@@ -1,0 +1,15 @@
+[
+{
+  "modid": "zairyou",
+  "name": "Zairyou",
+  "description": "Zairyou.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Rongmario"],
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
