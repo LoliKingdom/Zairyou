@@ -23,6 +23,7 @@ public class Material {
 
     public static final Object2ObjectMap<String, Material> REGISTRY = new Object2ObjectOpenHashMap<>();
 
+    public static final Material NONE = new Material("none", 0).enableAllTools(0, 0, 0F, 0F, 0F, 0);
     public static final Material COPPER = new Material("copper", 0xFF8000)
             .allowTypes(DUST, INGOT)
             .enableTools(1, 144, 5.0F, 1.5F, -3.2F, 8, tools -> tools.axe().hoe().pickaxe().shovel().sword());
@@ -61,6 +62,14 @@ public class Material {
         return typeItems;
     }
 
+    public ExtendedToolMaterial getToolMaterial() {
+        return toolMaterial;
+    }
+
+    public MaterialTools getTools() {
+        return tools;
+    }
+
     public MaterialItem getItem(MaterialType type) {
         return typeItems.get(type);
     }
@@ -85,10 +94,24 @@ public class Material {
         return TextureSet.NONE;
     }
 
+    public Material enableAllTools(Item.ToolMaterial toolMaterial, int attackSpeed) {
+        this.hasTools = true;
+        this.toolMaterial = new ExtendedToolMaterial(toolMaterial, attackSpeed);
+        this.tools = new MaterialTools(this.toolMaterial);
+        return this;
+    }
+
     public Material enableTools(Item.ToolMaterial toolMaterial, int attackSpeed, UnaryOperator<MaterialTools> applicableTools) {
         this.hasTools = true;
         this.toolMaterial = new ExtendedToolMaterial(toolMaterial, attackSpeed);
         this.tools = applicableTools.apply(new MaterialTools(this.toolMaterial));
+        return this;
+    }
+
+    public Material enableAllTools(int harvestLevel, int maxUses, float efficiency, float attackDamage, float attackSpeed, int enchantability) {
+        this.hasTools = true;
+        this.toolMaterial = new ExtendedToolMaterial(EnumHelper.addToolMaterial(name, harvestLevel, maxUses, efficiency, attackDamage, enchantability), attackSpeed);
+        this.tools = new MaterialTools(this.toolMaterial).axe().hoe().pickaxe().shovel().sword();
         return this;
     }
 
