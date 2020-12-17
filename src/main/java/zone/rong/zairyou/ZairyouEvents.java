@@ -40,7 +40,11 @@ public class ZairyouEvents {
     public static void onHandlingItemColours(ColorHandlerEvent.Item event) {
         Material.REGISTRY.values()
                 .forEach(m -> m.getItems().values()
-                        .forEach(i -> event.getItemColors().registerItemColorHandler((stack, tintIndex) -> m.getColour(), i)));
+                        .forEach(i -> {
+                            if (!m.isTypeDisabledForTinting(i.getMaterialType())) {
+                                event.getItemColors().registerItemColorHandler((stack, tintIndex) -> m.getColour(), i);
+                            }
+                        }));
     }
 
     @SubscribeEvent

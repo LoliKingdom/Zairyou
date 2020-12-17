@@ -8,7 +8,10 @@ import java.util.Locale;
 public enum MaterialType {
 
     INGOT(Zairyou.ID, new ModelResourceLocation(Zairyou.ID + ":ingot", "inventory")),
-    DUST(Zairyou.ID, new ModelResourceLocation(Zairyou.ID + ":dust", "inventory"));
+    DUST(Zairyou.ID, new ModelResourceLocation(Zairyou.ID + ":dust", "inventory")),
+
+    FERTILIZER("thermalfoundation", new ModelResourceLocation(Zairyou.ID + ":fertilizer", "inventory")),
+    SERVO("thermalfoundation", new ModelResourceLocation(Zairyou.ID + ":servo", "inventory"));
 
     private final String modId;
     private final ModelResourceLocation textureLocation;
