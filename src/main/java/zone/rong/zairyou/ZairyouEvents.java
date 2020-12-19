@@ -8,6 +8,7 @@ import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -20,6 +21,17 @@ import zone.rong.zairyou.api.tile.MachineTileEntity;
 
 @Mod.EventBusSubscriber
 public class ZairyouEvents {
+
+    // Debug
+    @SubscribeEvent
+    public static void onToolTipShown(ItemTooltipEvent event) {
+        if (event.getFlags().isAdvanced() && event.getItemStack().getItem() instanceof MaterialItem) {
+            MaterialItem matItem = (MaterialItem) event.getItemStack().getItem();
+            for (String ore : matItem.getOreNames()) {
+                event.getToolTip().add(ore);
+            }
+        }
+    }
 
     @SubscribeEvent
     public static void onBlockRegister(RegistryEvent.Register<Block> event) {

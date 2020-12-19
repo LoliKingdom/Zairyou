@@ -3,6 +3,7 @@ package zone.rong.zairyou.api.material;
 import com.google.common.base.CaseFormat;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -14,10 +15,7 @@ import zone.rong.zairyou.api.item.tool.ExtendedToolMaterial;
 import zone.rong.zairyou.api.item.tool.MaterialTools;
 import zone.rong.zairyou.api.material.type.MaterialType;
 
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.UnaryOperator;
 
 import static zone.rong.zairyou.api.material.type.MaterialType.*;
@@ -30,8 +28,8 @@ public class Material {
     public static final Object2ObjectMap<String, Material> REGISTRY = new Object2ObjectOpenHashMap<>();
 
     public static final Material NONE = new Material("none", 0).enableAllTools(0, 0, 0F, 0F, 0F, 0);
-    public static final Material COPPER = new Material("copper", 0xFF8000)
-            .allowTypes(DUST, INGOT)
+    public static final Material COPPER = new Material("copper", 0xFF7400)
+            .allowTypes(DUST, INGOT) // FF8000
             .enableTools(1, 144, 5.0F, 1.5F, -3.2F, 8, tools -> tools.axe().hoe().pickaxe().shovel().sword());
     public static final Material ELECTRUM = new Material("electrum", 0xFFFF64)
             .allowTypes(DUST, INGOT, COIL);
@@ -41,18 +39,20 @@ public class Material {
             .allowType(SERVO)
             .disableTint(SERVO)
             .texture(SERVO, new ModelResourceLocation(Zairyou.ID + ":custom/redstone_servo", "inventory"));
-    public static final Material SILVER = new Material("silver", 0xDCDCFF)
+    public static final Material SILVER = new Material("silver", 0xCCE0FF)
             .allowTypes(DUST, INGOT, COIL);
 
     /* Marker/Pseudo Materials - TODO: Match colours with electric tier defaults */
     public static final Material BASIC = new Material("basic", 0x0)
-            .allowType(FERTILIZER)
-            .disableTint(FERTILIZER)
-            .texture(FERTILIZER, new ModelResourceLocation(Zairyou.ID + ":custom/basic_fertilizer", "inventory"));
+            .allowTypes(FERTILIZER, SLAG)
+            .disableTints(FERTILIZER, SLAG)
+            .texture(FERTILIZER, new ModelResourceLocation(Zairyou.ID + ":custom/basic_fertilizer", "inventory"))
+            .texture(SLAG, new ModelResourceLocation(Zairyou.ID + ":custom/basic_slag", "inventory"));
     public static final Material RICH = new Material("rich", 0x0)
-            .allowType(FERTILIZER)
-            .disableTint(FERTILIZER)
-            .texture(FERTILIZER, new ModelResourceLocation(Zairyou.ID + ":custom/rich_fertilizer", "inventory"));
+            .allowTypes(FERTILIZER, SLAG)
+            .disableTints(FERTILIZER, SLAG)
+            .texture(FERTILIZER, new ModelResourceLocation(Zairyou.ID + ":custom/rich_fertilizer", "inventory"))
+            .texture(SLAG, new ModelResourceLocation(Zairyou.ID + ":custom/rich_slag", "inventory"));
     public static final Material FLUX = new Material("flux", 0x0)
             .allowType(FERTILIZER)
             .disableTint(FERTILIZER)
@@ -84,8 +84,21 @@ public class Material {
         return name;
     }
 
-    public String getOreName(MaterialType type) {
-        return type.toCamelString().concat(CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, this.name));
+    public String[] getOreNames(MaterialType type) {
+        final String[] typeOreNames = type.getPrefixes();
+        List<String> oreNames = new ObjectArrayList<>();
+        for (final String ore : typeOreNames) {
+            final String stripped = ore.replaceAll("\\p{Punct}", "");
+            if (ore.endsWith("~") || (ore.endsWith("~&") && this == Material.BASIC)) {
+                oreNames.add(stripped);
+                continue;
+            }
+            if (ore.endsWith("*")) {
+                oreNames.add(stripped);
+            }
+            oreNames.add(stripped.concat(toCamelString()));
+        }
+        return oreNames.toArray(new String[0]);
     }
 
     public String getTranslationKey() {
@@ -206,9 +219,21 @@ public class Material {
         return this;
     }
 
+    public Material disableTints(MaterialType... types) {
+        if (this.disabledTint == null) {
+            this.disabledTint = EnumSet.noneOf(MaterialType.class);
+        }
+        Collections.addAll(this.disabledTint, types);
+        return this;
+    }
+
     public MaterialItem setItem(MaterialType type, MaterialItem item) {
         this.typeItems.put(type, item);
         return item;
+    }
+
+    public String toCamelString() {
+        return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, this.name);
     }
 
 }

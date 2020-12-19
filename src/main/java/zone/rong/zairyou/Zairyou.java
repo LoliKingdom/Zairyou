@@ -18,7 +18,7 @@ public class Zairyou {
     public static final String ID = "zairyou";
     public static final String NAME = "Zairyou";
 
-    public static final Logger LOGGER = LogManager.getLogger("Zairyou");
+    public static final Logger LOGGER = LogManager.getLogger(ID);
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
@@ -30,7 +30,11 @@ public class Zairyou {
         Material.REGISTRY.values().stream()
                 .map(Material::getItems)
                 .flatMap(m -> m.values().stream())
-                .forEach(i -> OreDictionary.registerOre(i.getOreName(), i));
+                .forEach(i -> {
+                    for (final String ore : i.getOreNames()) {
+                        OreDictionary.registerOre(ore, i);
+                    }
+                });
     }
 
 }

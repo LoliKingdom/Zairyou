@@ -14,12 +14,12 @@ public class MaterialItem extends Item {
     private final Material material;
     private final MaterialType materialType;
 
-    private final String oreName;
+    private final String[] oreNames;
 
     public MaterialItem(Material material, MaterialType materialType) {
         this.material = material;
         this.materialType = materialType;
-        this.oreName = material.getOreName(materialType);
+        this.oreNames = material.getOreNames(materialType);
         this.setCreativeTab(CreativeTabs.MATERIALS);
     }
 
@@ -31,8 +31,8 @@ public class MaterialItem extends Item {
         return materialType;
     }
 
-    public String getOreName() {
-        return oreName;
+    public String[] getOreNames() {
+        return oreNames;
     }
 
     @Override

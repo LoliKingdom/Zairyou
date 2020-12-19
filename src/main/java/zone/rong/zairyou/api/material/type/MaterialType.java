@@ -8,21 +8,33 @@ import java.util.Locale;
 
 public enum MaterialType {
 
-    INGOT(Zairyou.ID, new ModelResourceLocation(Zairyou.ID + ":ingot", "inventory"), false),
-    DUST(Zairyou.ID, new ModelResourceLocation(Zairyou.ID + ":dust", "inventory"), false),
+    INGOT(Zairyou.ID, "ingot", new ModelResourceLocation(Zairyou.ID + ":ingot", "inventory"), false),
+    DUST(Zairyou.ID, "dust", new ModelResourceLocation(Zairyou.ID + ":dust", "inventory"), false),
 
-    COIL("thermalfoundation", new ModelResourceLocation(Zairyou.ID + ":coil", "inventory"), true),
-    FERTILIZER("thermalfoundation", new ModelResourceLocation(Zairyou.ID + ":fertilizer", "inventory"), false),
-    SERVO("thermalfoundation", new ModelResourceLocation(Zairyou.ID + ":servo", "inventory"), false);
+    COIL("thermalfoundation", "coil", new ModelResourceLocation(Zairyou.ID + ":coil", "inventory"), true),
+    FERTILIZER("thermalfoundation", "fertilizer", new ModelResourceLocation(Zairyou.ID + ":fertilizer", "inventory"), false),
+    SERVO("thermalfoundation", "servo", new ModelResourceLocation(Zairyou.ID + ":servo", "inventory"), false),
+    SLAG("thermalfoundation", "slag~&", new ModelResourceLocation(Zairyou.ID + ":slag", "inventory"), false, "crystalSlag~&", "itemSlag~&");
 
     private final String modId;
     private final ModelResourceLocation textureLocation;
     private final boolean hasTextureLayers;
+    private final String[] prefixes;
 
-    MaterialType(String modId, ModelResourceLocation textureLocation, boolean hasTextureLayers) {
+    MaterialType(String modId, String prefix, ModelResourceLocation textureLocation, boolean hasTextureLayers) {
         this.modId = modId;
         this.textureLocation = textureLocation;
         this.hasTextureLayers = hasTextureLayers;
+        this.prefixes = new String[] { prefix };
+    }
+
+    MaterialType(String modId, String prefix, ModelResourceLocation textureLocation, boolean hasTextureLayers, String... alternatePrefixes) {
+        this.modId = modId;
+        this.textureLocation = textureLocation;
+        this.hasTextureLayers = hasTextureLayers;
+        this.prefixes = new String[alternatePrefixes.length + 1];
+        this.prefixes[0] = prefix;
+        System.arraycopy(alternatePrefixes, 0, this.prefixes, 1, alternatePrefixes.length);
     }
 
     public String getModID() {
@@ -41,13 +53,25 @@ public enum MaterialType {
         return hasTextureLayers;
     }
 
+    public String[] getPrefixes() {
+        return prefixes;
+    }
+
     @Override
     public String toString() {
         return this.name().toLowerCase(Locale.ROOT);
     }
 
-    public String toCamelString() {
-        return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, this.name());
+    @Deprecated
+    public String[] toCamelStrings() {
+        if (prefixes.length == 0) {
+            return new String[] {CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, this.name())};
+        }
+        String[] alternates = new String[prefixes.length];
+        for (int i = 0; i < alternates.length; i++) {
+            alternates[i] = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, prefixes[i]);
+        }
+        return alternates;
     }
 
 }
