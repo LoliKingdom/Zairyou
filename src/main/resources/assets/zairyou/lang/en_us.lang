@@ -1,0 +1,17 @@
+zairyou.none.name=None
+zairyou.copper.name=Copper
+zairyou.electrum.name=Electrum
+zairyou.gold.name=Gold
+zairyou.redstone.name=Redstone
+zairyou.silver.name=Silver
+
+zairyou.basic.name=Basic
+zairyou.rich.name=Rich
+zairyou.flux.name=Flux
+
+zairyou.ingot.name=%s Ingot
+zairyou.dust.name=%s Dust
+
+thermalfoundation.coil.name=%s Power Coil
+thermalfoundation.fertilizer.name=%s Phyto-Gro
+thermalfoundation.servo.name=%s Servo

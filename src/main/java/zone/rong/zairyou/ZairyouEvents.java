@@ -38,11 +38,13 @@ public class ZairyouEvents {
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public static void onHandlingItemColours(ColorHandlerEvent.Item event) {
-        Material.REGISTRY.values()
-                .forEach(m -> m.getItems().values()
-                        .forEach(i -> {
-                            if (!m.isTypeDisabledForTinting(i.getMaterialType())) {
-                                event.getItemColors().registerItemColorHandler((stack, tintIndex) -> m.getColour(), i);
+        Material.REGISTRY.values().forEach(m -> m.getItems().forEach((t, i) -> {
+                            if (m.hasTint(t)) {
+                                if (!t.hasOverlayTexture()) {
+                                    event.getItemColors().registerItemColorHandler((stack, tintIndex) -> m.getColour(), i);
+                                } else {
+                                    event.getItemColors().registerItemColorHandler((stack, tintIndex) -> tintIndex == 0 ? -1 : m.getColour(), i);
+                                }
                             }
                         }));
     }

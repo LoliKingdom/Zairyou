@@ -1,5 +1,6 @@
 package zone.rong.zairyou.api.material;
 
+import com.google.common.base.CaseFormat;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -15,6 +16,7 @@ import zone.rong.zairyou.api.material.type.MaterialType;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
@@ -31,31 +33,36 @@ public class Material {
     public static final Material COPPER = new Material("copper", 0xFF8000)
             .allowTypes(DUST, INGOT)
             .enableTools(1, 144, 5.0F, 1.5F, -3.2F, 8, tools -> tools.axe().hoe().pickaxe().shovel().sword());
+    public static final Material ELECTRUM = new Material("electrum", 0xFFFF64)
+            .allowTypes(DUST, INGOT, COIL);
+    public static final Material GOLD = new Material("gold", 0xFFFF00)
+            .allowTypes(DUST, COIL);
     public static final Material REDSTONE = new Material("redstone", 0xC80000)
             .allowType(SERVO)
             .disableTint(SERVO)
-            .texture(SERVO, new ModelResourceLocation(Zairyou.ID + ":redstone_servo", "inventory"));
+            .texture(SERVO, new ModelResourceLocation(Zairyou.ID + ":custom/redstone_servo", "inventory"));
+    public static final Material SILVER = new Material("silver", 0xDCDCFF)
+            .allowTypes(DUST, INGOT, COIL);
 
-    /* Marker/Pseudo Materials */
+    /* Marker/Pseudo Materials - TODO: Match colours with electric tier defaults */
     public static final Material BASIC = new Material("basic", 0x0)
             .allowType(FERTILIZER)
             .disableTint(FERTILIZER)
-            .texture(FERTILIZER, new ModelResourceLocation(Zairyou.ID + ":basic_fertilizer", "inventory"));
+            .texture(FERTILIZER, new ModelResourceLocation(Zairyou.ID + ":custom/basic_fertilizer", "inventory"));
     public static final Material RICH = new Material("rich", 0x0)
             .allowType(FERTILIZER)
             .disableTint(FERTILIZER)
-            .texture(FERTILIZER, new ModelResourceLocation(Zairyou.ID + ":rich_fertilizer", "inventory"));
+            .texture(FERTILIZER, new ModelResourceLocation(Zairyou.ID + ":custom/rich_fertilizer", "inventory"));
     public static final Material FLUX = new Material("flux", 0x0)
             .allowType(FERTILIZER)
             .disableTint(FERTILIZER)
-            .texture(FERTILIZER, new ModelResourceLocation(Zairyou.ID + ":flux_fertilizer", "inventory"));
+            .texture(FERTILIZER, new ModelResourceLocation(Zairyou.ID + ":custom/flux_fertilizer", "inventory"));
 
-    private final String name;
+    private final String name, translationKey;
     private final int colour;
     private final EnumMap<MaterialType, MaterialItem> typeItems = new EnumMap<>(MaterialType.class);
     // private final TextureSet textureSet;
 
-    private boolean hasCustomTexture;
     private boolean hasTools;
 
     private EnumSet<MaterialType> disabledTint;
@@ -65,7 +72,11 @@ public class Material {
 
     public Material(String name, int colour) {
         this.name = name;
+        this.translationKey = String.join(".", Zairyou.ID, name, "name");
         this.colour = colour;
+        if (REGISTRY.containsKey(name)) {
+            throw new IllegalStateException(name + " has been registered already!");
+        }
         REGISTRY.put(name, this);
     }
 
@@ -73,19 +84,27 @@ public class Material {
         return name;
     }
 
+    public String getOreName(MaterialType type) {
+        return type.toCamelString().concat(CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, this.name));
+    }
+
+    public String getTranslationKey() {
+        return translationKey;
+    }
+
     public int getColour() {
         return colour;
     }
 
-    public boolean isTypeDisabledForTinting(MaterialType type) {
-        return this.disabledTint == null || this.disabledTint.contains(type);
+    public boolean hasTint(MaterialType type) {
+        return this.disabledTint == null || !this.disabledTint.contains(type);
     }
 
     public Set<MaterialType> getAllowedTypes() {
         return typeItems.keySet();
     }
 
-    public EnumMap<MaterialType, MaterialItem> getItems() {
+    public Map<MaterialType, MaterialItem> getItems() {
         return typeItems;
     }
 
@@ -102,24 +121,24 @@ public class Material {
     }
 
     public ItemStack getStack(MaterialType type, int count) {
-        return new ItemStack(getItem(type), count);
+        return new ItemStack(typeItems.get(type), count);
     }
 
     public ItemStack getStack(MaterialType type, int count, String tagName, NBTTagCompound tag) {
-        ItemStack stack = new ItemStack(getItem(type), count);
+        ItemStack stack = new ItemStack(typeItems.get(type), count);
         stack.getTagCompound().setTag(tagName, tag);
         return stack;
     }
 
     public ModelResourceLocation getTexture(MaterialType type) {
-        if (this.hasCustomTexture) {
-            return customTextures.get(type);
+        if (this.customTextures == null) {
+            return type.getTextureLocation();
         }
-        return type.getTextureLocation();
-    }
-
-    public boolean hasCustomTexture() {
-        return hasCustomTexture;
+        ModelResourceLocation loc = this.customTextures.get(type);
+        if (loc == null) {
+            return type.getTextureLocation();
+        }
+        return loc;
     }
 
     public boolean hasTools() {
@@ -172,7 +191,6 @@ public class Material {
     }
 
     public Material texture(MaterialType type, ModelResourceLocation location) {
-        this.hasCustomTexture = true;
         if (this.customTextures == null) {
             this.customTextures = new EnumMap<>(MaterialType.class);
         }
@@ -189,7 +207,7 @@ public class Material {
     }
 
     public MaterialItem setItem(MaterialType type, MaterialItem item) {
-        this.typeItems.replace(type, item);
+        this.typeItems.put(type, item);
         return item;
     }
 
