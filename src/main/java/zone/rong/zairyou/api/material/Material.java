@@ -9,15 +9,23 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.EnumHelper;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
 import zone.rong.zairyou.Zairyou;
+import zone.rong.zairyou.api.fluid.DefaultFluidBlock;
+import zone.rong.zairyou.api.fluid.FluidType;
 import zone.rong.zairyou.api.item.MaterialItem;
 import zone.rong.zairyou.api.item.tool.ExtendedToolMaterial;
 import zone.rong.zairyou.api.item.tool.MaterialTools;
 import zone.rong.zairyou.api.material.type.MaterialType;
+import zone.rong.zairyou.api.util.RenderUtils;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.UnaryOperator;
 
+import static zone.rong.zairyou.api.fluid.FluidType.*;
 import static zone.rong.zairyou.api.material.type.MaterialType.*;
 
 /**
@@ -28,19 +36,28 @@ public class Material {
     public static final Object2ObjectMap<String, Material> REGISTRY = new Object2ObjectOpenHashMap<>();
 
     public static final Material NONE = new Material("none", 0).enableAllTools(0, 0, 0F, 0F, 0F, 0);
+
     public static final Material COPPER = new Material("copper", 0xFF7400)
-            .allowTypes(DUST, INGOT) // FF8000
+            .allowTypes(DUST, INGOT)
+            .fluid(MOLTEN, "copper", fluid -> fluid.setLuminosity(8).setDensity(3000).setViscosity(6000).setTemperature(1385))
             .enableTools(1, 144, 5.0F, 1.5F, -3.2F, 8, tools -> tools.axe().hoe().pickaxe().shovel().sword());
+
     public static final Material ELECTRUM = new Material("electrum", 0xFFFF64)
-            .allowTypes(DUST, INGOT, COIL);
+            .allowTypes(DUST, INGOT, COIL)
+            .fluid(MOLTEN, "electrum", fluid -> fluid.setLuminosity(8).setDensity(3000).setViscosity(6000).setTemperature(1337));
+
     public static final Material GOLD = new Material("gold", 0xFFFF00)
-            .allowTypes(DUST, COIL);
+            .allowTypes(DUST, COIL)
+            .fluid(MOLTEN, "gold", fluid -> fluid.setLuminosity(8).setDensity(3000).setViscosity(6000).setTemperature(1337));
+
     public static final Material REDSTONE = new Material("redstone", 0xC80000)
             .allowType(SERVO)
             .disableTint(SERVO)
             .texture(SERVO, new ModelResourceLocation(Zairyou.ID + ":custom/redstone_servo", "inventory"));
+
     public static final Material SILVER = new Material("silver", 0xCCE0FF)
-            .allowTypes(DUST, INGOT, COIL);
+            .allowTypes(DUST, INGOT, COIL)
+            .fluid(MOLTEN, "silver", fluid -> fluid.setLuminosity(8).setDensity(3000).setViscosity(6000).setTemperature(1235));
 
     /* Marker/Pseudo Materials - TODO: Match colours with electric tier defaults */
     public static final Material BASIC = new Material("basic", 0x0)
@@ -48,11 +65,13 @@ public class Material {
             .disableTints(FERTILIZER, SLAG)
             .texture(FERTILIZER, new ModelResourceLocation(Zairyou.ID + ":custom/basic_fertilizer", "inventory"))
             .texture(SLAG, new ModelResourceLocation(Zairyou.ID + ":custom/basic_slag", "inventory"));
+
     public static final Material RICH = new Material("rich", 0x0)
             .allowTypes(FERTILIZER, SLAG)
             .disableTints(FERTILIZER, SLAG)
             .texture(FERTILIZER, new ModelResourceLocation(Zairyou.ID + ":custom/rich_fertilizer", "inventory"))
             .texture(SLAG, new ModelResourceLocation(Zairyou.ID + ":custom/rich_slag", "inventory"));
+
     public static final Material FLUX = new Material("flux", 0x0)
             .allowType(FERTILIZER)
             .disableTint(FERTILIZER)
@@ -60,10 +79,12 @@ public class Material {
 
     private final String name, translationKey;
     private final int colour;
-    private final EnumMap<MaterialType, MaterialItem> typeItems = new EnumMap<>(MaterialType.class);
+
+    private EnumMap<MaterialType, MaterialItem> typeItems;
+    private EnumMap<FluidType, Fluid> typeFluids;
     // private final TextureSet textureSet;
 
-    private boolean hasTools;
+    private boolean hasTools = false;
 
     private EnumSet<MaterialType> disabledTint;
     private EnumMap<MaterialType, ModelResourceLocation> customTextures;
@@ -114,11 +135,11 @@ public class Material {
     }
 
     public Set<MaterialType> getAllowedTypes() {
-        return typeItems.keySet();
+        return this.typeItems == null ? Collections.emptySet() : this.typeItems.keySet();
     }
 
     public Map<MaterialType, MaterialItem> getItems() {
-        return typeItems;
+        return this.typeItems == null ? Collections.emptyMap() : this.typeItems;
     }
 
     public ExtendedToolMaterial getToolMaterial() {
@@ -129,18 +150,41 @@ public class Material {
         return tools;
     }
 
+    public Map<FluidType, Fluid> getFluids() {
+        return this.typeFluids == null ? Collections.emptyMap() : this.typeFluids;
+    }
+
+    @Nullable
     public MaterialItem getItem(MaterialType type) {
-        return typeItems.get(type);
+        return this.typeItems == null ? null : this.typeItems.getOrDefault(type, null);
+    }
+
+    @Nullable
+    public Fluid getFluid(FluidType type) {
+        return this.typeFluids == null ? null : this.typeFluids.getOrDefault(type, null);
     }
 
     public ItemStack getStack(MaterialType type, int count) {
-        return new ItemStack(typeItems.get(type), count);
+        Item item = getItem(type);
+        if (item == null) {
+            return ItemStack.EMPTY;
+        }
+        return new ItemStack(item, count);
     }
 
     public ItemStack getStack(MaterialType type, int count, String tagName, NBTTagCompound tag) {
-        ItemStack stack = new ItemStack(typeItems.get(type), count);
+        Item item = getItem(type);
+        if (item == null) {
+            return ItemStack.EMPTY;
+        }
+        ItemStack stack = new ItemStack(item, count);
         stack.getTagCompound().setTag(tagName, tag);
         return stack;
+    }
+
+    @Nullable
+    public FluidStack getStack(FluidType type, int amount) {
+        return new FluidStack(getFluid(type), amount);
     }
 
     public ModelResourceLocation getTexture(MaterialType type) {
@@ -192,16 +236,62 @@ public class Material {
     }
 
     public Material allowType(MaterialType type) {
+        if (this.typeItems == null) {
+            this.typeItems = new EnumMap<>(MaterialType.class);
+        }
         this.typeItems.put(type, null);
         return this;
     }
 
     public Material allowTypes(MaterialType... types) {
+        if (this.typeItems == null) {
+            this.typeItems = new EnumMap<>(MaterialType.class);
+        }
         for (MaterialType type : types) {
             this.typeItems.put(type, null);
         }
         return this;
     }
+
+    public Material fluid(FluidType type, Fluid fluid) {
+        if (this.typeFluids == null) {
+            this.typeFluids = new EnumMap<>(FluidType.class);
+        }
+        FluidRegistry.addBucketForFluid(fluid);
+        this.typeFluids.put(type, fluid);
+        return this;
+    }
+
+    public Material fluid(FluidType type, String fluidName, int colour, UnaryOperator<Fluid> fluidCallback, UnaryOperator<DefaultFluidBlock> blockCallback) {
+        Fluid fluid = fluidCallback.apply(new Fluid(fluidName, type.getStillTexture(), type.getFlowingTexture(), RenderUtils.convertRGB2ARGB(colour)));
+        FluidRegistry.registerFluid(fluid);
+        fluid.setBlock(blockCallback.apply(new DefaultFluidBlock(fluid, type)));
+        return fluid(type, fluid);
+    }
+
+    public Material fluid(FluidType type, String fluidName, int colour, UnaryOperator<Fluid> fluidCallback) {
+        return fluid(type, fluidName, colour, fluidCallback, block -> block);
+    }
+
+    public Material fluid(FluidType type, String fluidName, UnaryOperator<Fluid> fluidCallback, UnaryOperator<DefaultFluidBlock> blockCallback) {
+        return fluid(type, fluidName, this.colour, fluidCallback, blockCallback);
+    }
+
+    public Material fluid(FluidType type, String fluidName, UnaryOperator<Fluid> fluidCallback) {
+        return fluid(type, fluidName, this.colour, fluidCallback, block -> block);
+    }
+
+    /*
+    public Material fluids(FluidType... types) {
+        if (this.typeFluids == null) {
+            this.typeFluids = new EnumMap<>(FluidType.class);
+        }
+        for (FluidType type : types) {
+            this.typeFluids.put(type, null);
+        }
+        return this;
+    }
+     */
 
     public Material texture(MaterialType type, ModelResourceLocation location) {
         if (this.customTextures == null) {
