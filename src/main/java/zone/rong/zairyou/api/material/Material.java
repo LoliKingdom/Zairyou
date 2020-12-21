@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -37,18 +38,22 @@ public class Material {
 
     public static final Material NONE = new Material("none", 0).enableAllTools(0, 0, 0F, 0F, 0F, 0);
 
+    public static final Material AIR = new Material("air", 0x58A7A5)
+            .fluid(LIQUID, "liquid_air", fluid -> fluid.setDensity(0).setTemperature(79))
+            .fluid(GASEOUS, "air", fluid -> fluid.setDensity(0).setTemperature(290));
+
     public static final Material COPPER = new Material("copper", 0xFF7400)
             .allowTypes(DUST, INGOT)
-            .fluid(MOLTEN, "copper", fluid -> fluid.setLuminosity(8).setDensity(3000).setViscosity(6000).setTemperature(1385))
+            .fluid(MOLTEN, "copper", fluid -> fluid.setLuminosity(15).setDensity(3000).setViscosity(6000).setTemperature(1385))
             .enableTools(1, 144, 5.0F, 1.5F, -3.2F, 8, tools -> tools.axe().hoe().pickaxe().shovel().sword());
 
     public static final Material ELECTRUM = new Material("electrum", 0xFFFF64)
             .allowTypes(DUST, INGOT, COIL)
-            .fluid(MOLTEN, "electrum", fluid -> fluid.setLuminosity(8).setDensity(3000).setViscosity(6000).setTemperature(1337));
+            .fluid(MOLTEN, "electrum", fluid -> fluid.setLuminosity(15).setDensity(3000).setViscosity(6000).setTemperature(1337));
 
     public static final Material GOLD = new Material("gold", 0xFFFF00)
             .allowTypes(DUST, COIL)
-            .fluid(MOLTEN, "gold", fluid -> fluid.setLuminosity(8).setDensity(3000).setViscosity(6000).setTemperature(1337));
+            .fluid(MOLTEN, "gold", fluid -> fluid.setLuminosity(15).setDensity(3000).setViscosity(6000).setTemperature(1337));
 
     public static final Material REDSTONE = new Material("redstone", 0xC80000)
             .allowType(SERVO)
@@ -57,7 +62,7 @@ public class Material {
 
     public static final Material SILVER = new Material("silver", 0xCCE0FF)
             .allowTypes(DUST, INGOT, COIL)
-            .fluid(MOLTEN, "silver", fluid -> fluid.setLuminosity(8).setDensity(3000).setViscosity(6000).setTemperature(1235));
+            .fluid(MOLTEN, "silver", fluid -> fluid.setLuminosity(15).setDensity(3000).setViscosity(6000).setTemperature(1235));
 
     /* Marker/Pseudo Materials - TODO: Match colours with electric tier defaults */
     public static final Material BASIC = new Material("basic", 0x0)
@@ -263,7 +268,12 @@ public class Material {
     }
 
     public Material fluid(FluidType type, String fluidName, int colour, UnaryOperator<Fluid> fluidCallback, UnaryOperator<DefaultFluidBlock> blockCallback) {
-        Fluid fluid = fluidCallback.apply(new Fluid(fluidName, type.getStillTexture(), type.getFlowingTexture(), RenderUtils.convertRGB2ARGB(colour)));
+        Fluid fluid = fluidCallback.apply(new Fluid(fluidName, type.getStillTexture(), type.getFlowingTexture(), RenderUtils.convertRGB2ARGB(type.getBaseAlpha(), colour)) {
+            @Override
+            public String getLocalizedName(FluidStack stack) {
+                return I18n.format(type.getTranslationKey(), I18n.format(Material.this.translationKey));
+            }
+        });
         FluidRegistry.registerFluid(fluid);
         fluid.setBlock(blockCallback.apply(new DefaultFluidBlock(fluid, type)));
         return fluid(type, fluid);

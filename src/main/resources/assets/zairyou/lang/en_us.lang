@@ -12,6 +12,11 @@ zairyou.flux.name=Flux
 zairyou.ingot.name=%s Ingot
 zairyou.dust.name=%s Dust
 
+zairyou.liquid.name=Liquid %s
+zairyou.molten.name=Molten %s
+zairyou.gaseous.name=%s Gas
+zairyou.plasma.name=%s Plasma
+
 thermalfoundation.coil.name=%s Power Coil
 thermalfoundation.fertilizer.name=%s Phyto-Gro
 thermalfoundation.servo.name=%s Servo

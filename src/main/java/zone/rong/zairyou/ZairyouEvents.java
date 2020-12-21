@@ -131,7 +131,7 @@ public class ZairyouEvents {
                     Block block = f.getBlock();
                     if (block instanceof DefaultFluidBlock) {
                         ModelFluid modelFluid = new ModelFluid(f);
-                        IBakedModel bakedModel = modelFluid.bake(modelFluid.getDefaultState(), DefaultVertexFormats.BLOCK, RenderUtils::getTexture);
+                        IBakedModel bakedModel = modelFluid.bake(modelFluid.getDefaultState(), DefaultVertexFormats.ITEM, RenderUtils::getTexture);
                         event.getModelRegistry().putObject(RenderUtils.getSimpleModelLocation(block), bakedModel);
                     }
                 });
