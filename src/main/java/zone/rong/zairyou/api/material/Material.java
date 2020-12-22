@@ -4,11 +4,14 @@ import com.google.common.base.CaseFormat;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.block.Block;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
@@ -24,10 +27,10 @@ import zone.rong.zairyou.api.util.RenderUtils;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.IntSupplier;
 import java.util.function.UnaryOperator;
-
-import static zone.rong.zairyou.api.fluid.FluidType.*;
-import static zone.rong.zairyou.api.material.type.MaterialType.*;
 
 /**
  * Material. That's it.
@@ -36,51 +39,15 @@ public class Material {
 
     public static final Object2ObjectMap<String, Material> REGISTRY = new Object2ObjectOpenHashMap<>();
 
-    public static final Material NONE = new Material("none", 0).enableAllTools(0, 0, 0F, 0F, 0F, 0);
+    public static Material of(String name, int colour) {
+        if (REGISTRY.containsKey(name)) {
+            throw new IllegalStateException(name + " has been registered already!");
+        }
+        return new Material(name, colour);
+    }
 
-    public static final Material AIR = new Material("air", 0x58A7A5)
-            .fluid(LIQUID, "liquid_air", fluid -> fluid.setDensity(0).setTemperature(79))
-            .fluid(GASEOUS, "air", fluid -> fluid.setDensity(0).setTemperature(290));
-
-    public static final Material COPPER = new Material("copper", 0xFF7400)
-            .allowTypes(DUST, INGOT)
-            .fluid(MOLTEN, "copper", fluid -> fluid.setLuminosity(15).setDensity(3000).setViscosity(6000).setTemperature(1385))
-            .enableTools(1, 144, 5.0F, 1.5F, -3.2F, 8, tools -> tools.axe().hoe().pickaxe().shovel().sword());
-
-    public static final Material ELECTRUM = new Material("electrum", 0xFFFF64)
-            .allowTypes(DUST, INGOT, COIL)
-            .fluid(MOLTEN, "electrum", fluid -> fluid.setLuminosity(15).setDensity(3000).setViscosity(6000).setTemperature(1337));
-
-    public static final Material GOLD = new Material("gold", 0xFFFF00)
-            .allowTypes(DUST, COIL)
-            .fluid(MOLTEN, "gold", fluid -> fluid.setLuminosity(15).setDensity(3000).setViscosity(6000).setTemperature(1337));
-
-    public static final Material REDSTONE = new Material("redstone", 0xC80000)
-            .allowType(SERVO)
-            .disableTint(SERVO)
-            .texture(SERVO, new ModelResourceLocation(Zairyou.ID + ":custom/redstone_servo", "inventory"));
-
-    public static final Material SILVER = new Material("silver", 0xCCE0FF)
-            .allowTypes(DUST, INGOT, COIL)
-            .fluid(MOLTEN, "silver", fluid -> fluid.setLuminosity(15).setDensity(3000).setViscosity(6000).setTemperature(1235));
-
-    /* Marker/Pseudo Materials - TODO: Match colours with electric tier defaults */
-    public static final Material BASIC = new Material("basic", 0x0)
-            .allowTypes(FERTILIZER, SLAG)
-            .disableTints(FERTILIZER, SLAG)
-            .texture(FERTILIZER, new ModelResourceLocation(Zairyou.ID + ":custom/basic_fertilizer", "inventory"))
-            .texture(SLAG, new ModelResourceLocation(Zairyou.ID + ":custom/basic_slag", "inventory"));
-
-    public static final Material RICH = new Material("rich", 0x0)
-            .allowTypes(FERTILIZER, SLAG)
-            .disableTints(FERTILIZER, SLAG)
-            .texture(FERTILIZER, new ModelResourceLocation(Zairyou.ID + ":custom/rich_fertilizer", "inventory"))
-            .texture(SLAG, new ModelResourceLocation(Zairyou.ID + ":custom/rich_slag", "inventory"));
-
-    public static final Material FLUX = new Material("flux", 0x0)
-            .allowType(FERTILIZER)
-            .disableTint(FERTILIZER)
-            .texture(FERTILIZER, new ModelResourceLocation(Zairyou.ID + ":custom/flux_fertilizer", "inventory"));
+    public static final Material NONE = new Material("none", 0).tools(0, 0, 0F, 0F, 0F, 0);
+    public static final Material BASIC = new Material("basic", 0x0);
 
     private final String name, translationKey;
     private final int colour;
@@ -96,13 +63,10 @@ public class Material {
     private ExtendedToolMaterial toolMaterial;
     private MaterialTools tools;
 
-    public Material(String name, int colour) {
+    protected Material(String name, int colour) {
         this.name = name;
         this.translationKey = String.join(".", Zairyou.ID, name, "name");
         this.colour = colour;
-        if (REGISTRY.containsKey(name)) {
-            throw new IllegalStateException(name + " has been registered already!");
-        }
         REGISTRY.put(name, this);
     }
 
@@ -212,35 +176,35 @@ public class Material {
         return TextureSet.NONE;
     }
 
-    public Material enableAllTools(Item.ToolMaterial toolMaterial, int attackSpeed) {
+    public Material tools(Item.ToolMaterial toolMaterial, int attackSpeed) {
         this.hasTools = true;
         this.toolMaterial = new ExtendedToolMaterial(toolMaterial, attackSpeed);
         this.tools = new MaterialTools(this.toolMaterial);
         return this;
     }
 
-    public Material enableTools(Item.ToolMaterial toolMaterial, int attackSpeed, UnaryOperator<MaterialTools> applicableTools) {
+    public Material tools(Item.ToolMaterial toolMaterial, int attackSpeed, UnaryOperator<MaterialTools> applicableTools) {
         this.hasTools = true;
         this.toolMaterial = new ExtendedToolMaterial(toolMaterial, attackSpeed);
         this.tools = applicableTools.apply(new MaterialTools(this.toolMaterial));
         return this;
     }
 
-    public Material enableAllTools(int harvestLevel, int maxUses, float efficiency, float attackDamage, float attackSpeed, int enchantability) {
+    public Material tools(int harvestLevel, int maxUses, float efficiency, float attackDamage, float attackSpeed, int enchantability) {
         this.hasTools = true;
         this.toolMaterial = new ExtendedToolMaterial(EnumHelper.addToolMaterial(name, harvestLevel, maxUses, efficiency, attackDamage, enchantability), attackSpeed);
         this.tools = new MaterialTools(this.toolMaterial).axe().hoe().pickaxe().shovel().sword();
         return this;
     }
 
-    public Material enableTools(int harvestLevel, int maxUses, float efficiency, float attackDamage, float attackSpeed, int enchantability, UnaryOperator<MaterialTools> applicableTools) {
+    public Material tools(int harvestLevel, int maxUses, float efficiency, float attackDamage, float attackSpeed, int enchantability, UnaryOperator<MaterialTools> applicableTools) {
         this.hasTools = true;
         this.toolMaterial = new ExtendedToolMaterial(EnumHelper.addToolMaterial(name, harvestLevel, maxUses, efficiency, attackDamage, enchantability), attackSpeed);
         this.tools = applicableTools.apply(new MaterialTools(this.toolMaterial));
         return this;
     }
 
-    public Material allowType(MaterialType type) {
+    public Material type(MaterialType type) {
         if (this.typeItems == null) {
             this.typeItems = new EnumMap<>(MaterialType.class);
         }
@@ -248,7 +212,7 @@ public class Material {
         return this;
     }
 
-    public Material allowTypes(MaterialType... types) {
+    public Material types(MaterialType... types) {
         if (this.typeItems == null) {
             this.typeItems = new EnumMap<>(MaterialType.class);
         }
@@ -267,28 +231,14 @@ public class Material {
         return this;
     }
 
-    public Material fluid(FluidType type, String fluidName, int colour, UnaryOperator<Fluid> fluidCallback, UnaryOperator<DefaultFluidBlock> blockCallback) {
-        Fluid fluid = fluidCallback.apply(new Fluid(fluidName, type.getStillTexture(), type.getFlowingTexture(), RenderUtils.convertRGB2ARGB(type.getBaseAlpha(), colour)) {
-            @Override
-            public String getLocalizedName(FluidStack stack) {
-                return I18n.format(type.getTranslationKey(), I18n.format(Material.this.translationKey));
-            }
-        });
-        FluidRegistry.registerFluid(fluid);
-        fluid.setBlock(blockCallback.apply(new DefaultFluidBlock(fluid, type)));
-        return fluid(type, fluid);
+    public Material fluid(FluidType fluidType, UnaryOperator<FluidBuilder> builderOperator) {
+        return fluid(fluidType, builderOperator.apply(new FluidBuilder(this.name, fluidType, this.colour)).build());
     }
 
-    public Material fluid(FluidType type, String fluidName, int colour, UnaryOperator<Fluid> fluidCallback) {
-        return fluid(type, fluidName, colour, fluidCallback, block -> block);
-    }
-
-    public Material fluid(FluidType type, String fluidName, UnaryOperator<Fluid> fluidCallback, UnaryOperator<DefaultFluidBlock> blockCallback) {
-        return fluid(type, fluidName, this.colour, fluidCallback, blockCallback);
-    }
-
-    public Material fluid(FluidType type, String fluidName, UnaryOperator<Fluid> fluidCallback) {
-        return fluid(type, fluidName, this.colour, fluidCallback, block -> block);
+    public Material fluid(FluidType fluidType, UnaryOperator<FluidBuilder> builderOperator, Consumer<Block> blockConsumer) {
+        Fluid fluid = builderOperator.apply(new FluidBuilder(this.name, fluidType, this.colour)).build();
+        blockConsumer.accept(fluid.getBlock());
+        return fluid(fluidType, fluid);
     }
 
     /*
@@ -311,7 +261,15 @@ public class Material {
         return this;
     }
 
-    public Material disableTint(MaterialType type) {
+    public Material texture(MaterialType type, String domain, String id) {
+        return texture(type, new ModelResourceLocation(domain + id, "inventory")); // TODO: differentiate Block and Item
+    }
+
+    public Material texture(MaterialType type, String id) {
+        return texture(type, new ModelResourceLocation(Zairyou.ID + ":" + id, "inventory")); // TODO: differentiate Block and Item
+    }
+
+    public Material noTint(MaterialType type) {
         if (this.disabledTint == null) {
             this.disabledTint = EnumSet.noneOf(MaterialType.class);
         }
@@ -319,7 +277,7 @@ public class Material {
         return this;
     }
 
-    public Material disableTints(MaterialType... types) {
+    public Material noTints(MaterialType... types) {
         if (this.disabledTint == null) {
             this.disabledTint = EnumSet.noneOf(MaterialType.class);
         }
@@ -334,6 +292,112 @@ public class Material {
 
     public String toCamelString() {
         return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, this.name);
+    }
+
+    public class FluidBuilder {
+
+        private String name;
+
+        private final FluidType fluidType;
+        private final int colour;
+
+        private ResourceLocation still, flow, overlay;
+        private boolean noTint = false;
+        private IntSupplier luminosity, density, viscosity, temperature;
+        private Function<Fluid, Block> fluidBlock;
+        private EnumRarity rarity;
+
+        FluidBuilder(String name, FluidType fluidType, int colour) {
+            this.name = name;
+            this.fluidType = fluidType;
+            this.colour = colour;
+        }
+
+        public FluidBuilder customName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public FluidBuilder still(ResourceLocation still) {
+            this.still = still;
+            return this;
+        }
+
+        public FluidBuilder still(String still) {
+            this.still = new ResourceLocation(Zairyou.ID, still);
+            return this;
+        }
+
+        public FluidBuilder flow(ResourceLocation flow) {
+            this.flow = flow;
+            return this;
+        }
+
+        public FluidBuilder flow(String flow) {
+            this.flow = new ResourceLocation(Zairyou.ID, flow);
+            return this;
+        }
+
+        public FluidBuilder overlay(ResourceLocation overlay) {
+            this.overlay = overlay;
+            return this;
+        }
+
+        public FluidBuilder noTint() {
+            this.noTint = true;
+            return this;
+        }
+
+        public FluidBuilder luminosity(int luminosity) {
+            this.luminosity = () -> luminosity;
+            return this;
+        }
+
+        public FluidBuilder density(int density) {
+            this.density = () -> density;
+            return this;
+        }
+
+        public FluidBuilder viscosity(int viscosity) {
+            this.viscosity = () -> viscosity;
+            return this;
+        }
+
+        public FluidBuilder temperature(int temperature) {
+            this.temperature = () -> temperature;
+            return this;
+        }
+
+        public FluidBuilder rarity(EnumRarity rarity) {
+            this.rarity = rarity;
+            return this;
+        }
+
+        public FluidBuilder customBlock(Function<Fluid, Block> block) {
+            this.fluidBlock = block;
+            return this;
+        }
+
+        Fluid build() {
+            Fluid fluid = new Fluid(this.name, this.still == null ? this.fluidType.getStillTexture() : this.still, this.flow == null ? this.fluidType.getFlowingTexture() : this.flow, this.overlay) {
+                @Override
+                public String getLocalizedName(FluidStack stack) {
+                    return I18n.format(fluidType.getTranslationKey(), I18n.format(Material.this.translationKey));
+                }
+            };
+            if (!this.noTint) {
+                fluid.setColor(RenderUtils.convertRGB2ARGB(this.fluidType.getBaseAlpha(), this.colour));
+            }
+            FluidRegistry.registerFluid(fluid);
+            fluid.setBlock(this.fluidBlock == null ? new DefaultFluidBlock(fluid, this.fluidType) : this.fluidBlock.apply(fluid))
+                    .setLuminosity(this.luminosity == null ? this.fluidType.getBaseLuminosity() : this.luminosity.getAsInt())
+                    .setDensity(this.density == null ? this.fluidType.getBaseDensity() : this.density.getAsInt())
+                    .setViscosity(this.viscosity == null ? this.fluidType.getBaseViscosity() : this.viscosity.getAsInt())
+                    .setTemperature(this.temperature == null ? this.fluidType.getBaseTemperature() : this.temperature.getAsInt())
+                    .setRarity(this.rarity == null ? EnumRarity.COMMON : this.rarity);
+            return fluid;
+        }
+
     }
 
 }

@@ -9,6 +9,7 @@ import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zone.rong.zairyou.api.material.Material;
+import zone.rong.zairyou.objects.Materials;
 
 import java.util.Collection;
 import java.util.Map;
@@ -28,6 +29,7 @@ public class Zairyou {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(this);
+        Materials.init();
     }
 
     @Mod.EventHandler

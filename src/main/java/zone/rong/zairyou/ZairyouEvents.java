@@ -97,10 +97,14 @@ public class ZairyouEvents {
             // event.getMap().registerSprite(fluidType.getStillTexture());
             // event.getMap().registerSprite(fluidType.getFlowingTexture());
         // }
-        event.getMap().registerSprite(FluidType.LIQUID.getStillTexture());
-        event.getMap().registerSprite(FluidType.LIQUID.getFlowingTexture());
-        event.getMap().registerSprite(FluidType.MOLTEN.getStillTexture());
-        event.getMap().registerSprite(FluidType.MOLTEN.getFlowingTexture());
+        Material.REGISTRY.values()
+                .stream()
+                .filter(m -> !m.getFluids().isEmpty())
+                .flatMap(m -> m.getFluids().values().stream())
+                .forEach(f -> {
+                    event.getMap().registerSprite(f.getStill());
+                    event.getMap().registerSprite(f.getFlowing());
+                });
     }
 
     @SubscribeEvent
