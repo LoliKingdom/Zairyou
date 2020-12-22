@@ -12,7 +12,7 @@ public enum FluidType {
     LIQUID(new ResourceLocation(Zairyou.ID, "blocks/fluids/still"), new ResourceLocation(Zairyou.ID, "blocks/fluids/flow"), 0xAA, 0, 1000, 1000, 300),
     MOLTEN(new ResourceLocation(Zairyou.ID, "blocks/fluids/molten_still"), new ResourceLocation(Zairyou.ID, "blocks/fluids/molten_flow"),
             SoundEvents.ITEM_BUCKET_FILL_LAVA, SoundEvents.ITEM_BUCKET_EMPTY_LAVA, 0xFF, 15, 3000, 6000, 1300),
-    GASEOUS(LIQUID.stillTexture, LIQUID.flowingTexture, 0x69, 0, 1000, 1000, 300),
+    GASEOUS(LIQUID.stillTexture, LIQUID.flowingTexture, 0x69, 0, -1000, 0, 300),
     PLASMA(MOLTEN.stillTexture, MOLTEN.flowingTexture, 0xBE, 15, 1000, 1000, 6400);
 
     public static final FluidType[] VALUES;
