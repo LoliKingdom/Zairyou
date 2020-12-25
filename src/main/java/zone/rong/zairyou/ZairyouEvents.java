@@ -111,12 +111,28 @@ public class ZairyouEvents {
                 }
             }
         }));
+        /*
+        Material.REGISTRY.values().forEach(m -> m.getBlocks().values()
+                .stream()
+                .filter(b -> b instanceof OreBlock)
+                .map(b -> (OreBlock) b)
+                .forEach(b -> event.getItemColors().registerItemColorHandler((stack, tintIndex) -> tintIndex == 1 ? b.getMaterial().getColour() : -1, b)));
+         */
     }
 
+    @Deprecated
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
+    // TODO - move this to custom baking, without handling block colours, we tint the BakedQuads straight.
     public static void onHandlingBlockColours(ColorHandlerEvent.Block event) {
-        // event.getBlockColors().registerBlockColorHandler(((state, world, pos, tintIndex) -> tintIndex == 0 ? -1 : Materials.GOLD.getColour()), temporaryBlock);
+        /*
+        Material.REGISTRY.values().forEach(m -> m.getBlocks().values()
+                .stream()
+                .filter(b -> b instanceof OreBlock)
+                .map(b -> (OreBlock) b)
+                .forEach(b -> event.getBlockColors().registerBlockColorHandler((state, world, pos, tintIndex) -> tintIndex == 1 ? b.getMaterial().getColour() : -1, b)));
+
+         */
     }
 
     @SubscribeEvent

@@ -15,8 +15,10 @@ public class TintedBakedQuad extends BakedQuad {
         }
          */
         this.colouredVertexData = quad.getVertexData();
+        int size = format.getIntegerSize();
+        int offset = format.getColorOffset() / 4;
         for (int i = 0; i < 4; i++) {
-            this.colouredVertexData[(format.getColorOffset() / 4) + format.getIntegerSize() * i] = RenderUtils.convertRGB2ABGR(rgb);
+            this.colouredVertexData[offset + size * i] = RenderUtils.convertRGB2ABGR(rgb);
         }
     }
 
@@ -24,4 +26,10 @@ public class TintedBakedQuad extends BakedQuad {
     public int[] getVertexData() {
         return this.colouredVertexData;
     }
+
+    @Override
+    public boolean hasTintIndex() {
+        return false;
+    }
+
 }

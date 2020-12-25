@@ -1,4 +1,5 @@
 zairyou.none.name=None
+zairyou.air.name=Air
 zairyou.copper.name=Copper
 zairyou.electrum.name=Electrum
 zairyou.gold.name=Gold
@@ -9,7 +10,7 @@ zairyou.basic.name=Basic
 zairyou.rich.name=Rich
 zairyou.flux.name=Flux
 
-zairyou.ore.name=%s %s %s Ore
+zairyou.ore.name=%s%s %s Ore
 
 zairyou.ingot.name=%s Ingot
 zairyou.dust.name=%s Dust
@@ -18,6 +19,8 @@ zairyou.liquid.name=Liquid %s
 zairyou.molten.name=Molten %s
 zairyou.gaseous.name=%s Gas
 zairyou.plasma.name=%s Plasma
+
+zairyou.ore_grade.normal.name=
 
 thermalfoundation.coil.name=%s Power Coil
 thermalfoundation.fertilizer.name=%s Phyto-Gro

@@ -224,6 +224,7 @@ public class Material {
         return this;
     }
 
+    // TODO: placeholder
     public Material ore() {
         if (this.typeBlocks == null) {
             this.typeBlocks = new EnumMap<>(BlockMaterialType.class);

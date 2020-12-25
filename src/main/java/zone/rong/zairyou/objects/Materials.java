@@ -43,12 +43,12 @@ public class Materials {
      */
 
     public static final Material AIR = of("air", 0x58A7A5).fluid(LIQUID, fluid -> fluid.temperature(79).customName("liquid_air")).fluid(GASEOUS, fluid -> fluid.temperature(290));
-    public static final Material COAL = of("coal", 0x464646).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/coal_still").flow("blocks/fluids/coal_flow").noTint().density(900).viscosity(2000));
+    public static final Material COAL = of("coal", 0x464646).ore().fluid(LIQUID, fluid -> fluid.still("blocks/fluids/coal_still").flow("blocks/fluids/coal_flow").noTint().density(900).viscosity(2000));
     public static final Material COPPER = of("copper", 0xFF7400).ore().types(DUST, INGOT).fluid(MOLTEN, fluid -> fluid.temperature(1385)).tools(1, 144, 5.0F, 1.5F, -3.2F, 8, tools -> tools.axe().hoe().pickaxe().shovel().sword());
     public static final Material ELECTRUM = of("electrum", 0xFFFF64).types(DUST, INGOT, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
-    public static final Material GOLD = of("gold", 0xFFFF00).types(DUST, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
-    public static final Material REDSTONE = of("redstone", 0xC80000).type(SERVO).noTint(SERVO).texture(SERVO, "custom/redstone_servo").fluid(MOLTEN, fluid -> fluid.noTint().still("blocks/fluids/redstone_still").flow("blocks/fluids/redstone_flow").luminosity(7).density(1200).viscosity(1500).rarity(EnumRarity.UNCOMMON));
-    public static final Material SILVER = of("silver", 0xCCE0FF).ore().types(DUST, INGOT, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1235));
+    public static final Material GOLD = of("gold", 0xFFFF00).ore().types(DUST, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
+    public static final Material REDSTONE = of("redstone", 0xC80000).ore().type(SERVO).noTint(SERVO).texture(SERVO, "custom/redstone_servo").fluid(MOLTEN, fluid -> fluid.noTint().still("blocks/fluids/redstone_still").flow("blocks/fluids/redstone_flow").luminosity(7).density(1200).viscosity(1500).rarity(EnumRarity.UNCOMMON));
+    public static final Material SILVER = of("silver", 0xC0C0C0).ore().types(DUST, INGOT, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1235));
 
     /* Pure Fluid Materials */
     public static final Material CREOSOTE = of("creosote", 0x804000).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/creosote_still").flow("blocks/fluids/creosote_flow").noTint().density(1100).viscosity(2000));
