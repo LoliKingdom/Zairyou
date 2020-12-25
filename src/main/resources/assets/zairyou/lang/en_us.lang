@@ -9,6 +9,8 @@ zairyou.basic.name=Basic
 zairyou.rich.name=Rich
 zairyou.flux.name=Flux
 
+zairyou.ore.name=%s %s %s Ore
+
 zairyou.ingot.name=%s Ingot
 zairyou.dust.name=%s Dust
 
@@ -20,3 +22,7 @@ zairyou.plasma.name=%s Plasma
 thermalfoundation.coil.name=%s Power Coil
 thermalfoundation.fertilizer.name=%s Phyto-Gro
 thermalfoundation.servo.name=%s Servo
+
+tfc.andesite.name=Andesite
+tfc.basalt.name=Basalt
+tfc.chalk.name=Chalk

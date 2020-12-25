@@ -5,21 +5,21 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import zone.rong.zairyou.api.material.Material;
-import zone.rong.zairyou.api.material.type.MaterialType;
+import zone.rong.zairyou.api.material.type.ItemMaterialType;
 
 import javax.annotation.Nullable;
 
 public class MaterialItem extends Item {
 
     private final Material material;
-    private final MaterialType materialType;
+    private final ItemMaterialType itemMaterialType;
 
     private final String[] oreNames;
 
-    public MaterialItem(Material material, MaterialType materialType) {
+    public MaterialItem(Material material, ItemMaterialType itemMaterialType) {
         this.material = material;
-        this.materialType = materialType;
-        this.oreNames = material.getOreNames(materialType);
+        this.itemMaterialType = itemMaterialType;
+        this.oreNames = material.getOreNames(itemMaterialType);
         this.setCreativeTab(CreativeTabs.MATERIALS);
     }
 
@@ -27,8 +27,8 @@ public class MaterialItem extends Item {
         return material;
     }
 
-    public MaterialType getMaterialType() {
-        return materialType;
+    public ItemMaterialType getMaterialType() {
+        return itemMaterialType;
     }
 
     public String[] getOreNames() {
@@ -38,12 +38,12 @@ public class MaterialItem extends Item {
     @Override
     public String getItemStackDisplayName(ItemStack stack) {
         // return I18n.translateToLocal(material.getTranslationKey()) + " " + I18n.translateToLocal(materialType.getTranslationKey());
-        return I18n.format(materialType.getTranslationKey(), I18n.format(material.getTranslationKey()));
+        return I18n.format(itemMaterialType.getTranslationKey(), I18n.format(material.getTranslationKey()));
     }
 
     @Nullable
     @Override
     public String getCreatorModId(ItemStack stack) {
-        return materialType.getModID();
+        return itemMaterialType.getModID();
     }
 }

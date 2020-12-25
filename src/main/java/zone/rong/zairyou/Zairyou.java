@@ -1,5 +1,6 @@
 package zone.rong.zairyou;
 
+import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Mod;
@@ -8,6 +9,8 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import zone.rong.zairyou.api.client.ZairyouModelLoader;
+import zone.rong.zairyou.api.item.MaterialItem;
 import zone.rong.zairyou.api.material.Material;
 import zone.rong.zairyou.objects.Materials;
 
@@ -30,6 +33,9 @@ public class Zairyou {
     public void preInit(FMLPreInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(this);
         Materials.init();
+        if (event.getSide().isClient()) {
+            // ModelLoaderRegistry.registerLoader(new ZairyouModelLoader());
+        }
     }
 
     @Mod.EventHandler
@@ -37,6 +43,8 @@ public class Zairyou {
         Material.REGISTRY.values().stream()
                 .map(Material::getItems)
                 .flatMap(m -> m.values().stream())
+                .filter(i -> i instanceof MaterialItem)
+                .map(i -> (MaterialItem) i)
                 .forEach(i -> {
                     for (final String ore : i.getOreNames()) {
                         OreDictionary.registerOre(ore, i);

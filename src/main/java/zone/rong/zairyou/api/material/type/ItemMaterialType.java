@@ -6,10 +6,14 @@ import zone.rong.zairyou.Zairyou;
 
 import java.util.Locale;
 
-public enum MaterialType {
+public enum ItemMaterialType {
 
-    INGOT(Zairyou.ID, "ingot", new ModelResourceLocation(Zairyou.ID + ":ingot", "inventory"), false),
+    COAL(Zairyou.ID, "gem", new ModelResourceLocation(Zairyou.ID + ":coal", "inventory"), false),
+    CHARCOAL(Zairyou.ID, "gem", new ModelResourceLocation(Zairyou.ID + ":coal", "inventory"), false),
+    DIAMOND(Zairyou.ID, "gem", new ModelResourceLocation(Zairyou.ID + ":diamond", "inventory"), false),
     DUST(Zairyou.ID, "dust", new ModelResourceLocation(Zairyou.ID + ":dust", "inventory"), false),
+    EMERALD(Zairyou.ID, "gem", new ModelResourceLocation(Zairyou.ID + ":emerald", "inventory"), false),
+    INGOT(Zairyou.ID, "ingot", new ModelResourceLocation(Zairyou.ID + ":ingot", "inventory"), false),
 
     COIL("thermalfoundation", "coil", new ModelResourceLocation(Zairyou.ID + ":coil", "inventory"), true),
     FERTILIZER("thermalfoundation", "fertilizer", new ModelResourceLocation(Zairyou.ID + ":fertilizer", "inventory"), false),
@@ -21,14 +25,14 @@ public enum MaterialType {
     private final boolean hasTextureLayers;
     private final String[] prefixes;
 
-    MaterialType(String modId, String prefix, ModelResourceLocation textureLocation, boolean hasTextureLayers) {
+    ItemMaterialType(String modId, String prefix, ModelResourceLocation textureLocation, boolean hasTextureLayers) {
         this.modId = modId;
         this.textureLocation = textureLocation;
         this.hasTextureLayers = hasTextureLayers;
         this.prefixes = new String[] { prefix };
     }
 
-    MaterialType(String modId, String prefix, ModelResourceLocation textureLocation, boolean hasTextureLayers, String... alternatePrefixes) {
+    ItemMaterialType(String modId, String prefix, ModelResourceLocation textureLocation, boolean hasTextureLayers, String... alternatePrefixes) {
         this.modId = modId;
         this.textureLocation = textureLocation;
         this.hasTextureLayers = hasTextureLayers;

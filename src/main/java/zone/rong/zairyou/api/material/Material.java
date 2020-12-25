@@ -19,11 +19,11 @@ import net.minecraftforge.fluids.FluidStack;
 import zone.rong.zairyou.Zairyou;
 import zone.rong.zairyou.api.fluid.DefaultFluidBlock;
 import zone.rong.zairyou.api.fluid.FluidType;
-import zone.rong.zairyou.api.item.MaterialItem;
 import zone.rong.zairyou.api.item.tool.ExtendedToolMaterial;
 import zone.rong.zairyou.api.item.tool.MaterialTools;
-import zone.rong.zairyou.api.material.type.MaterialType;
-import zone.rong.zairyou.api.util.RenderUtils;
+import zone.rong.zairyou.api.material.type.BlockMaterialType;
+import zone.rong.zairyou.api.material.type.ItemMaterialType;
+import zone.rong.zairyou.api.client.RenderUtils;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -39,6 +39,10 @@ public class Material {
 
     public static final Object2ObjectMap<String, Material> REGISTRY = new Object2ObjectOpenHashMap<>();
 
+    public static Material of(String name) {
+        return of(name, 0x0);
+    }
+
     public static Material of(String name, int colour) {
         if (REGISTRY.containsKey(name)) {
             throw new IllegalStateException(name + " has been registered already!");
@@ -46,20 +50,21 @@ public class Material {
         return new Material(name, colour);
     }
 
-    public static final Material NONE = new Material("none", 0).tools(0, 0, 0F, 0F, 0F, 0);
-    public static final Material BASIC = new Material("basic", 0x0);
+    public static final Material NONE = of("none").tools(0, 0, 0F, 0F, 0F, 0);
+    public static final Material BASIC = of("basic");
 
     private final String name, translationKey;
     private final int colour;
 
-    private EnumMap<MaterialType, MaterialItem> typeItems;
+    private EnumMap<BlockMaterialType, Block> typeBlocks;
+    private EnumMap<ItemMaterialType, Item> typeItems;
     private EnumMap<FluidType, Fluid> typeFluids;
     // private final TextureSet textureSet;
 
     private boolean hasTools = false;
 
-    private EnumSet<MaterialType> disabledTint;
-    private EnumMap<MaterialType, ModelResourceLocation> customTextures;
+    private EnumSet<ItemMaterialType> disabledTint;
+    private EnumMap<ItemMaterialType, ModelResourceLocation> customTextures;
     private ExtendedToolMaterial toolMaterial;
     private MaterialTools tools;
 
@@ -74,7 +79,7 @@ public class Material {
         return name;
     }
 
-    public String[] getOreNames(MaterialType type) {
+    public String[] getOreNames(ItemMaterialType type) {
         final String[] typeOreNames = type.getPrefixes();
         List<String> oreNames = new ObjectArrayList<>();
         for (final String ore : typeOreNames) {
@@ -99,15 +104,15 @@ public class Material {
         return colour;
     }
 
-    public boolean hasTint(MaterialType type) {
+    public boolean hasTint(ItemMaterialType type) {
         return this.disabledTint == null || !this.disabledTint.contains(type);
     }
 
-    public Set<MaterialType> getAllowedTypes() {
+    public Set<ItemMaterialType> getAllowedTypes() {
         return this.typeItems == null ? Collections.emptySet() : this.typeItems.keySet();
     }
 
-    public Map<MaterialType, MaterialItem> getItems() {
+    public Map<ItemMaterialType, Item> getItems() {
         return this.typeItems == null ? Collections.emptyMap() : this.typeItems;
     }
 
@@ -124,16 +129,16 @@ public class Material {
     }
 
     @Nullable
-    public MaterialItem getItem(MaterialType type) {
-        return this.typeItems == null ? null : this.typeItems.getOrDefault(type, null);
+    public Item getItem(ItemMaterialType type) {
+        return this.typeItems == null ? null : this.typeItems.get(type);
     }
 
     @Nullable
     public Fluid getFluid(FluidType type) {
-        return this.typeFluids == null ? null : this.typeFluids.getOrDefault(type, null);
+        return this.typeFluids == null ? null : this.typeFluids.get(type);
     }
 
-    public ItemStack getStack(MaterialType type, int count) {
+    public ItemStack getStack(ItemMaterialType type, int count) {
         Item item = getItem(type);
         if (item == null) {
             return ItemStack.EMPTY;
@@ -141,7 +146,7 @@ public class Material {
         return new ItemStack(item, count);
     }
 
-    public ItemStack getStack(MaterialType type, int count, String tagName, NBTTagCompound tag) {
+    public ItemStack getStack(ItemMaterialType type, int count, String tagName, NBTTagCompound tag) {
         Item item = getItem(type);
         if (item == null) {
             return ItemStack.EMPTY;
@@ -156,7 +161,7 @@ public class Material {
         return new FluidStack(getFluid(type), amount);
     }
 
-    public ModelResourceLocation getTexture(MaterialType type) {
+    public ModelResourceLocation getTexture(ItemMaterialType type) {
         if (this.customTextures == null) {
             return type.getTextureLocation();
         }
@@ -204,19 +209,37 @@ public class Material {
         return this;
     }
 
-    public Material type(MaterialType type) {
+    public Material type(BlockMaterialType type) {
+        if (this.typeBlocks == null) {
+            this.typeBlocks = new EnumMap<>(BlockMaterialType.class);
+        }
+        this.typeBlocks.put(type, null);
+        return this;
+    }
+
+    public Material types(BlockMaterialType... types) {
+        if (this.typeBlocks == null) {
+            this.typeBlocks = new EnumMap<>(BlockMaterialType.class);
+        }
+        for (BlockMaterialType type : types) {
+            this.typeBlocks.put(type, null);
+        }
+        return this;
+    }
+
+    public Material type(ItemMaterialType type) {
         if (this.typeItems == null) {
-            this.typeItems = new EnumMap<>(MaterialType.class);
+            this.typeItems = new EnumMap<>(ItemMaterialType.class);
         }
         this.typeItems.put(type, null);
         return this;
     }
 
-    public Material types(MaterialType... types) {
+    public Material types(ItemMaterialType... types) {
         if (this.typeItems == null) {
-            this.typeItems = new EnumMap<>(MaterialType.class);
+            this.typeItems = new EnumMap<>(ItemMaterialType.class);
         }
-        for (MaterialType type : types) {
+        for (ItemMaterialType type : types) {
             this.typeItems.put(type, null);
         }
         return this;
@@ -253,39 +276,39 @@ public class Material {
     }
      */
 
-    public Material texture(MaterialType type, ModelResourceLocation location) {
+    public Material texture(ItemMaterialType type, ModelResourceLocation location) {
         if (this.customTextures == null) {
-            this.customTextures = new EnumMap<>(MaterialType.class);
+            this.customTextures = new EnumMap<>(ItemMaterialType.class);
         }
         this.customTextures.put(type, location);
         return this;
     }
 
-    public Material texture(MaterialType type, String domain, String id) {
+    public Material texture(ItemMaterialType type, String domain, String id) {
         return texture(type, new ModelResourceLocation(domain + id, "inventory")); // TODO: differentiate Block and Item
     }
 
-    public Material texture(MaterialType type, String id) {
+    public Material texture(ItemMaterialType type, String id) {
         return texture(type, new ModelResourceLocation(Zairyou.ID + ":" + id, "inventory")); // TODO: differentiate Block and Item
     }
 
-    public Material noTint(MaterialType type) {
+    public Material noTint(ItemMaterialType type) {
         if (this.disabledTint == null) {
-            this.disabledTint = EnumSet.noneOf(MaterialType.class);
+            this.disabledTint = EnumSet.noneOf(ItemMaterialType.class);
         }
         this.disabledTint.add(type);
         return this;
     }
 
-    public Material noTints(MaterialType... types) {
+    public Material noTints(ItemMaterialType... types) {
         if (this.disabledTint == null) {
-            this.disabledTint = EnumSet.noneOf(MaterialType.class);
+            this.disabledTint = EnumSet.noneOf(ItemMaterialType.class);
         }
         Collections.addAll(this.disabledTint, types);
         return this;
     }
 
-    public MaterialItem setItem(MaterialType type, MaterialItem item) {
+    public Item setItem(ItemMaterialType type, Item item) {
         this.typeItems.put(type, item);
         return item;
     }
@@ -394,7 +417,8 @@ public class Material {
                     .setDensity(this.density == null ? this.fluidType.getBaseDensity() : this.density.getAsInt())
                     .setViscosity(this.viscosity == null ? this.fluidType.getBaseViscosity() : this.viscosity.getAsInt())
                     .setTemperature(this.temperature == null ? this.fluidType.getBaseTemperature() : this.temperature.getAsInt())
-                    .setRarity(this.rarity == null ? EnumRarity.COMMON : this.rarity);
+                    .setRarity(this.rarity == null ? EnumRarity.COMMON : this.rarity)
+                    .setGaseous(this.fluidType == FluidType.GASEOUS);
             return fluid;
         }
 
