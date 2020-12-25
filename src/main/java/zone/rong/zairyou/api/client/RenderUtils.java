@@ -116,7 +116,7 @@ public class RenderUtils {
     }
 
     public static int convertRGB2ABGR(int colour) {
-        return ((colour |= 0xFF000000) & 0xFF00FF00) | ((colour & 0xFF) << 16) | (colour >> 16) & 0xFF;
+        return 0xFF << 24 | ((colour & 0xFF) << 16) | ((colour >> 8) & 0xFF) << 8 | (colour >> 16) & 0xFF;
     }
 
     public static TRSRTransformation getTransform(float tx, float ty, float tz, float ax, float ay, float az, float s) {
