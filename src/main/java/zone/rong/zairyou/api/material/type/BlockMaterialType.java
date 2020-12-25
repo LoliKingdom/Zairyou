@@ -6,7 +6,7 @@ import zone.rong.zairyou.Zairyou;
 
 import java.util.Locale;
 
-public enum BlockMaterialType {
+public enum BlockMaterialType implements IMaterialType {
 
     ORE(Zairyou.ID, "ore", new ModelResourceLocation(Zairyou.ID + ":ore", "inventory"), true);
 

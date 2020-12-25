@@ -1,4 +1,4 @@
-package zone.rong.zairyou.api.client.model.baked;
+package zone.rong.zairyou.api.client;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
@@ -8,7 +8,8 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ItemLayerModel;
 import net.minecraftforge.common.model.TRSRTransformation;
-import zone.rong.zairyou.api.client.RenderUtils;
+import zone.rong.zairyou.api.client.model.baked.TintedBakedQuad;
+import zone.rong.zairyou.api.client.model.baked.WrappedBakedModel;
 
 import java.util.Map;
 
@@ -26,7 +27,7 @@ public class Bakery {
     private ModelType template;
     private IBakedModel block, item;
 
-    private Bakery() { }
+    public Bakery() { }
 
     public Bakery template(ModelType template) {
         this.template = template;
@@ -84,6 +85,8 @@ public class Bakery {
             this.item = new WrappedBakedModel(new ItemLayerModel(model).bake(TRSRTransformation.identity(), DefaultVertexFormats.ITEM, RenderUtils::getTexture), true);
         }
         currentlyBaking = false;
+        this.sprites.clear();
+        this.tints.clear();
     }
 
     public IBakedModel receiveBlock() {
@@ -105,6 +108,42 @@ public class Bakery {
     }
 
     public enum ModelType {
+
+        NORMAL("{\n" +
+                "  \"parent\": \"block/block\",\n" +
+                "  \"elements\": [\n" +
+                "    {\n" +
+                "      \"from\": [0, 0, 0],\n" +
+                "      \"to\": [16, 16, 16],\n" +
+                "      \"faces\": {\n" +
+                "        \"down\":  { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"cullface\": \"down\" },\n" +
+                "        \"up\":    { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"cullface\": \"up\" },\n" +
+                "        \"north\": { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"cullface\": \"north\" },\n" +
+                "        \"south\": { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"cullface\": \"south\" },\n" +
+                "        \"west\":  { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"cullface\": \"west\" },\n" +
+                "        \"east\":  { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"cullface\": \"east\" }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}"),
+
+        NORMAL_TINTED("{\n" +
+                "  \"parent\": \"block/block\",\n" +
+                "  \"elements\": [\n" +
+                "    {\n" +
+                "      \"from\": [0, 0, 0],\n" +
+                "      \"to\": [16, 16, 16],\n" +
+                "      \"faces\": {\n" +
+                "        \"down\":  { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"tintindex\": 1, \"cullface\": \"down\" },\n" +
+                "        \"up\":    { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"tintindex\": 1, \"cullface\": \"up\" },\n" +
+                "        \"north\": { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"tintindex\": 1, \"cullface\": \"north\" },\n" +
+                "        \"south\": { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"tintindex\": 1, \"cullface\": \"south\" },\n" +
+                "        \"west\":  { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"tintindex\": 1, \"cullface\": \"west\" },\n" +
+                "        \"east\":  { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"tintindex\": 1, \"cullface\": \"east\" }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}"),
 
         SINGLE_OVERLAY("{\n" +
                 "  \"parent\": \"block/block\",\n" +

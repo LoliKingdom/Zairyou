@@ -24,6 +24,8 @@ import zone.rong.zairyou.api.item.tool.MaterialTools;
 import zone.rong.zairyou.api.material.type.BlockMaterialType;
 import zone.rong.zairyou.api.material.type.ItemMaterialType;
 import zone.rong.zairyou.api.client.RenderUtils;
+import zone.rong.zairyou.api.ore.OreBlock;
+import zone.rong.zairyou.api.ore.OreGrade;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -108,8 +110,16 @@ public class Material {
         return this.disabledTint == null || !this.disabledTint.contains(type);
     }
 
-    public Set<ItemMaterialType> getAllowedTypes() {
+    public Set<BlockMaterialType> getAllowedBlockTypes() {
+        return this.typeBlocks == null ? Collections.emptySet() : this.typeBlocks.keySet();
+    }
+
+    public Set<ItemMaterialType> getAllowedItemTypes() {
         return this.typeItems == null ? Collections.emptySet() : this.typeItems.keySet();
+    }
+
+    public Map<BlockMaterialType, Block> getBlocks() {
+        return this.typeBlocks == null ? Collections.emptyMap() : this.typeBlocks;
     }
 
     public Map<ItemMaterialType, Item> getItems() {
@@ -126,6 +136,11 @@ public class Material {
 
     public Map<FluidType, Fluid> getFluids() {
         return this.typeFluids == null ? Collections.emptyMap() : this.typeFluids;
+    }
+
+    @Nullable
+    public Block getBlock(BlockMaterialType type) {
+        return this.typeBlocks == null ? null : this.typeBlocks.get(type);
     }
 
     @Nullable
@@ -209,7 +224,18 @@ public class Material {
         return this;
     }
 
+    public Material ore() {
+        if (this.typeBlocks == null) {
+            this.typeBlocks = new EnumMap<>(BlockMaterialType.class);
+        }
+        this.typeBlocks.put(BlockMaterialType.ORE, new OreBlock(this, OreGrade.NORMAL));
+        return this;
+    }
+
     public Material type(BlockMaterialType type) {
+        if (type == BlockMaterialType.ORE) {
+            throw new UnsupportedOperationException("Please register " + type.toString() + " with the valid method.");
+        }
         if (this.typeBlocks == null) {
             this.typeBlocks = new EnumMap<>(BlockMaterialType.class);
         }
@@ -222,6 +248,9 @@ public class Material {
             this.typeBlocks = new EnumMap<>(BlockMaterialType.class);
         }
         for (BlockMaterialType type : types) {
+            if (type == BlockMaterialType.ORE) {
+                throw new UnsupportedOperationException("Please register " + type.toString() + " with the valid method.");
+            }
             this.typeBlocks.put(type, null);
         }
         return this;
@@ -306,6 +335,11 @@ public class Material {
         }
         Collections.addAll(this.disabledTint, types);
         return this;
+    }
+
+    public Block setBlock(BlockMaterialType type, Block block) {
+        this.typeBlocks.put(type, block);
+        return block;
     }
 
     public Item setItem(ItemMaterialType type, Item item) {

@@ -6,7 +6,7 @@ import zone.rong.zairyou.Zairyou;
 
 import java.util.Locale;
 
-public enum ItemMaterialType {
+public enum ItemMaterialType implements IMaterialType {
 
     COAL(Zairyou.ID, "gem", new ModelResourceLocation(Zairyou.ID + ":coal", "inventory"), false),
     CHARCOAL(Zairyou.ID, "gem", new ModelResourceLocation(Zairyou.ID + ":coal", "inventory"), false),
