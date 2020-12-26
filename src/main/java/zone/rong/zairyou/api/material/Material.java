@@ -6,32 +6,26 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import zone.rong.zairyou.Zairyou;
-import zone.rong.zairyou.api.fluid.DefaultFluidBlock;
+import zone.rong.zairyou.api.fluid.ExtendedFluid;
 import zone.rong.zairyou.api.fluid.FluidType;
 import zone.rong.zairyou.api.item.tool.ExtendedToolMaterial;
 import zone.rong.zairyou.api.item.tool.MaterialTools;
 import zone.rong.zairyou.api.material.type.BlockMaterialType;
 import zone.rong.zairyou.api.material.type.ItemMaterialType;
-import zone.rong.zairyou.api.client.RenderUtils;
 import zone.rong.zairyou.api.ore.OreBlock;
 import zone.rong.zairyou.api.ore.OreGrade;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.IntSupplier;
 import java.util.function.UnaryOperator;
 
 /**
@@ -284,12 +278,12 @@ public class Material {
         return this;
     }
 
-    public Material fluid(FluidType fluidType, UnaryOperator<FluidBuilder> builderOperator) {
-        return fluid(fluidType, builderOperator.apply(new FluidBuilder(this.name, fluidType, this.colour)).build());
+    public Material fluid(FluidType fluidType, UnaryOperator<ExtendedFluid.Builder> builderOperator) {
+        return fluid(fluidType, builderOperator.apply(new ExtendedFluid.Builder(this, fluidType)).build());
     }
 
-    public Material fluid(FluidType fluidType, UnaryOperator<FluidBuilder> builderOperator, Consumer<Block> blockConsumer) {
-        Fluid fluid = builderOperator.apply(new FluidBuilder(this.name, fluidType, this.colour)).build();
+    public Material fluid(FluidType fluidType, UnaryOperator<ExtendedFluid.Builder> builderOperator, Consumer<Block> blockConsumer) {
+        Fluid fluid = builderOperator.apply(new ExtendedFluid.Builder(this, fluidType)).build();
         blockConsumer.accept(fluid.getBlock());
         return fluid(fluidType, fluid);
     }
@@ -350,113 +344,6 @@ public class Material {
 
     public String toCamelString() {
         return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, this.name);
-    }
-
-    public class FluidBuilder {
-
-        private String name;
-
-        private final FluidType fluidType;
-        private final int colour;
-
-        private ResourceLocation still, flow, overlay;
-        private boolean noTint = false;
-        private IntSupplier luminosity, density, viscosity, temperature;
-        private Function<Fluid, Block> fluidBlock;
-        private EnumRarity rarity;
-
-        FluidBuilder(String name, FluidType fluidType, int colour) {
-            this.name = name;
-            this.fluidType = fluidType;
-            this.colour = colour;
-        }
-
-        public FluidBuilder customName(String name) {
-            this.name = name;
-            return this;
-        }
-
-        public FluidBuilder still(ResourceLocation still) {
-            this.still = still;
-            return this;
-        }
-
-        public FluidBuilder still(String still) {
-            this.still = new ResourceLocation(Zairyou.ID, still);
-            return this;
-        }
-
-        public FluidBuilder flow(ResourceLocation flow) {
-            this.flow = flow;
-            return this;
-        }
-
-        public FluidBuilder flow(String flow) {
-            this.flow = new ResourceLocation(Zairyou.ID, flow);
-            return this;
-        }
-
-        public FluidBuilder overlay(ResourceLocation overlay) {
-            this.overlay = overlay;
-            return this;
-        }
-
-        public FluidBuilder noTint() {
-            this.noTint = true;
-            return this;
-        }
-
-        public FluidBuilder luminosity(int luminosity) {
-            this.luminosity = () -> luminosity;
-            return this;
-        }
-
-        public FluidBuilder density(int density) {
-            this.density = () -> density;
-            return this;
-        }
-
-        public FluidBuilder viscosity(int viscosity) {
-            this.viscosity = () -> viscosity;
-            return this;
-        }
-
-        public FluidBuilder temperature(int temperature) {
-            this.temperature = () -> temperature;
-            return this;
-        }
-
-        public FluidBuilder rarity(EnumRarity rarity) {
-            this.rarity = rarity;
-            return this;
-        }
-
-        public FluidBuilder customBlock(Function<Fluid, Block> block) {
-            this.fluidBlock = block;
-            return this;
-        }
-
-        Fluid build() {
-            Fluid fluid = new Fluid(this.name, this.still == null ? this.fluidType.getStillTexture() : this.still, this.flow == null ? this.fluidType.getFlowingTexture() : this.flow, this.overlay) {
-                @Override
-                public String getLocalizedName(FluidStack stack) {
-                    return I18n.format(fluidType.getTranslationKey(), I18n.format(Material.this.translationKey));
-                }
-            };
-            if (!this.noTint) {
-                fluid.setColor(RenderUtils.convertRGB2ARGB(this.fluidType.getBaseAlpha(), this.colour));
-            }
-            FluidRegistry.registerFluid(fluid);
-            fluid.setBlock(this.fluidBlock == null ? new DefaultFluidBlock(fluid, this.fluidType) : this.fluidBlock.apply(fluid))
-                    .setLuminosity(this.luminosity == null ? this.fluidType.getBaseLuminosity() : this.luminosity.getAsInt())
-                    .setDensity(this.density == null ? this.fluidType.getBaseDensity() : this.density.getAsInt())
-                    .setViscosity(this.viscosity == null ? this.fluidType.getBaseViscosity() : this.viscosity.getAsInt())
-                    .setTemperature(this.temperature == null ? this.fluidType.getBaseTemperature() : this.temperature.getAsInt())
-                    .setRarity(this.rarity == null ? EnumRarity.COMMON : this.rarity)
-                    .setGaseous(this.fluidType == FluidType.GASEOUS);
-            return fluid;
-        }
-
     }
 
 }

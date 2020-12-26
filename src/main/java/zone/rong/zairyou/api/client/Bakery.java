@@ -60,6 +60,8 @@ public class Bakery {
         currentlyBaking = true;
         if (!wantBlock && !wantItem) {
             currentlyBaking = false;
+            this.sprites.clear();
+            this.tints.clear();
             return;
         }
         final ModelBlock baseModel = this.template.baseModel;

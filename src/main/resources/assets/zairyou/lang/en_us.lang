@@ -1,10 +1,25 @@
 zairyou.none.name=None
 zairyou.air.name=Air
+zairyou.coal.name=Coal
 zairyou.copper.name=Copper
 zairyou.electrum.name=Electrum
 zairyou.gold.name=Gold
 zairyou.redstone.name=Redstone
 zairyou.silver.name=Silver
+
+zairyou.biocrude.name=Biocrude
+zairyou.creosote.name=Creosote
+zairyou.crude_oil.name=Crude Oil
+zairyou.experience.name=Experience
+zairyou.mushroom_stew.name=Mushroom Stew
+zairyou.refined_biofuel.name=Refined Biofuel
+zairyou.refined_oil.name=Refined Oil
+zairyou.refined_fuel.name=Refined Fuel
+zairyou.resin.name=Resin
+zairyou.sap.name=Sap
+zairyou.seed_oil.name=Seed Oil
+zairyou.steam.name=Steam
+zairyou.tree_oil.name=Tree Oil
 
 zairyou.basic.name=Basic
 zairyou.rich.name=Rich
@@ -20,7 +35,27 @@ zairyou.molten.name=Molten %s
 zairyou.gaseous.name=%s Gas
 zairyou.plasma.name=%s Plasma
 
+zairyou.ore_grade.poor.name=Poor
 zairyou.ore_grade.normal.name=
+zairyou.ore_grade.rich.name=Rich
+
+zairyou.fluid.air_gaseous.name=Air
+zairyou.fluid.steam_gaseous.name=Steam
+
+zairyou.fluid.coal_liquid.name=Liquifacted Coal
+zairyou.fluid.biocrude_liquid.name=Biocrude
+zairyou.fluid.creosote_liquid.name=Creosote
+zairyou.fluid.crude_oil_liquid.name=Crude Oil
+zairyou.fluid.mushroom_stew_liquid.name=Mushroom Stew
+zairyou.fluid.refined_biofuel_liquid.name=Refined Biofuel
+zairyou.fluid.refined_oil_liquid.name=Refined Oil
+zairyou.fluid.refined_fuel_liquid.name=Refined Fuel
+zairyou.fluid.resin_liquid.name=Resin
+zairyou.fluid.sap_liquid.name=Sap
+zairyou.fluid.seed_oil_liquid.name=Seed Oil
+zairyou.fluid.tree_oil_liquid.name=Tree Oil
+
+zairyou.fluid.redstone_molten.name=Destabilized Redstone
 
 thermalfoundation.coil.name=%s Power Coil
 thermalfoundation.fertilizer.name=%s Phyto-Gro
