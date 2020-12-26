@@ -118,7 +118,8 @@ public class Bakery {
 
         NORMAL(Zairyou.ID, "block/normal", "block/block"),
         NORMAL_TINTED(Zairyou.ID, "block/normal_tinted", "block/block"),
-        SINGLE_OVERLAY(Zairyou.ID, "block/single_overlay", "block/block");
+        SINGLE_OVERLAY(Zairyou.ID, "block/single_overlay", "block/block"),
+        TOOL("minecraft", "item/handheld");
 
         final ModelBlock baseModel;
 

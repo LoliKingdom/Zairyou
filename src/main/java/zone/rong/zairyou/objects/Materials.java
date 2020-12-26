@@ -33,6 +33,8 @@ public class Materials {
     public static final Material REDSTONE = of("redstone", 0xC80000).ore().type(SERVO).noTint(SERVO).texture(SERVO, "custom/redstone_servo").fluid(MOLTEN, fluid -> fluid.noTint().customTranslation().still("blocks/fluids/redstone_still").flow("blocks/fluids/redstone_flow").luminosity(7).density(1200).viscosity(1500).rarity(EnumRarity.UNCOMMON));
     public static final Material SILVER = of("silver", 0xC0C0C0).ore().types(DUST, INGOT, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1235));
 
+    public static final Material NITER = of("niter", 0xFFC8C8).types(DUST);
+
     /* Pure Fluid Materials */
     public static final Material BIOCRUDE = of("biocrude", 0x346217).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/biocrude_still").flow("blocks/fluids/biocrude_flow").noTint().customTranslation().density(1500).viscosity(2500));
     public static final Material CREOSOTE = of("creosote", 0x804000).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/creosote_still").flow("blocks/fluids/creosote_flow").noTint().customTranslation().density(1100).viscosity(2000));
