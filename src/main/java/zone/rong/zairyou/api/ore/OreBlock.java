@@ -89,6 +89,8 @@ public class OreBlock extends Block implements IMaterialBlock {
         return new ItemStack(this, 1, state.getValue(STONE_TYPES));
     }
 
+
+
     @Override
     public BlockRenderLayer getBlockLayer() {
         return BlockRenderLayer.CUTOUT;
@@ -117,7 +119,7 @@ public class OreBlock extends Block implements IMaterialBlock {
                     .template(Bakery.ModelType.SINGLE_OVERLAY)
                     .prepareTexture("layer0", StoneType.VALUES[i].getBaseTexture())
                     .prepareTexture("layer1", "zairyou:blocks/grade/normal")
-                    .tint(1, material.getColour());
+                    .tint(0, material.getColour());
             bake.bake(true, false);
             event.getModelRegistry().putObject(new ModelResourceLocation(OreBlock.this.getRegistryName().toString() + "_" + i), bake.receiveBlock());
         }

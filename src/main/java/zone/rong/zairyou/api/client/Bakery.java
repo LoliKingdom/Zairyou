@@ -3,14 +3,19 @@ package zone.rong.zairyou.api.client;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.*;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ItemLayerModel;
 import net.minecraftforge.common.model.TRSRTransformation;
+import zone.rong.zairyou.Zairyou;
 import zone.rong.zairyou.api.client.model.baked.TintedBakedQuad;
-import zone.rong.zairyou.api.client.model.baked.WrappedBakedModel;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class Bakery {
@@ -79,10 +84,10 @@ public class Bakery {
                     builder.addFaceQuad(facing, this.tints.containsKey(blockFace.tintIndex) ? new TintedBakedQuad(quad, this.tints.get(blockFace.tintIndex)) : quad);
                 });
             }
-            this.block = new WrappedBakedModel(builder.makeBakedModel(), false);
+            this.block = builder.makeBakedModel(); // new WrappedBakedModel(builder.makeBakedModel(), false);
         }
         if (wantItem) {
-            this.item = new WrappedBakedModel(new ItemLayerModel(model).bake(TRSRTransformation.identity(), DefaultVertexFormats.ITEM, RenderUtils::getTexture), true);
+            this.item = new ItemLayerModel(model).bake(TRSRTransformation.identity(), DefaultVertexFormats.ITEM, RenderUtils::getTexture);
         }
         currentlyBaking = false;
         this.sprites.clear();
@@ -109,76 +114,32 @@ public class Bakery {
 
     public enum ModelType {
 
-        NORMAL("{\n" +
-                "  \"parent\": \"block/block\",\n" +
-                "  \"elements\": [\n" +
-                "    {\n" +
-                "      \"from\": [0, 0, 0],\n" +
-                "      \"to\": [16, 16, 16],\n" +
-                "      \"faces\": {\n" +
-                "        \"down\":  { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"cullface\": \"down\" },\n" +
-                "        \"up\":    { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"cullface\": \"up\" },\n" +
-                "        \"north\": { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"cullface\": \"north\" },\n" +
-                "        \"south\": { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"cullface\": \"south\" },\n" +
-                "        \"west\":  { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"cullface\": \"west\" },\n" +
-                "        \"east\":  { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"cullface\": \"east\" }\n" +
-                "      }\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}"),
-
-        NORMAL_TINTED("{\n" +
-                "  \"parent\": \"block/block\",\n" +
-                "  \"elements\": [\n" +
-                "    {\n" +
-                "      \"from\": [0, 0, 0],\n" +
-                "      \"to\": [16, 16, 16],\n" +
-                "      \"faces\": {\n" +
-                "        \"down\":  { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"tintindex\": 1, \"cullface\": \"down\" },\n" +
-                "        \"up\":    { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"tintindex\": 1, \"cullface\": \"up\" },\n" +
-                "        \"north\": { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"tintindex\": 1, \"cullface\": \"north\" },\n" +
-                "        \"south\": { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"tintindex\": 1, \"cullface\": \"south\" },\n" +
-                "        \"west\":  { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"tintindex\": 1, \"cullface\": \"west\" },\n" +
-                "        \"east\":  { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"tintindex\": 1, \"cullface\": \"east\" }\n" +
-                "      }\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}"),
-
-        SINGLE_OVERLAY("{\n" +
-                "  \"parent\": \"block/block\",\n" +
-                "  \"elements\": [\n" +
-                "    {\n" +
-                "      \"from\": [0, 0, 0],\n" +
-                "      \"to\": [16, 16, 16],\n" +
-                "      \"faces\": {\n" +
-                "        \"down\":  { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"cullface\": \"down\" },\n" +
-                "        \"up\":    { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"cullface\": \"up\" },\n" +
-                "        \"north\": { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"cullface\": \"north\" },\n" +
-                "        \"south\": { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"cullface\": \"south\" },\n" +
-                "        \"west\":  { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"cullface\": \"west\" },\n" +
-                "        \"east\":  { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer0\", \"cullface\": \"east\" }\n" +
-                "      }\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"from\": [0, 0, 0],\n" +
-                "      \"to\": [16, 16, 16],\n" +
-                "      \"faces\": {\n" +
-                "        \"down\":  { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer1\", \"tintindex\": 1, \"cullface\": \"down\" },\n" +
-                "        \"up\":    { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer1\", \"tintindex\": 1, \"cullface\": \"up\" },\n" +
-                "        \"north\": { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer1\", \"tintindex\": 1, \"cullface\": \"north\" },\n" +
-                "        \"south\": { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer1\", \"tintindex\": 1, \"cullface\": \"south\" },\n" +
-                "        \"west\":  { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer1\", \"tintindex\": 1, \"cullface\": \"west\" },\n" +
-                "        \"east\":  { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#layer1\", \"tintindex\": 1, \"cullface\": \"east\" }\n" +
-                "      }\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}");
+        NORMAL(Zairyou.ID, "block/normal", "block/block"),
+        NORMAL_TINTED(Zairyou.ID, "block/normal_tinted", "block/block"),
+        SINGLE_OVERLAY(Zairyou.ID, "block/single_overlay", "block/block");
 
         final ModelBlock baseModel;
 
-        ModelType(String json) {
-            this.baseModel = ModelBlock.deserialize(json);
+        @SuppressWarnings("ConstantConditions")
+        ModelType(String domain, String path) {
+            IResource resource = null;
+            try {
+                resource = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(domain, "models/" + path + ".json"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            this.baseModel = ModelBlock.deserialize(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8));
+        }
+
+        ModelType(String domain, String path, String parent) {
+            this(domain, path);
+            IResource resource = null;
+            try {
+                resource = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation("models/" + parent + ".json"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            this.baseModel.parent = ModelBlock.deserialize(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8));
         }
 
     }
