@@ -9,6 +9,7 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import zone.rong.zairyou.Zairyou;
 import zone.rong.zairyou.api.client.RenderUtils;
+import zone.rong.zairyou.api.fluid.block.DefaultFluidBlock;
 import zone.rong.zairyou.api.material.Material;
 
 import java.util.function.Function;
@@ -34,6 +35,7 @@ public class ExtendedFluid extends Fluid {
         } else {
             this.translation = () -> I18n.format(fluidType.getTranslationKey(), I18n.format(backingMaterial.getTranslationKey()));
         }
+        FluidRegistry.registerFluid(this);
     }
 
     @Override
@@ -144,7 +146,6 @@ public class ExtendedFluid extends Fluid {
 
         public ExtendedFluid build() {
             ExtendedFluid fluid = new ExtendedFluid(this);
-            FluidRegistry.registerFluid(fluid);
             fluid.setBlock(this.fluidBlock == null ? new DefaultFluidBlock(fluid, this.fluidType) : this.fluidBlock.apply(fluid))
                     .setLuminosity(this.luminosity == null ? this.fluidType.getBaseLuminosity() : this.luminosity.getAsInt())
                     .setDensity(this.density == null ? this.fluidType.getBaseDensity() : this.density.getAsInt())

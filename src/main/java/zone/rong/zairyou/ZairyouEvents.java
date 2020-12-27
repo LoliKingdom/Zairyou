@@ -10,6 +10,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.potion.PotionUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.client.event.ModelBakeEvent;
@@ -27,7 +28,9 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import zone.rong.zairyou.api.fluid.DefaultFluidBlock;
+import zone.rong.zairyou.api.fluid.block.DefaultFluidBlock;
+import zone.rong.zairyou.api.fluid.block.PotionFluidBlock;
+import zone.rong.zairyou.api.fluid.block.tile.PotionFluidTileEntity;
 import zone.rong.zairyou.api.item.MaterialItem;
 import zone.rong.zairyou.api.material.Material;
 import zone.rong.zairyou.api.material.type.BlockMaterialType;
@@ -41,6 +44,8 @@ import zone.rong.zairyou.api.tile.MachineTileEntity;
 import zone.rong.zairyou.api.client.RenderUtils;
 import zone.rong.zairyou.objects.Materials;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 @Mod.EventBusSubscriber
@@ -60,6 +65,7 @@ public class ZairyouEvents {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBlockRegister(RegistryEvent.Register<Block> event) {
         GameRegistry.registerTileEntity(MachineTileEntity.class, MachineTileEntity.ID);
+        GameRegistry.registerTileEntity(PotionFluidTileEntity.class, PotionFluidTileEntity.ID);
 
         Material.REGISTRY.forEach((name, material) -> {
             material.getBlocks().forEach((type, block) -> event.getRegistry().register(block.setRegistryName(Zairyou.ID, name + "_" + type.toString())));
@@ -125,6 +131,13 @@ public class ZairyouEvents {
     @SideOnly(Side.CLIENT)
     // TODO - move this to custom baking, without handling block colours, we tint the BakedQuads straight.
     public static void onHandlingBlockColours(ColorHandlerEvent.Block event) {
+        Material.REGISTRY.values()
+                .stream()
+                .map(Material::getFluids)
+                .map(Map::values)
+                .flatMap(Collection::stream)
+                .filter(f -> f.getBlock() instanceof PotionFluidBlock)
+                .forEach(f -> event.getBlockColors().registerBlockColorHandler(((PotionFluidBlock) f.getBlock()), f.getBlock()));
         /*
         Material.REGISTRY.values().forEach(m -> m.getBlocks().values()
                 .stream()

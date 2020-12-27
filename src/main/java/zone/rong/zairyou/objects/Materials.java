@@ -1,6 +1,14 @@
 package zone.rong.zairyou.objects;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import net.minecraft.init.PotionTypes;
 import net.minecraft.item.EnumRarity;
+import net.minecraft.potion.PotionType;
+import net.minecraft.potion.PotionUtils;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import zone.rong.zairyou.api.fluid.PotionFluid;
+import zone.rong.zairyou.api.fluid.block.PotionFluidBlock;
 import zone.rong.zairyou.api.material.Material;
 
 import static zone.rong.zairyou.api.material.Material.of;
@@ -51,6 +59,11 @@ public class Materials {
     public static final Material STEAM = of("steam", 0xFFFFFF).fluid(GASEOUS, fluid -> fluid.still("blocks/fluids/steam_still").flow("blocks/fluids/steam_flow").noTint().customTranslation().viscosity(200).temperature(750));
     public static final Material TREE_OIL = of("tree_oil", 0x8F7638).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/tree_oil_still").flow("blocks/fluids/tree_oil_flow").noTint().customTranslation().density(900).viscosity(1200));
 
+    /** Potions **/
+    // public static final Material POTION = of("potion", 0xF800F8).fluid(LIQUID, new PotionFluid("potion", "potion.effect.").setLuminosity(3).setDensity(500).setViscosity(1500).setRarity(EnumRarity.UNCOMMON));
+    // public static final Material SPLASH_POTION = of("potion_splash", 0xF800F8).fluid(LIQUID, new PotionFluid("potion_splash", "splash_potion.effect.").setLuminosity(3).setDensity(500).setViscosity(1500).setRarity(EnumRarity.UNCOMMON));
+    // public static final Material LINGERING_POTION = of("potion_lingering", 0xF800F8).fluid(LIQUID, new PotionFluid("potion_lingering", "lingering_potion.effect.").setLuminosity(3).setDensity(500).setViscosity(1500).setRarity(EnumRarity.UNCOMMON));
+
     /* Marker/Pseudo Materials - TODO: Match colours with electric tier defaults */
     public static final Material RICH = of("rich").types(FERTILIZER, SLAG).noTints(FERTILIZER, SLAG).texture(FERTILIZER, "custom/rich_fertilizer").texture(SLAG, "custom/rich_slag");
 
@@ -58,6 +71,56 @@ public class Materials {
 
     public static void init() {
         Material.BASIC.types(FERTILIZER, SLAG).noTints(FERTILIZER, SLAG).texture(FERTILIZER, "custom/basic_fertilizer").texture(SLAG, "custom/basic_slag");
+        Potions.init();
+        // POTION.getFluid(LIQUID).setBlock(new PotionFluidBlock((PotionFluid) POTION.getFluid(LIQUID), LIQUID));
+        // SPLASH_POTION.getFluid(LIQUID).setBlock(new PotionFluidBlock((PotionFluid) SPLASH_POTION.getFluid(LIQUID), LIQUID));
+        // LINGERING_POTION.getFluid(LIQUID).setBlock(new PotionFluidBlock((PotionFluid) LINGERING_POTION.getFluid(LIQUID), LIQUID));
+    }
+
+    public static class Potions {
+
+        private static final BiMap<PotionType, Material> potionMaterials = HashBiMap.create();
+
+        public static void init() {
+            ForgeRegistries.POTION_TYPES.getValuesCollection().forEach(p -> {
+                if (p != PotionTypes.WATER) {
+                    for (PotionFormat format : PotionFormat.VALUES) {
+                        potionMaterials.put(p, Material.of(format.name + "_" + PotionType.REGISTRY.getNameForObject(p).getResourcePath(), PotionUtils.getPotionColor(p)).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/potion_still").flow("blocks/fluids/potion_flow").luminosity(3).density(500).viscosity(1500).rarity(EnumRarity.UNCOMMON)));
+                    }
+                }
+            });
+        }
+
+        public static Material getMaterial(PotionType type) {
+            return potionMaterials.get(type);
+        }
+
+        public static PotionType getPotionType(Material material) {
+            return potionMaterials.inverse().get(material);
+        }
+
+        public enum PotionFormat {
+
+            NORMAL("potion"),
+            SPLASH("splash_potion"),
+            LINGERING("lingering_potion");
+
+            public static final PotionFormat[] VALUES;
+
+            static {
+                VALUES = values();
+            }
+
+            final String name;
+            final String prefix;
+
+            PotionFormat(String name) {
+                this.name = name;
+                this.prefix = name.concat(".effect.");
+            }
+
+        }
+
     }
 
 }

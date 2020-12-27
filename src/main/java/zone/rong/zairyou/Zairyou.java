@@ -1,6 +1,5 @@
 package zone.rong.zairyou;
 
-import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Mod;
@@ -9,21 +8,20 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import zone.rong.zairyou.api.client.ZairyouModelLoader;
+import zone.rong.zairyou.api.creativetab.PotionCreativeTab;
 import zone.rong.zairyou.api.item.MaterialItem;
 import zone.rong.zairyou.api.material.Material;
 import zone.rong.zairyou.objects.Materials;
 
-import java.util.Collection;
-import java.util.Map;
-
-@Mod(modid = Zairyou.ID, name = Zairyou.NAME, version = "1.0", dependencies = "required:ic2-classic-spmod")
+@Mod(modid = Zairyou.ID, name = Zairyou.NAME, version = "0.1")
 public class Zairyou {
 
     public static final String ID = "zairyou";
     public static final String NAME = "Zairyou";
 
     public static final Logger LOGGER = LogManager.getLogger(ID);
+
+    public static final PotionCreativeTab POTION_TAB = new PotionCreativeTab();
 
     static {
         FluidRegistry.enableUniversalBucket();
@@ -33,9 +31,6 @@ public class Zairyou {
     public void preInit(FMLPreInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(this);
         Materials.init();
-        if (event.getSide().isClient()) {
-            // ModelLoaderRegistry.registerLoader(new ZairyouModelLoader());
-        }
     }
 
     @Mod.EventHandler
