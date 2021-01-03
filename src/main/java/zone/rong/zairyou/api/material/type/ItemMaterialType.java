@@ -6,7 +6,7 @@ import java.util.Locale;
 
 public enum ItemMaterialType implements IMaterialType {
 
-    COAL(Zairyou.ID, 1, "gem"), // A gem variant, but for various coals
+    COAL(Zairyou.ID, 1, "coal~", "gem"), // A gem variant, but for various coals
 
     CRUSHED(Zairyou.ID, 1, "crushed"),
     CENTRIFUGED_CRUSHED(Zairyou.ID, 1, "crushedCentrifuged"),

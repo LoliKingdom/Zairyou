@@ -1,7 +1,6 @@
 package zone.rong.zairyou.api.material;
 
 import com.google.common.base.CaseFormat;
-import com.sun.istack.internal.Nullable;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -55,7 +54,7 @@ public class Material {
     private final Map<IMaterialType, ResourceLocation[]> textures;
 
     private EnumMap<BlockMaterialType, Block> typeBlocks;
-    private EnumMap<ItemMaterialType, Item> typeItems;
+    private EnumMap<ItemMaterialType, ItemStack> typeItems;
     private EnumMap<FluidType, Fluid> typeFluids;
     // private final TextureSet textureSet;
 
@@ -126,8 +125,12 @@ public class Material {
         return this.typeBlocks == null ? Collections.emptyMap() : this.typeBlocks;
     }
 
-    public Map<ItemMaterialType, Item> getItems() {
+    public Map<ItemMaterialType, ItemStack> getItems() {
         return this.typeItems == null ? Collections.emptyMap() : this.typeItems;
+    }
+
+    public Map<FluidType, Fluid> getFluids() {
+        return this.typeFluids == null ? Collections.emptyMap() : this.typeFluids;
     }
 
     public ExtendedToolMaterial getToolMaterial() {
@@ -138,21 +141,21 @@ public class Material {
         return tools;
     }
 
-    public Map<FluidType, Fluid> getFluids() {
-        return this.typeFluids == null ? Collections.emptyMap() : this.typeFluids;
-    }
-
-    @Nullable
     public Block getBlock(BlockMaterialType type) {
         return this.typeBlocks == null ? null : this.typeBlocks.get(type);
     }
 
-    @Nullable
-    public Item getItem(ItemMaterialType type) {
-        return this.typeItems == null ? null : this.typeItems.get(type);
+    public ItemStack getItem(ItemMaterialType type, boolean copy) {
+        if (this.typeItems == null) {
+            return ItemStack.EMPTY;
+        }
+        ItemStack stack = this.typeItems.get(type);
+        if (stack == null) {
+            return ItemStack.EMPTY;
+        }
+        return copy ? stack.copy() : stack;
     }
 
-    @Nullable
     public Fluid getFluid(FluidType type) {
         return this.typeFluids == null ? null : this.typeFluids.get(type);
     }
@@ -166,14 +169,11 @@ public class Material {
     }
 
     public ItemStack getStack(ItemMaterialType type, int count) {
-        Item item = getItem(type);
-        if (item == null) {
-            return ItemStack.EMPTY;
-        }
-        return new ItemStack(item, count);
+        ItemStack stack = getItem(type, true);
+        stack.setCount(count);
+        return stack;
     }
 
-    @Nullable
     public FluidStack getStack(FluidType type, int amount) {
         return new FluidStack(getFluid(type), amount);
     }
@@ -345,8 +345,18 @@ public class Material {
         return block;
     }
 
+    public ItemStack setItem(ItemMaterialType type, ItemStack stack) {
+        this.typeItems.put(type, stack);
+        return stack;
+    }
+
+    public Item setItem(ItemMaterialType type, Item item, int meta) {
+        this.typeItems.put(type, new ItemStack(item, 1, meta));
+        return item;
+    }
+
     public Item setItem(ItemMaterialType type, Item item) {
-        this.typeItems.put(type, item);
+        this.typeItems.put(type, new ItemStack(item));
         return item;
     }
 

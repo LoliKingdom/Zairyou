@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.Mixins;
 
 import java.util.Map;
 
+@Deprecated
 @IFMLLoadingPlugin.MCVersion(ForgeVersion.mcVersion)
 @IFMLLoadingPlugin.SortingIndex(-750)
 @IFMLLoadingPlugin.Name("Zairyou Plugin")

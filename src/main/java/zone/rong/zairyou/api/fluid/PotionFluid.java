@@ -1,24 +1,46 @@
 package zone.rong.zairyou.api.fluid;
 
 import net.minecraft.client.resources.I18n;
-import net.minecraft.init.Items;
-import net.minecraft.init.PotionTypes;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.item.EnumRarity;
 import net.minecraft.potion.PotionType;
 import net.minecraft.potion.PotionUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import zone.rong.zairyou.Zairyou;
+import zone.rong.zairyou.api.client.RenderUtils;
 import zone.rong.zairyou.objects.Materials;
 
-import javax.annotation.Nullable;
+public class PotionFluid extends Fluid {
 
-@Deprecated
-public class PotionFluid/* extends Fluid*/ {
+    private final Materials.Potions.PotionFormat potionFormat;
+    private final PotionType potionType;
+
+    public PotionFluid(Materials.Potions.PotionFormat potionFormat, PotionType potionType) {
+        super(ForgeRegistries.POTION_TYPES.getKey(potionType).getResourcePath(), new ResourceLocation(Zairyou.ID, "blocks/fluids/potion_still"), new ResourceLocation(Zairyou.ID, "blocks/fluids/potion_flow"));
+        this.potionFormat = potionFormat;
+        this.potionType = potionType;
+        this.setColor(RenderUtils.convertRGB2ARGB(FluidType.LIQUID.getBaseAlpha(), PotionUtils.getPotionColor(potionType)));
+        this.setLuminosity(3);
+        this.setDensity(500);
+        this.setViscosity(1500);
+        this.setRarity(EnumRarity.UNCOMMON);
+    }
+
+    public Materials.Potions.PotionFormat getPotionFormat() {
+        return potionFormat;
+    }
+
+    @Override
+    public String getLocalizedName(FluidStack stack) {
+        return I18n.format(getUnlocalizedName());
+    }
+
+    @Override
+    public String getUnlocalizedName() {
+        return potionType.getNamePrefixed(potionFormat.prefix);
+    }
 
     /*
     public static int getPotionColor(FluidStack stack) {

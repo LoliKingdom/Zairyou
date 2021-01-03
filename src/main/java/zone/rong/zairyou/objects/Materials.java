@@ -6,10 +6,14 @@ import net.minecraft.init.PotionTypes;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.potion.PotionType;
 import net.minecraft.potion.PotionUtils;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import zone.rong.zairyou.api.fluid.FluidType;
+import zone.rong.zairyou.api.fluid.PotionFluid;
 import zone.rong.zairyou.api.material.Material;
 import zone.rong.zairyou.api.material.type.ItemMaterialType;
+
+import java.util.EnumMap;
+import java.util.Map;
 
 import static zone.rong.zairyou.api.material.Material.of;
 import static zone.rong.zairyou.api.fluid.FluidType.*;
@@ -36,7 +40,8 @@ public class Materials {
      */
 
     public static final Material AIR = of("air", 0x58A7A5).fluid(LIQUID, fluid -> fluid.temperature(79).customName("liquid_air")).fluid(GASEOUS, fluid -> fluid.customTranslation().temperature(290));
-    public static final Material COAL = of("coal", 0x464646).ore().fluid(LIQUID, fluid -> fluid.still("blocks/fluids/coal_still").flow("blocks/fluids/coal_flow").noTint().customTranslation().density(900).viscosity(2000));
+    public static final Material CHARCOAL = of("charcoal", 0x4C4335).types(DUST);
+    public static final Material COAL = of("coal", 0x464646).ore().types(DUST).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/coal_still").flow("blocks/fluids/coal_flow").noTint().customTranslation().density(900).viscosity(2000));
     public static final Material COPPER = of("copper", 0xFF7400).ore().types(METAL_TYPES).fluid(MOLTEN, fluid -> fluid.temperature(1385)).tools(1, 144, 5.0F, 1.5F, -3.2F, 8, tools -> tools.axe().hoe().pickaxe().shovel().sword());
     public static final Material ELECTRUM = of("electrum", 0xFFFF64).types(METAL_TYPES, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
     public static final Material GOLD = of("gold", 0xFFFF00).ore().types(DUST, SMALL_DUST, TINY_DUST, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
@@ -80,26 +85,49 @@ public class Materials {
 
     public static class Potions {
 
-        private static final BiMap<PotionType, Material> potionMaterials = HashBiMap.create();
+        private static final Map<PotionFormat, BiMap<PotionType, Material>> potionMaterials = new EnumMap<>(PotionFormat.class);
+
+        static {
+            potionMaterials.put(PotionFormat.NORMAL, HashBiMap.create());
+            potionMaterials.put(PotionFormat.SPLASH, HashBiMap.create());
+            potionMaterials.put(PotionFormat.LINGERING, HashBiMap.create());
+        }
 
         public static void init() {
             ForgeRegistries.POTION_TYPES.getValuesCollection().forEach(p -> {
                 if (p != PotionTypes.WATER) {
                     for (PotionFormat format : PotionFormat.VALUES) {
-                        potionMaterials.put(p, Material.of(format.name + "_" + PotionType.REGISTRY.getNameForObject(p).getResourcePath(), PotionUtils.getPotionColor(p)).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/potion_still").flow("blocks/fluids/potion_flow").luminosity(3).density(500).viscosity(1500).rarity(EnumRarity.UNCOMMON)));
+                        potionMaterials.get(format)
+                                .put(p, Material.of(format.name + "_" + PotionType.REGISTRY.getNameForObject(p).getResourcePath(), PotionUtils.getPotionColor(p))
+                                .fluid(LIQUID, new PotionFluid(format, p)));
                     }
                 }
             });
         }
 
-        public static Material getMaterial(PotionType type) {
-            return potionMaterials.get(type);
+        public static Material getMaterial(PotionFormat format, PotionType type) {
+            return potionMaterials.get(format).get(type);
         }
 
-        public static PotionType getPotionType(Material material) {
-            return potionMaterials.inverse().get(material);
+        public static PotionType getPotionType(PotionFormat format, Material material) {
+            return potionMaterials.get(format).inverse().get(material);
         }
 
+        public static boolean isPotion(FluidStack stack) {
+            return stack.getFluid().getUnlocalizedName().startsWith(PotionFormat.NORMAL.prefix);
+        }
+
+        public static boolean isSplashPotion(FluidStack stack) {
+            return stack.getFluid().getUnlocalizedName().startsWith(PotionFormat.SPLASH.prefix);
+        }
+
+        public static boolean isLingeringPotion(FluidStack stack) {
+            return stack.getFluid().getUnlocalizedName().startsWith(PotionFormat.LINGERING.prefix);
+        }
+
+        /**
+         * Because of ThermalExpansion's stupid formatting. We have to pull this shit.
+         */
         public enum PotionFormat {
 
             NORMAL("potion"),
@@ -112,8 +140,8 @@ public class Materials {
                 VALUES = values();
             }
 
-            final String name;
-            final String prefix;
+            public final String name;
+            public final String prefix;
 
             PotionFormat(String name) {
                 this.name = name;

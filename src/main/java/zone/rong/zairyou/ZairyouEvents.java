@@ -90,8 +90,10 @@ public class ZairyouEvents {
                 event.getRegistry().register(material.setItem(type, new MaterialItem(material, type).setRegistryName(Zairyou.ID, name + "_" + type.toString())));
             }
             for (final Fluid fluid : material.getFluids().values()) {
-                Block fluidBlock = fluid.getBlock();
-                event.getRegistry().register(new ItemBlock(fluidBlock).setRegistryName(Zairyou.ID, "fluid_" + fluid.getName()).setCreativeTab(CreativeTabs.MATERIALS));
+                if (fluid.getBlock() != null) {
+                    Block fluidBlock = fluid.getBlock();
+                    event.getRegistry().register(new ItemBlock(fluidBlock).setRegistryName(Zairyou.ID, "fluid_" + fluid.getName()).setCreativeTab(CreativeTabs.MATERIALS));
+                }
             }
             material.getBlocks().forEach((type, block) -> {
                 if (type == BlockMaterialType.ORE) {
@@ -103,7 +105,8 @@ public class ZairyouEvents {
         });
         Materials.REDSTONE.setItem(ItemMaterialType.DUST, Items.REDSTONE);
         Materials.GOLD.setItem(ItemMaterialType.INGOT, Items.GOLD_INGOT);
-        Materials.GOLD.setItem(ItemMaterialType.INGOT, Items.GOLD_INGOT);
+        Materials.COAL.setItem(ItemMaterialType.COAL, Items.COAL, 0);
+        Materials.CHARCOAL.setItem(ItemMaterialType.COAL, Items.COAL, 1);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -112,13 +115,13 @@ public class ZairyouEvents {
         Material.REGISTRY.values().forEach(m -> m.getItems().forEach((type, item) -> {
             switch (type) {
                 case TINY_DUST:
-                    registry.register(RecipeUtil.addShaped(m.getName() + "_tiny_dust_to_dust", false, m.getStack(ItemMaterialType.DUST, 1),
+                    registry.register(RecipeUtil.addShaped(m.getName() + "_tiny_dust_to_dust", false, m.getItem(ItemMaterialType.DUST, false),
                             "xxx", "xxx", "xxx", 'x', item));
                 case SMALL_DUST:
-                    registry.register(RecipeUtil.addShaped(m.getName() + "_small_dust_to_dust", false, m.getStack(ItemMaterialType.DUST, 1),
+                    registry.register(RecipeUtil.addShaped(m.getName() + "_small_dust_to_dust", false, m.getItem(ItemMaterialType.DUST, false),
                             "xx", "xx", 'x', item));
                 case DUST:
-                    ItemStack ingotStack = m.getStack(ItemMaterialType.INGOT, 1);
+                    ItemStack ingotStack = m.getItem(ItemMaterialType.INGOT, false);
                     if (!ingotStack.isEmpty()) {
                         RecipeUtil.addSmelting(item, ingotStack, 0.5F);
                     }
@@ -139,8 +142,9 @@ public class ZairyouEvents {
             }
         }));
         Material.REGISTRY.values().forEach(m -> m.getItems().forEach((type, item) -> {
-            if (item instanceof IItemColor && m.hasTint(type)) {
-                event.getItemColors().registerItemColorHandler((IItemColor) item, item);
+            Item i = item.getItem();
+            if (i instanceof IItemColor && m.hasTint(type)) {
+                event.getItemColors().registerItemColorHandler((IItemColor) i, i);
             }
         }));
     }
@@ -189,8 +193,8 @@ public class ZairyouEvents {
         Material.REGISTRY.values()
                 .stream()
                 .flatMap(m -> m.getItems().values().stream())
-                .filter(i -> i instanceof IModelOverride)
-                .map(i -> (IModelOverride) i)
+                .filter(s -> s.getItem() instanceof IModelOverride)
+                .map(s -> (IModelOverride) s.getItem())
                 .forEach(i -> i.addTextures(stitch));
 
         for (final StoneType stoneType : StoneType.VALUES) {
@@ -216,8 +220,8 @@ public class ZairyouEvents {
                             .forEach(IModelOverride::onModelRegister);
                     m.getItems().values()
                             .stream()
-                            .filter(i -> i instanceof IModelOverride)
-                            .map(i -> (IModelOverride) i)
+                            .filter(s -> s.getItem() instanceof IModelOverride)
+                            .map(s -> (IModelOverride) s.getItem())
                             .forEach(IModelOverride::onModelRegister);
                     /*
                     m.getItems().forEach((t, i) -> {
@@ -271,8 +275,8 @@ public class ZairyouEvents {
         Material.REGISTRY.values()
                 .stream()
                 .flatMap(m -> m.getItems().values().stream())
-                .filter(i -> i instanceof IModelOverride)
-                .map(i -> (IModelOverride) i)
+                .filter(s -> s.getItem() instanceof IModelOverride)
+                .map(s -> (IModelOverride) s.getItem())
                 .forEach(i -> i.onModelBake(event));
 
         Bakery.shutdown();
