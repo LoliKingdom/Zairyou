@@ -1,6 +1,9 @@
 package zone.rong.zairyou.api.client.model.baked;
 
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.vertex.VertexFormat;
+import net.minecraft.util.EnumFacing;
 import zone.rong.zairyou.api.client.RenderUtils;
 
 public class TintedBakedQuad extends BakedQuad {
@@ -15,6 +18,11 @@ public class TintedBakedQuad extends BakedQuad {
         for (int i = 0; i < 4; i++) {
             this.colouredVertexData[offset + size * i] = RenderUtils.convertRGB2ABGR(rgb);
         }
+    }
+
+    public TintedBakedQuad(int[] vertexDataIn, int tintIndexIn, EnumFacing faceIn, TextureAtlasSprite spriteIn, boolean applyDiffuseLighting, VertexFormat format) {
+        super(vertexDataIn, tintIndexIn, faceIn, spriteIn, applyDiffuseLighting, format);
+        this.colouredVertexData = vertexDataIn;
     }
 
     @Override

@@ -26,8 +26,8 @@ public class RenderUtils {
     public static final Function<Block, StateMapper> SIMPLE_STATE_MAPPER = block -> new StateMapper(getSimpleModelLocation(block));
     public static final ItemMeshDefinition SIMPLE_MESH_DEFINITION = stack -> getSimpleModelLocation(Block.getBlockFromItem(stack.getItem()));
 
-    private static EnumMap<ItemCameraTransforms.TransformType, Matrix4f> TRANSFORM_MAP_ITEM = new EnumMap<>(ItemCameraTransforms.TransformType.class);
-    private static EnumMap<ItemCameraTransforms.TransformType, Matrix4f> TRANSFORM_MAP_BLOCK = new EnumMap<>(ItemCameraTransforms.TransformType.class);
+    private static final EnumMap<ItemCameraTransforms.TransformType, Matrix4f> TRANSFORM_MAP_ITEM = new EnumMap<>(ItemCameraTransforms.TransformType.class);
+    private static final EnumMap<ItemCameraTransforms.TransformType, Matrix4f> TRANSFORM_MAP_BLOCK = new EnumMap<>(ItemCameraTransforms.TransformType.class);
 
     private static final Matrix4f[] FACING_TO_MATRIX = new Matrix4f[] {
             getMat(new AxisAngle4f(new Vector3f(1, 0, 0), 4.7124f)),
@@ -78,23 +78,16 @@ public class RenderUtils {
         return getTexture(location.toString());
     }
 
-    /** Model Helpers **/
     public static IModel load(String path) {
-        return load(new ModelResourceLocation(Zairyou.ID + ":" + path));
+        return load(new ResourceLocation(Zairyou.ID, path));
     }
 
     public static IModel load(String domain, String path) {
-        return load(new ModelResourceLocation(domain + ":" + path));
+        return load(new ResourceLocation(domain, path));
     }
 
-    public static IModel load(ModelResourceLocation loc) {
-        try {
-            return ModelLoaderRegistry.getModel(loc);
-        } catch (Exception e) {
-            System.err.println("ModelBase.load() failed due to " + e + ":");
-            e.printStackTrace();
-            return ModelLoaderRegistry.getMissingModel();
-        }
+    public static IModel load(ResourceLocation loc) {
+        return ModelLoaderRegistry.getModelOrMissing(loc);
     }
 
     public static Matrix4f getItemTransform(ItemCameraTransforms.TransformType type) {

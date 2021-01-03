@@ -1,130 +1,190 @@
 package zone.rong.zairyou.api.client;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.*;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.model.ItemLayerModel;
-import net.minecraftforge.common.model.TRSRTransformation;
+import net.minecraftforge.client.model.IModel;
 import zone.rong.zairyou.Zairyou;
-import zone.rong.zairyou.api.client.model.baked.TintedBakedQuad;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class Bakery {
 
-    private static final FaceBakery FACE_BAKERY = new FaceBakery();
-    // private static final ItemModelGenerator ITEM_MODEL_GENERATOR = new ItemModelGenerator();
+    @Deprecated private static FaceBakery FACE_BAKERY = null; // new FaceBakery();
+    public static Bakery INSTANCE = new Bakery();
 
-    public static final Bakery INSTANCE = new Bakery();
-
-    private final Map<String, String> sprites = new Object2ObjectOpenHashMap<>();
-    private final Int2IntMap tints = new Int2IntOpenHashMap();
-
-    private boolean currentlyBaking = false;
-    private ModelType template;
-    private IBakedModel block, item;
-
-    public Bakery() { }
-
-    public Bakery template(ModelType template) {
-        this.template = template;
-        return this;
+    public static void shutdown() {
+        INSTANCE = null;
     }
 
-    public Bakery prepareTexture(String element, ResourceLocation textureLocation) {
-        // this.sprites.put(element.startsWith("#") ? element : "#".concat(element), textureLocation.toString());
-        this.sprites.put(element, textureLocation.toString());
-        return this;
+    private final BlockDepartment blockDepartment;
+    private final ItemDepartment itemDepartment;
+
+    protected Bakery() {
+        this.blockDepartment = new BlockDepartment();
+        this.itemDepartment = new ItemDepartment();
     }
 
-    public Bakery prepareTexture(String element, String textureLocation) {
-        // this.sprites.put(element.startsWith("#") ? element : "#".concat(element), textureLocation);
-        this.sprites.put(element, textureLocation);
-        return this;
+    public BlockDepartment getBlockDepartment() {
+        return blockDepartment;
     }
 
-    public Bakery tint(int tintIndex, int rgb) {
-        this.tints.put(tintIndex, rgb);
-        return this;
+    public ItemDepartment getItemDepartment() {
+        return itemDepartment;
     }
 
-    public void bake(boolean wantBlock, boolean wantItem) {
-        currentlyBaking = true;
-        if (!wantBlock && !wantItem) {
-            currentlyBaking = false;
-            this.sprites.clear();
-            this.tints.clear();
-            return;
+    public static class BlockDepartment implements IBakeable<BlockDepartment> {
+
+        private final Map<String, String> sprites = new Object2ObjectOpenHashMap<>();
+
+        private boolean currentlyBaking = false;
+        private ModelType template;
+        private IBakedModel product;
+
+        @Override
+        public BlockDepartment template(ModelType template) {
+            this.currentlyBaking = true;
+            this.template = template;
+            return this;
         }
-        final ModelBlock baseModel = this.template.baseModel;
-        ModelBlock model = new ModelBlock(baseModel.getParentLocation(), baseModel.getElements(), this.sprites, baseModel.ambientOcclusion, baseModel.isGui3d(), baseModel.getAllTransforms(), baseModel.getOverrides());
-        if (wantBlock) {
-            SimpleBakedModel.Builder builder = new SimpleBakedModel.Builder(model, model.createOverrides());
-            // builder.setTexture(RenderUtils.getTexture(this.sprites.getOrDefault("particle", this.sprites.get("#layer0"))));
-            builder.setTexture(RenderUtils.getTexture(model.textures.getOrDefault("particle", model.textures.get("layer0"))));
-            for (BlockPart part : model.getElements()) {
-                part.mapFaces.forEach((facing, blockFace) -> {
-                    BakedQuad quad = FACE_BAKERY.makeBakedQuad(
-                            part.positionFrom,
-                            part.positionTo,
-                            blockFace,
-                            // blockFace.texture.equals("#layer0") ? getTexture(base) : getTexture(overlay),
-                            RenderUtils.getTexture(model.textures.get(blockFace.texture.substring(1))),
-                            facing,
-                            ModelRotation.X0_Y0,
-                            part.partRotation,
-                            false,
-                            part.shade);
-                    builder.addFaceQuad(facing, this.tints.containsKey(blockFace.tintIndex) ? new TintedBakedQuad(quad, this.tints.get(blockFace.tintIndex)) : quad);
-                });
+
+        @Override
+        public BlockDepartment prepareTexture(String element, ResourceLocation textureLocation) {
+            this.sprites.put(element, textureLocation.toString());
+            return this;
+        }
+
+        @Override
+        public BlockDepartment prepareTexture(String element, String textureLocation) {
+            this.sprites.put(element, textureLocation);
+            return this;
+        }
+
+        @Override
+        public BlockDepartment prepareTextures(String element, ResourceLocation[] textureLocations) {
+            int layer = 0;
+            for (ResourceLocation location : textureLocations) {
+                this.sprites.put(element + layer++, location.toString());
             }
-            this.block = builder.makeBakedModel(); // new WrappedBakedModel(builder.makeBakedModel(), false);
+            return this;
         }
-        if (wantItem) {
-            this.item = new ItemLayerModel(model).bake(TRSRTransformation.identity(), DefaultVertexFormats.ITEM, RenderUtils::getTexture);
+
+        @Override
+        public BlockDepartment bake() {
+            if (!this.currentlyBaking) {
+                throw new RuntimeException("Tried baking with no ingredients!");
+            }
+            this.product = bakeModel(this.template.model, this.sprites, DefaultVertexFormats.BLOCK);
+            // this.product = bake(Bakery.FACE_BAKERY, this.template.baseModel, this.sprites, this.tints);
+            this.template = null;
+            this.sprites.clear();
+            this.currentlyBaking = false;
+            return this;
         }
-        currentlyBaking = false;
-        this.sprites.clear();
-        this.tints.clear();
+
+        @Override
+        public IBakedModel take() {
+            if (this.currentlyBaking) {
+                throw new RuntimeException("The bake isn't done yet!");
+            }
+            IBakedModel take = this.product;
+            this.product = null;
+            return take;
+        }
+
     }
 
-    public IBakedModel receiveBlock() {
-        if (currentlyBaking) {
-            throw new RuntimeException("Cannot retrieved IBakedModels whilst baking.");
-        }
-        IBakedModel take = this.block;
-        this.block = null;
-        return take;
-    }
+    public static class ItemDepartment implements IBakeable<ItemDepartment> {
 
-    public IBakedModel receiveItem() {
-        if (currentlyBaking) {
-            throw new RuntimeException("Cannot retrieved IBakedModels whilst baking.");
+        private final Map<String, String> sprites = new Object2ObjectOpenHashMap<>();
+
+        private boolean currentlyBaking = false;
+        private ModelType template;
+        private IBakedModel product;
+
+        @Override
+        public ItemDepartment template(ModelType template) {
+            this.currentlyBaking = true;
+            this.template = template;
+            return this;
         }
-        IBakedModel take = this.item;
-        this.item = null;
-        return take;
+
+        @Override
+        public ItemDepartment prepareTexture(String element, ResourceLocation textureLocation) {
+            this.sprites.put(element, textureLocation.toString());
+            return this;
+        }
+
+        @Override
+        public ItemDepartment prepareTexture(String element, String textureLocation) {
+            this.sprites.put(element, textureLocation);
+            return this;
+        }
+
+        @Override
+        public ItemDepartment prepareTextures(String element, ResourceLocation[] textureLocations) {
+            int layer = 0;
+            for (ResourceLocation location : textureLocations) {
+                this.sprites.put(element + layer++, location.toString());
+            }
+            return this;
+        }
+
+        @Override
+        public ItemDepartment bake() {
+            if (!this.currentlyBaking) {
+                throw new RuntimeException("Tried baking with no ingredients!");
+            }
+            this.product = bakeModel(this.template.model, this.sprites, DefaultVertexFormats.ITEM);
+            // this.product = bake(Bakery.FACE_BAKERY, this.template.baseModel, this.sprites, this.tints);
+            this.template = null;
+            this.sprites.clear();
+            this.currentlyBaking = false;
+            return this;
+        }
+
+        @Override
+        public IBakedModel take() {
+            if (this.currentlyBaking) {
+                throw new RuntimeException("The bake isn't done yet!");
+            }
+            IBakedModel take = this.product;
+            this.product = null;
+            return take;
+        }
+
     }
 
     public enum ModelType {
 
-        NORMAL(Zairyou.ID, "block/normal", "block/block"),
-        NORMAL_TINTED(Zairyou.ID, "block/normal_tinted", "block/block"),
-        SINGLE_OVERLAY(Zairyou.ID, "block/single_overlay", "block/block"),
-        TOOL("minecraft", "item/handheld");
+        NORMAL_BLOCK(Zairyou.ID, "block/normal"),
+        NORMAL_ITEM("minecraft", "item/generated"),
+        HANDHELD_ITEM("minecraft", "item/handheld");
 
+        final IModel model;
+
+        ModelType(String locationDomain, String locationPath) {
+            this.model = RenderUtils.load(locationDomain, locationPath);
+        }
+
+    }
+
+    /*
+    public enum ModelType {
+
+        NORMAL_BLOCK(true, Zairyou.ID, "block/normal", "block/block"),
+        NORMAL_TINTED(true, Zairyou.ID, "block/normal_tinted", NORMAL_BLOCK.baseModel.parent),
+        SINGLE_OVERLAY(true, Zairyou.ID, "block/single_overlay", NORMAL_BLOCK.baseModel.parent),
+        NORMAL_ITEM(false, "minecraft", "item/generated", "zairyou:models/item/simple.json"),
+        TOOL(false, "minecraft", "item/handheld", NORMAL_ITEM.baseModel, NORMAL_ITEM.baseModel.parent);
+
+        final boolean forBlock;
         final ModelBlock baseModel;
 
         @SuppressWarnings("ConstantConditions")
-        ModelType(String domain, String path) {
+        ModelType(boolean forBlock, String domain, String path) {
+            this.forBlock = forBlock;
             IResource resource = null;
             try {
                 resource = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(domain, "models/" + path + ".json"));
@@ -134,17 +194,41 @@ public class Bakery {
             this.baseModel = ModelBlock.deserialize(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8));
         }
 
-        ModelType(String domain, String path, String parent) {
-            this(domain, path);
-            IResource resource = null;
+        ModelType(boolean forBlock, String domain, String path, String... parents) {
+            this(forBlock, domain, path);
             try {
-                resource = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation("models/" + parent + ".json"));
+                ModelBlock parent = this.baseModel;
+                for (String s : parents) {
+                    IResource resource = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(s));
+                    parent.parent = ModelBlock.deserialize(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8));
+                    parent = parent.parent;
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            this.baseModel.parent = ModelBlock.deserialize(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8));
+        }
+
+        ModelType(boolean forBlock, String domain, String path, Object... parents) {
+            this(forBlock, domain, path);
+            try {
+                ModelBlock parent = this.baseModel;
+                for (Object parentObj : parents) {
+                    if (parentObj instanceof String) {
+                        IResource resource = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(parentObj.toString()));
+                        parent.parent = ModelBlock.deserialize(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8));
+                    } else if (parentObj instanceof ModelBlock) {
+                        parent.parent = (ModelBlock) parentObj;
+                    } else {
+                        throw new IllegalArgumentException("Parent Object has to either be a String or a ModelBlock");
+                    }
+                    parent = parent.parent;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
     }
+     */
 
 }

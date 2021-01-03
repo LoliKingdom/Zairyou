@@ -1,41 +1,43 @@
-zairyou.none.name=None
-zairyou.air.name=Air
-zairyou.coal.name=Coal
-zairyou.copper.name=Copper
-zairyou.electrum.name=Electrum
-zairyou.gold.name=Gold
-zairyou.redstone.name=Redstone
-zairyou.silver.name=Silver
+zairyou.material.none.name=None
+zairyou.material.air.name=Air
+zairyou.material.coal.name=Coal
+zairyou.material.copper.name=Copper
+zairyou.material.electrum.name=Electrum
+zairyou.material.gold.name=Gold
+zairyou.material.redstone.name=Redstone
+zairyou.material.silver.name=Silver
 
-zairyou.niter.name=Niter
+zairyou.material.niter.name=Niter
 
-zairyou.biocrude.name=Biocrude
-zairyou.creosote.name=Creosote
-zairyou.crude_oil.name=Crude Oil
-zairyou.experience.name=Experience
-zairyou.mushroom_stew.name=Mushroom Stew
-zairyou.refined_biofuel.name=Refined Biofuel
-zairyou.refined_oil.name=Refined Oil
-zairyou.refined_fuel.name=Refined Fuel
-zairyou.resin.name=Resin
-zairyou.sap.name=Sap
-zairyou.seed_oil.name=Seed Oil
-zairyou.steam.name=Steam
-zairyou.tree_oil.name=Tree Oil
+zairyou.material.biocrude.name=Biocrude
+zairyou.material.creosote.name=Creosote
+zairyou.material.crude_oil.name=Crude Oil
+zairyou.material.experience.name=Experience
+zairyou.material.mushroom_stew.name=Mushroom Stew
+zairyou.material.refined_biofuel.name=Refined Biofuel
+zairyou.material.refined_oil.name=Refined Oil
+zairyou.material.refined_fuel.name=Refined Fuel
+zairyou.material.resin.name=Resin
+zairyou.material.sap.name=Sap
+zairyou.material.seed_oil.name=Seed Oil
+zairyou.material.steam.name=Steam
+zairyou.material.tree_oil.name=Tree Oil
 
-zairyou.basic.name=Basic
-zairyou.rich.name=Rich
-zairyou.flux.name=Flux
+zairyou.material.basic.name=Basic
+zairyou.material.rich.name=Rich
+zairyou.material.flux.name=Flux
 
-zairyou.ore.name=%s%s %s Ore
+zairyou.material_type.ore.name=%s%s %s Ore
 
-zairyou.ingot.name=%s Ingot
-zairyou.dust.name=%s Dust
+zairyou.material_type.ingot.name=%s Ingot
+zairyou.material_type.dust.name=%s Dust
+zairyou.material_type.small_dust.name=Small %s Dust
+zairyou.material_type.tiny_dust.name=Tiny %s Dust
 
-zairyou.liquid.name=Liquid %s
-zairyou.molten.name=Molten %s
-zairyou.gaseous.name=%s Gas
-zairyou.plasma.name=%s Plasma
+zairyou.fluid_type.liquid.name=Liquid %s
+zairyou.fluid_type.molten.name=Molten %s
+zairyou.fluid_type.gaseous.name=%s Gas
+zairyou.fluid_type.plasma.name=%s Plasma
 
 zairyou.ore_grade.poor.name=Poor
 zairyou.ore_grade.normal.name=
@@ -59,10 +61,11 @@ zairyou.fluid.tree_oil_liquid.name=Tree Oil
 
 zairyou.fluid.redstone_molten.name=Destabilized Redstone
 
-thermalfoundation.coil.name=%s Power Coil
-thermalfoundation.fertilizer.name=%s Phyto-Gro
-thermalfoundation.servo.name=%s Servo
+thermalfoundation.material_type.coil.name=%s Power Coil
+thermalfoundation.material_type.fertilizer.name=%s Phyto-Gro
+thermalfoundation.material_type.servo.name=%s Servo
+thermalfoundation.material_type.slag.name=%s Slag
 
-tfc.andesite.name=Andesite
-tfc.basalt.name=Basalt
-tfc.chalk.name=Chalk
+tfc.stone_type.andesite.name=Andesite
+tfc.stone_type.basalt.name=Basalt
+tfc.stone_type.chalk.name=Chalk

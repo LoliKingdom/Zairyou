@@ -1,13 +1,18 @@
 buildscript {
     repositories {
+        maven { url = 'https://files.minecraftforge.net/maven' }
+        maven { url = 'https://repo.spongepowered.org/maven' }
         jcenter()
-        maven { url = "https://files.minecraftforge.net/maven" }
+        mavenCentral()
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
     }
 }
+
 apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'org.spongepowered.mixin'
 
 version = "0.1"
 group = "zone.rong"
@@ -22,17 +27,42 @@ minecraft {
     version = "1.12.2-14.23.5.2847"
     runDir = "run"
     mappings = "snapshot_20171003"
-	useDepAts = true
+    def args = [
+            '-Dfml.coreMods.load=zone.rong.zairyou.ZairyouLoadingPlugin',
+            '-Dmixin.hotSwap=true',
+            '-Dmixin.checks.interfaces=true'
+    ]
+    clientJvmArgs.addAll(args)
+    serverJvmArgs.addAll(args)
+    useDepAts = true
+    makeObfSourceJar = false
 }
 repositories {
     maven {
         url "https://www.cursemaven.com"
     }
+    maven {
+        url = 'https://repo.spongepowered.org/maven'
+    }
+}
+
+configurations {
+    embed
+    implementation.extendsFrom(embed)
+}
+
+sourceSets {
+    main {
+        ext.refMap = "mixins.zairyou.refmap.json"
+    }
 }
 
 dependencies {
-	compile "curse.maven:ic2-classic:3093608"
+	// compile "curse.maven:ic2-classic:3093608"
     // compile "curse.maven:gregtech-classic:3059975"
+    embed ('org.spongepowered:mixin:0.8.1-SNAPSHOT') { // Don't include in the build
+        transitive = false
+    }
 }
 
 processResources {
@@ -45,5 +75,19 @@ processResources {
         
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
+    }
+}
+
+jar {
+    from (configurations.embed.collect { it.isDirectory() ? it : zipTree(it) }) {
+        exclude 'LICENSE.txt', 'META-INF/MANIFSET.MF', 'META-INF/maven/**', 'META-INF/*.RSA', 'META-INF/*.SF'
+    }
+    manifest {
+        attributes([
+                "FMLCorePluginContainsFMLMod": true,
+                "FMLCorePlugin": 'zone.rong.zairyou.ZairyouLoadingPlugin',
+                "ForceLoadAsMod": true,
+                "TweakClass": 'org.spongepowered.asm.launch.MixinTweaker'
+        ])
     }
 }

@@ -1,11 +1,11 @@
-package zone.rong.zairyou.api.material.type;
+package zone.rong.zairyou.api.client;
 
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelBakeEvent;
 
 import java.util.Set;
 
-public interface IMaterialBlock {
+public interface IModelOverride {
 
     void addTextures(Set<ResourceLocation> textures);
 
