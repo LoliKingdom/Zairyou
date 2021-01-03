@@ -1,7 +1,7 @@
 package zone.rong.zairyou.api.material;
 
 import com.google.common.base.CaseFormat;
-import com.google.common.collect.Lists;
+import com.sun.istack.internal.Nullable;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -25,7 +25,6 @@ import zone.rong.zairyou.api.material.type.ItemMaterialType;
 import zone.rong.zairyou.api.ore.OreBlock;
 import zone.rong.zairyou.api.ore.OreGrade;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;

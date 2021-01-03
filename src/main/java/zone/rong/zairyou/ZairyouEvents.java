@@ -116,7 +116,7 @@ public class ZairyouEvents {
                             "xxx", "xxx", "xxx", 'x', item));
                 case SMALL_DUST:
                     registry.register(RecipeUtil.addShaped(m.getName() + "_small_dust_to_dust", false, m.getStack(ItemMaterialType.DUST, 1),
-                            "xxx", "xxx", "xxx", 'x', item));
+                            "xx", "xx", 'x', item));
                 case DUST:
                     ItemStack ingotStack = m.getStack(ItemMaterialType.INGOT, 1);
                     if (!ingotStack.isEmpty()) {
