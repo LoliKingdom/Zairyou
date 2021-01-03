@@ -3,14 +3,15 @@ package zone.rong.zairyou;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ModelBakery;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.color.IBlockColor;
+import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
-import net.minecraft.potion.PotionUtils;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.client.event.ModelBakeEvent;
@@ -28,13 +29,14 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.registries.IForgeRegistry;
+import zone.rong.zairyou.api.client.Bakery;
+import zone.rong.zairyou.api.client.IModelOverride;
 import zone.rong.zairyou.api.fluid.block.DefaultFluidBlock;
-import zone.rong.zairyou.api.fluid.block.PotionFluidBlock;
 import zone.rong.zairyou.api.fluid.block.tile.PotionFluidTileEntity;
 import zone.rong.zairyou.api.item.MaterialItem;
 import zone.rong.zairyou.api.material.Material;
 import zone.rong.zairyou.api.material.type.BlockMaterialType;
-import zone.rong.zairyou.api.material.type.IMaterialBlock;
 import zone.rong.zairyou.api.material.type.ItemMaterialType;
 import zone.rong.zairyou.api.ore.OreBlock;
 import zone.rong.zairyou.api.ore.OreGrade;
@@ -42,10 +44,9 @@ import zone.rong.zairyou.api.ore.OreItemBlock;
 import zone.rong.zairyou.api.ore.stone.StoneType;
 import zone.rong.zairyou.api.tile.MachineTileEntity;
 import zone.rong.zairyou.api.client.RenderUtils;
+import zone.rong.zairyou.api.util.RecipeUtil;
 import zone.rong.zairyou.objects.Materials;
 
-import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 
 @Mod.EventBusSubscriber
@@ -53,6 +54,7 @@ public class ZairyouEvents {
 
     // Debug
     @SubscribeEvent
+    @SideOnly(Side.CLIENT)
     public static void onToolTipShown(ItemTooltipEvent event) {
         if (event.getFlags().isAdvanced() && event.getItemStack().getItem() instanceof MaterialItem) {
             MaterialItem matItem = (MaterialItem) event.getItemStack().getItem();
@@ -101,51 +103,63 @@ public class ZairyouEvents {
         });
         Materials.REDSTONE.setItem(ItemMaterialType.DUST, Items.REDSTONE);
         Materials.GOLD.setItem(ItemMaterialType.INGOT, Items.GOLD_INGOT);
+        Materials.GOLD.setItem(ItemMaterialType.INGOT, Items.GOLD_INGOT);
     }
 
-    @Deprecated
-    @SubscribeEvent
-    @SideOnly(Side.CLIENT)
-    // TODO - move this to custom baking, without handling item colours, we tint the BakedQuads straight.
-    public static void onHandlingItemColours(ColorHandlerEvent.Item event) {
-        Material.REGISTRY.values().forEach(m -> m.getItems().forEach((t, i) -> {
-            if (m.hasTint(t)) {
-                if (!t.hasOverlayTexture()) {
-                    event.getItemColors().registerItemColorHandler((stack, tintIndex) -> m.getColour(), i);
-                } else {
-                    event.getItemColors().registerItemColorHandler((stack, tintIndex) -> tintIndex == 0 ? -1 : m.getColour(), i);
-                }
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onRecipeRegister(RegistryEvent.Register<IRecipe> event) {
+        IForgeRegistry<IRecipe> registry = event.getRegistry();
+        Material.REGISTRY.values().forEach(m -> m.getItems().forEach((type, item) -> {
+            switch (type) {
+                case TINY_DUST:
+                    registry.register(RecipeUtil.addShaped(m.getName() + "_tiny_dust_to_dust", false, m.getStack(ItemMaterialType.DUST, 1),
+                            "xxx", "xxx", "xxx", 'x', item));
+                case SMALL_DUST:
+                    registry.register(RecipeUtil.addShaped(m.getName() + "_small_dust_to_dust", false, m.getStack(ItemMaterialType.DUST, 1),
+                            "xxx", "xxx", "xxx", 'x', item));
+                case DUST:
+                    ItemStack ingotStack = m.getStack(ItemMaterialType.INGOT, 1);
+                    if (!ingotStack.isEmpty()) {
+                        RecipeUtil.addSmelting(item, ingotStack, 0.5F);
+                    }
+                    break;
+                default:
+                    break;
             }
         }));
-        /*
-        Material.REGISTRY.values().forEach(m -> m.getBlocks().values()
-                .stream()
-                .filter(b -> b instanceof OreBlock)
-                .map(b -> (OreBlock) b)
-                .forEach(b -> event.getItemColors().registerItemColorHandler((stack, tintIndex) -> tintIndex == 1 ? b.getMaterial().getColour() : -1, b)));
-         */
     }
 
     @Deprecated
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
-    // TODO - move this to custom baking, without handling block colours, we tint the BakedQuads straight.
-    public static void onHandlingBlockColours(ColorHandlerEvent.Block event) {
-        Material.REGISTRY.values()
-                .stream()
-                .map(Material::getFluids)
-                .map(Map::values)
-                .flatMap(Collection::stream)
-                .filter(f -> f.getBlock() instanceof PotionFluidBlock)
-                .forEach(f -> event.getBlockColors().registerBlockColorHandler(((PotionFluidBlock) f.getBlock()), f.getBlock()));
-        /*
-        Material.REGISTRY.values().forEach(m -> m.getBlocks().values()
-                .stream()
-                .filter(b -> b instanceof OreBlock)
-                .map(b -> (OreBlock) b)
-                .forEach(b -> event.getBlockColors().registerBlockColorHandler((state, world, pos, tintIndex) -> tintIndex == 1 ? b.getMaterial().getColour() : -1, b)));
+    public static void onHandlingItemColours(ColorHandlerEvent.Item event) {
+        Material.REGISTRY.values().forEach(m -> m.getBlocks().forEach((type, block) -> {
+            if (block instanceof IItemColor && m.hasTint(type)) {
+                event.getItemColors().registerItemColorHandler((IItemColor) block, block);
+            }
+        }));
+        Material.REGISTRY.values().forEach(m -> m.getItems().forEach((type, item) -> {
+            if (item instanceof IItemColor && m.hasTint(type)) {
+                event.getItemColors().registerItemColorHandler((IItemColor) item, item);
+            }
+        }));
+    }
 
-         */
+    @SubscribeEvent
+    @SideOnly(Side.CLIENT)
+    public static void onHandlingBlockColours(ColorHandlerEvent.Block event) {
+        Material.REGISTRY.values().forEach(m -> {
+            m.getBlocks().forEach((type, block) -> {
+                if (block instanceof IBlockColor && m.hasTint(type)) {
+                    event.getBlockColors().registerBlockColorHandler((IBlockColor) block, block);
+                }
+            });
+            m.getFluids().forEach((type, fluid) -> {
+                if (fluid.getBlock() instanceof IBlockColor) {
+                    event.getBlockColors().registerBlockColorHandler((IBlockColor) fluid.getBlock(), fluid.getBlock());
+                }
+            });
+        });
     }
 
     @SubscribeEvent
@@ -168,9 +182,16 @@ public class ZairyouEvents {
         Material.REGISTRY.values()
                 .stream()
                 .flatMap(m -> m.getBlocks().values().stream())
-                .filter(b -> b instanceof IMaterialBlock)
-                .map(b -> (IMaterialBlock) b)
+                .filter(b -> b instanceof IModelOverride)
+                .map(b -> (IModelOverride) b)
                 .forEach(b -> b.addTextures(stitch));
+
+        Material.REGISTRY.values()
+                .stream()
+                .flatMap(m -> m.getItems().values().stream())
+                .filter(i -> i instanceof IModelOverride)
+                .map(i -> (IModelOverride) i)
+                .forEach(i -> i.addTextures(stitch));
 
         for (final StoneType stoneType : StoneType.VALUES) {
             event.getMap().registerSprite(stoneType.getBaseTexture());
@@ -190,9 +211,15 @@ public class ZairyouEvents {
                 .forEach(m -> {
                     m.getBlocks().values()
                             .stream()
-                            .filter(b -> b instanceof IMaterialBlock)
-                            .map(b -> (IMaterialBlock) b)
-                            .forEach(IMaterialBlock::onModelRegister);
+                            .filter(b -> b instanceof IModelOverride)
+                            .map(b -> (IModelOverride) b)
+                            .forEach(IModelOverride::onModelRegister);
+                    m.getItems().values()
+                            .stream()
+                            .filter(i -> i instanceof IModelOverride)
+                            .map(i -> (IModelOverride) i)
+                            .forEach(IModelOverride::onModelRegister);
+                    /*
                     m.getItems().forEach((t, i) -> {
                         if (i instanceof MaterialItem) {
                             final ModelResourceLocation loc = m.getTexture(t);
@@ -200,6 +227,7 @@ public class ZairyouEvents {
                             ModelLoader.setCustomMeshDefinition(i, stack -> loc);
                         }
                     });
+                     */
                     m.getFluids().forEach((t, f) -> {
                         Block block = f.getBlock();
                         if (block instanceof DefaultFluidBlock) {
@@ -236,9 +264,18 @@ public class ZairyouEvents {
         Material.REGISTRY.values()
                 .stream()
                 .flatMap(m -> m.getBlocks().values().stream())
-                .filter(b -> b instanceof IMaterialBlock)
-                .map(b -> (IMaterialBlock) b)
+                .filter(b -> b instanceof IModelOverride)
+                .map(b -> (IModelOverride) b)
                 .forEach(b -> b.onModelBake(event));
+
+        Material.REGISTRY.values()
+                .stream()
+                .flatMap(m -> m.getItems().values().stream())
+                .filter(i -> i instanceof IModelOverride)
+                .map(i -> (IModelOverride) i)
+                .forEach(i -> i.onModelBake(event));
+
+        Bakery.shutdown();
         /*
         Bakery temporary = Bakery.INSTANCE
                 .template(Bakery.ModelType.SINGLE_OVERLAY)

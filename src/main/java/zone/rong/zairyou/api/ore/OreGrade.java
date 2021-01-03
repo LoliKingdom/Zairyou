@@ -9,8 +9,8 @@ import java.util.Locale;
 public enum OreGrade implements ITranslatable {
 
     NORMAL("", new ResourceLocation(Zairyou.ID, "blocks/grade/normal")),
-    POOR("poor", new ResourceLocation(Zairyou.ID, "blocks/grade/poor")),
-    RICH("rich", new ResourceLocation(Zairyou.ID, "blocks/grade/rich"));
+    POOR("Poor", new ResourceLocation(Zairyou.ID, "blocks/grade/poor")),
+    RICH("Rich", new ResourceLocation(Zairyou.ID, "blocks/grade/rich"));
 
     public static final OreGrade[] VALUES;
 

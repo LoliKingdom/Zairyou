@@ -1,62 +1,67 @@
 package zone.rong.zairyou.api.material.type;
 
-import com.google.common.base.CaseFormat;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import zone.rong.zairyou.Zairyou;
 
 import java.util.Locale;
 
 public enum ItemMaterialType implements IMaterialType {
 
-    COAL(Zairyou.ID, "gem", new ModelResourceLocation(Zairyou.ID + ":coal", "inventory"), false),
-    CHARCOAL(Zairyou.ID, "gem", new ModelResourceLocation(Zairyou.ID + ":coal", "inventory"), false),
-    DIAMOND(Zairyou.ID, "gem", new ModelResourceLocation(Zairyou.ID + ":diamond", "inventory"), false),
-    DUST(Zairyou.ID, "dust", new ModelResourceLocation(Zairyou.ID + ":dust", "inventory"), false),
-    EMERALD(Zairyou.ID, "gem", new ModelResourceLocation(Zairyou.ID + ":emerald", "inventory"), false),
-    INGOT(Zairyou.ID, "ingot", new ModelResourceLocation(Zairyou.ID + ":ingot", "inventory"), false),
+    COAL(Zairyou.ID, 1, "gem"), // A gem variant, but for various coals
 
-    COIL("thermalfoundation", "coil", new ModelResourceLocation(Zairyou.ID + ":coil", "inventory"), true),
-    FERTILIZER("thermalfoundation", "fertilizer", new ModelResourceLocation(Zairyou.ID + ":fertilizer", "inventory"), false),
-    SERVO("thermalfoundation", "servo", new ModelResourceLocation(Zairyou.ID + ":servo", "inventory"), false),
-    SLAG("thermalfoundation", "slag~&", new ModelResourceLocation(Zairyou.ID + ":slag", "inventory"), false, "crystalSlag~&", "itemSlag~&");
+    CRUSHED(Zairyou.ID, 1, "crushed"),
+    CENTRIFUGED_CRUSHED(Zairyou.ID, 1, "crushedCentrifuged"),
+    PURIFIED_CRUSHED(Zairyou.ID, 1, "crushedPurified"),
+
+    DUST(Zairyou.ID, 1, "dust"),
+    SMALL_DUST(Zairyou.ID, 1, "dustSmall"),
+    TINY_DUST(Zairyou.ID, 1, "dustTiny"),
+
+    INGOT(Zairyou.ID, 1, "ingot"),
+    HOT_INGOT(Zairyou.ID, 1, "ingot"),
+    DOUBLE_INGOT(Zairyou.ID, 1, "ingotDouble"),
+    DENSE_INGOT(Zairyou.ID, 1, "ingotDense"),
+
+    CHIPPED_GEM(Zairyou.ID, 1, "chipped"),
+    GEM(Zairyou.ID, 1, "gem"),
+    EXQUISITE_GEM(Zairyou.ID, 1, "exquisite"),
+
+    PLATE(Zairyou.ID, 1, "plate"),
+    DOUBLE_PLATE(Zairyou.ID, 1, "plateDouble"),
+    DENSE_PLATE(Zairyou.ID, 1, "plateDense"),
+
+    NUGGET(Zairyou.ID, 1, "nugget"),
+
+    ROD(Zairyou.ID, 1, "rod", "stick"),
+    LONG_ROD(Zairyou.ID, 1, "rodLong", "stickLong"),
+
+    FOIL(Zairyou.ID, 1, "foil"),
+
+    COIL("thermalfoundation", 2, "coil"),
+    FERTILIZER("thermalfoundation", 1, "fertilizer"),
+    SERVO("thermalfoundation", 1, "servo"),
+    SLAG("thermalfoundation", 1, "slag~&", "crystalSlag~&", "itemSlag~&");
 
     private final String modId;
-    private final ModelResourceLocation textureLocation;
-    private final boolean hasTextureLayers;
+    private final int modelLayers;
     private final String[] prefixes;
 
-    ItemMaterialType(String modId, String prefix, ModelResourceLocation textureLocation, boolean hasTextureLayers) {
+    ItemMaterialType(String modId, int modelLayers, String... alternatePrefixes) {
         this.modId = modId;
-        this.textureLocation = textureLocation;
-        this.hasTextureLayers = hasTextureLayers;
-        this.prefixes = new String[] { prefix };
+        this.modelLayers = modelLayers;
+        this.prefixes = alternatePrefixes;
     }
 
-    ItemMaterialType(String modId, String prefix, ModelResourceLocation textureLocation, boolean hasTextureLayers, String... alternatePrefixes) {
-        this.modId = modId;
-        this.textureLocation = textureLocation;
-        this.hasTextureLayers = hasTextureLayers;
-        this.prefixes = new String[alternatePrefixes.length + 1];
-        this.prefixes[0] = prefix;
-        System.arraycopy(alternatePrefixes, 0, this.prefixes, 1, alternatePrefixes.length);
-    }
-
+    @Override
     public String getModID() {
         return modId;
     }
 
-    public String getTranslationKey() {
-        return String.join(".", modId, toString(), "name");
+    @Override
+    public int getModelLayers() {
+        return modelLayers;
     }
 
-    public ModelResourceLocation getTextureLocation() {
-        return textureLocation;
-    }
-
-    public boolean hasOverlayTexture() {
-        return hasTextureLayers;
-    }
-
+    @Override
     public String[] getPrefixes() {
         return prefixes;
     }
@@ -64,18 +69,6 @@ public enum ItemMaterialType implements IMaterialType {
     @Override
     public String toString() {
         return this.name().toLowerCase(Locale.ROOT);
-    }
-
-    @Deprecated
-    public String[] toCamelStrings() {
-        if (prefixes.length == 0) {
-            return new String[] {CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, this.name())};
-        }
-        String[] alternates = new String[prefixes.length];
-        for (int i = 0; i < alternates.length; i++) {
-            alternates[i] = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, prefixes[i]);
-        }
-        return alternates;
     }
 
 }

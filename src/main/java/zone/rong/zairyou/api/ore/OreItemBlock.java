@@ -6,11 +6,19 @@ import net.minecraft.item.ItemStack;
 import zone.rong.zairyou.api.material.type.BlockMaterialType;
 import zone.rong.zairyou.api.ore.stone.StoneType;
 
+import javax.annotation.Nullable;
+
 public class OreItemBlock extends ItemBlock {
 
     public OreItemBlock(OreBlock block) {
         super(block);
         setHasSubtypes(true);
+    }
+
+    @Nullable
+    @Override
+    public String getCreatorModId(ItemStack stack) {
+        return StoneType.VALUES[stack.getMetadata()].getModId();
     }
 
     @Override

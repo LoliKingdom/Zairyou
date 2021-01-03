@@ -1,52 +1,34 @@
 package zone.rong.zairyou.api.material.type;
 
-import com.google.common.base.CaseFormat;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import zone.rong.zairyou.Zairyou;
 
 import java.util.Locale;
 
 public enum BlockMaterialType implements IMaterialType {
 
-    ORE(Zairyou.ID, "ore", new ModelResourceLocation(Zairyou.ID + ":ore", "inventory"), true);
+    ORE(Zairyou.ID, 0, "ore");
 
     private final String modId;
-    private final ModelResourceLocation textureLocation;
-    private final boolean hasTextureLayers;
+    private final int modelLayers;
     private final String[] prefixes;
 
-    BlockMaterialType(String modId, String prefix, ModelResourceLocation textureLocation, boolean hasTextureLayers) {
+    BlockMaterialType(String modId, int modelLayers, String... alternatePrefixes) {
         this.modId = modId;
-        this.textureLocation = textureLocation;
-        this.hasTextureLayers = hasTextureLayers;
-        this.prefixes = new String[] { prefix };
+        this.modelLayers = modelLayers;
+        this.prefixes = alternatePrefixes;
     }
 
-    BlockMaterialType(String modId, String prefix, ModelResourceLocation textureLocation, boolean hasTextureLayers, String... alternatePrefixes) {
-        this.modId = modId;
-        this.textureLocation = textureLocation;
-        this.hasTextureLayers = hasTextureLayers;
-        this.prefixes = new String[alternatePrefixes.length + 1];
-        this.prefixes[0] = prefix;
-        System.arraycopy(alternatePrefixes, 0, this.prefixes, 1, alternatePrefixes.length);
-    }
-
+    @Override
     public String getModID() {
         return modId;
     }
 
-    public String getTranslationKey() {
-        return String.join(".", modId, toString(), "name");
+    @Override
+    public int getModelLayers() {
+        return modelLayers;
     }
 
-    public ModelResourceLocation getTextureLocation() {
-        return textureLocation;
-    }
-
-    public boolean hasOverlayTexture() {
-        return hasTextureLayers;
-    }
-
+    @Override
     public String[] getPrefixes() {
         return prefixes;
     }
@@ -54,18 +36,6 @@ public enum BlockMaterialType implements IMaterialType {
     @Override
     public String toString() {
         return this.name().toLowerCase(Locale.ROOT);
-    }
-
-    @Deprecated
-    public String[] toCamelStrings() {
-        if (prefixes.length == 0) {
-            return new String[] {CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, this.name())};
-        }
-        String[] alternates = new String[prefixes.length];
-        for (int i = 0; i < alternates.length; i++) {
-            alternates[i] = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, prefixes[i]);
-        }
-        return alternates;
     }
 
 }

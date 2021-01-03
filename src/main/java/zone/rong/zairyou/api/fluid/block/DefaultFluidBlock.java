@@ -1,8 +1,9 @@
-package zone.rong.zairyou.api.fluid;
+package zone.rong.zairyou.api.fluid.block;
 
 import net.minecraft.block.material.Material;
 import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fluids.Fluid;
+import zone.rong.zairyou.api.fluid.FluidType;
 
 // TODO
 public class DefaultFluidBlock extends BlockFluidClassic {

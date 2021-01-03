@@ -7,6 +7,8 @@ import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
+import net.minecraft.client.renderer.color.IBlockColor;
+import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -15,17 +17,19 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import zone.rong.zairyou.api.client.Bakery;
+import zone.rong.zairyou.api.client.IModelOverride;
 import zone.rong.zairyou.api.material.Material;
-import zone.rong.zairyou.api.material.type.IMaterialBlock;
 import zone.rong.zairyou.api.ore.stone.StoneType;
 
+import javax.annotation.Nullable;
 import java.util.Set;
 
-public class OreBlock extends Block implements IMaterialBlock {
+public class OreBlock extends Block implements IModelOverride, IBlockColor, IItemColor {
 
     public static final PropertyInteger STONE_TYPES = PropertyInteger.create("stone_types", 0, StoneType.VALUES.length - 1);
 
@@ -115,13 +119,23 @@ public class OreBlock extends Block implements IMaterialBlock {
     @Override
     public void onModelBake(ModelBakeEvent event) {
         for (int i = 0; i < StoneType.VALUES.length; i++) {
-            Bakery bake = Bakery.INSTANCE
-                    .template(Bakery.ModelType.SINGLE_OVERLAY)
+            event.getModelRegistry().putObject(new ModelResourceLocation(OreBlock.this.getRegistryName().toString() + "_" + i),
+                    Bakery.INSTANCE.getBlockDepartment()
+                    .template(Bakery.ModelType.NORMAL_BLOCK)
                     .prepareTexture("layer0", StoneType.VALUES[i].getBaseTexture())
-                    .prepareTexture("layer1", "zairyou:blocks/grade/normal")
-                    .tint(0, material.getColour());
-            bake.bake(true, false);
-            event.getModelRegistry().putObject(new ModelResourceLocation(OreBlock.this.getRegistryName().toString() + "_" + i), bake.receiveBlock());
+                    .prepareTexture("layer1", OreGrade.NORMAL.getTextureLocation())
+                    .bake().take());
         }
     }
+
+    @Override
+    public int colorMultiplier(IBlockState state, @Nullable IBlockAccess world, @Nullable BlockPos pos, int tintIndex) {
+        return tintIndex == 1 ? material.getColour() : -1;
+    }
+
+    @Override
+    public int colorMultiplier(ItemStack stack, int tintIndex) {
+        return tintIndex == 1 ? material.getColour() : -1;
+    }
+
 }

@@ -1,15 +1,28 @@
 package zone.rong.zairyou.api.item;
 
+import net.minecraft.client.renderer.block.model.ModelBakery;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ModelLoader;
+import zone.rong.zairyou.api.client.Bakery;
+import zone.rong.zairyou.api.client.IModelOverride;
+import zone.rong.zairyou.api.client.RenderUtils;
 import zone.rong.zairyou.api.material.Material;
 import zone.rong.zairyou.api.material.type.ItemMaterialType;
+import zone.rong.zairyou.api.ore.OreBlock;
+import zone.rong.zairyou.api.ore.stone.StoneType;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Set;
 
-public class MaterialItem extends Item {
+public class MaterialItem extends Item implements IModelOverride, IItemColor {
 
     private final Material material;
     private final ItemMaterialType itemMaterialType;
@@ -37,7 +50,6 @@ public class MaterialItem extends Item {
 
     @Override
     public String getItemStackDisplayName(ItemStack stack) {
-        // return I18n.translateToLocal(material.getTranslationKey()) + " " + I18n.translateToLocal(materialType.getTranslationKey());
         return I18n.format(itemMaterialType.getTranslationKey(), I18n.format(material.getTranslationKey()));
     }
 
@@ -45,5 +57,31 @@ public class MaterialItem extends Item {
     @Override
     public String getCreatorModId(ItemStack stack) {
         return itemMaterialType.getModID();
+    }
+
+    @Override
+    public void addTextures(Set<ResourceLocation> textures) {
+        textures.addAll(Arrays.asList(material.getTextures(itemMaterialType)));
+    }
+
+    @Override
+    public void onModelRegister() {
+        final ModelResourceLocation location = RenderUtils.getSimpleModelLocation(this);
+        ModelBakery.registerItemVariants(this, location);
+        ModelLoader.setCustomMeshDefinition(this, stack -> location);
+    }
+
+    @Override
+    public void onModelBake(ModelBakeEvent event) {
+        event.getModelRegistry().putObject(RenderUtils.getSimpleModelLocation(this),
+                Bakery.INSTANCE.getItemDepartment()
+                        .template(Bakery.ModelType.NORMAL_ITEM)
+                        .prepareTextures("layer", material.getTextures(itemMaterialType))
+                        .bake().take());
+    }
+
+    @Override
+    public int colorMultiplier(ItemStack stack, int tintIndex) {
+        return tintIndex == 0 ? material.getColour() : -1;
     }
 }

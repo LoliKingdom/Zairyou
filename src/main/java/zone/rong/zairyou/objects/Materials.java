@@ -7,15 +7,17 @@ import net.minecraft.item.EnumRarity;
 import net.minecraft.potion.PotionType;
 import net.minecraft.potion.PotionUtils;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import zone.rong.zairyou.api.fluid.PotionFluid;
-import zone.rong.zairyou.api.fluid.block.PotionFluidBlock;
+import zone.rong.zairyou.api.fluid.FluidType;
 import zone.rong.zairyou.api.material.Material;
+import zone.rong.zairyou.api.material.type.ItemMaterialType;
 
 import static zone.rong.zairyou.api.material.Material.of;
 import static zone.rong.zairyou.api.fluid.FluidType.*;
 import static zone.rong.zairyou.api.material.type.ItemMaterialType.*;
 
 public class Materials {
+
+    private static final ItemMaterialType[] METAL_TYPES = { DUST, SMALL_DUST, TINY_DUST, INGOT, NUGGET };
 
     /*
 
@@ -35,11 +37,11 @@ public class Materials {
 
     public static final Material AIR = of("air", 0x58A7A5).fluid(LIQUID, fluid -> fluid.temperature(79).customName("liquid_air")).fluid(GASEOUS, fluid -> fluid.customTranslation().temperature(290));
     public static final Material COAL = of("coal", 0x464646).ore().fluid(LIQUID, fluid -> fluid.still("blocks/fluids/coal_still").flow("blocks/fluids/coal_flow").noTint().customTranslation().density(900).viscosity(2000));
-    public static final Material COPPER = of("copper", 0xFF7400).ore().types(DUST, INGOT).fluid(MOLTEN, fluid -> fluid.temperature(1385)).tools(1, 144, 5.0F, 1.5F, -3.2F, 8, tools -> tools.axe().hoe().pickaxe().shovel().sword());
-    public static final Material ELECTRUM = of("electrum", 0xFFFF64).types(DUST, INGOT, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
-    public static final Material GOLD = of("gold", 0xFFFF00).ore().types(DUST, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
-    public static final Material REDSTONE = of("redstone", 0xC80000).ore().type(SERVO).noTint(SERVO).texture(SERVO, "custom/redstone_servo").fluid(MOLTEN, fluid -> fluid.noTint().customTranslation().still("blocks/fluids/redstone_still").flow("blocks/fluids/redstone_flow").luminosity(7).density(1200).viscosity(1500).rarity(EnumRarity.UNCOMMON));
-    public static final Material SILVER = of("silver", 0xC0C0C0).ore().types(DUST, INGOT, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1235));
+    public static final Material COPPER = of("copper", 0xFF7400).ore().types(METAL_TYPES).fluid(MOLTEN, fluid -> fluid.temperature(1385)).tools(1, 144, 5.0F, 1.5F, -3.2F, 8, tools -> tools.axe().hoe().pickaxe().shovel().sword());
+    public static final Material ELECTRUM = of("electrum", 0xFFFF64).types(METAL_TYPES, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
+    public static final Material GOLD = of("gold", 0xFFFF00).ore().types(DUST, SMALL_DUST, TINY_DUST, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
+    public static final Material REDSTONE = of("redstone", 0xC80000).ore().type(SERVO).noTint(SERVO).texture(SERVO, "items/servo/redstone", 0).fluid(MOLTEN, fluid -> fluid.noTint().customTranslation().still("blocks/fluids/redstone_still").flow("blocks/fluids/redstone_flow").luminosity(7).density(1200).viscosity(1500).rarity(EnumRarity.UNCOMMON));
+    public static final Material SILVER = of("silver", 0xC0C0C0).ore().types(METAL_TYPES, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1235));
 
     public static final Material NITER = of("niter", 0xFFC8C8).types(DUST);
 
@@ -55,7 +57,7 @@ public class Materials {
     public static final Material RESIN = of("resin", 0xA66E00).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/resin_still").flow("blocks/fluids/resin_flow").noTint().customTranslation().density(900).viscosity(3000));
     public static final Material SAP = of("sap", 0x946426).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/sap_still").flow("blocks/fluids/sap_flow").noTint().customTranslation().density(1050).viscosity(1500));
     public static final Material SEED_OIL = of("seed_oil", 0xC4FF00).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/seed_oil_still").flow("blocks/fluids/seed_oil_flow").noTint().customTranslation().density(950).viscosity(1300));
-    // Fixme UNUSED: public static final Material SYRUP = of("syrup", 0x946426).fluid(GASEOUS, fluid -> fluid.still("blocks/fluids/sap_still").flow("blocks/fluids/sap_flow").noTint().density(1400).viscosity(2500));
+    // Fixme UNUSED: public static final Material SYRUP = of("syrup", 0x946426).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/sap_still").flow("blocks/fluids/sap_flow").noTint().density(1400).viscosity(2500));
     public static final Material STEAM = of("steam", 0xFFFFFF).fluid(GASEOUS, fluid -> fluid.still("blocks/fluids/steam_still").flow("blocks/fluids/steam_flow").noTint().customTranslation().viscosity(200).temperature(750));
     public static final Material TREE_OIL = of("tree_oil", 0x8F7638).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/tree_oil_still").flow("blocks/fluids/tree_oil_flow").noTint().customTranslation().density(900).viscosity(1200));
 
@@ -65,12 +67,11 @@ public class Materials {
     // public static final Material LINGERING_POTION = of("potion_lingering", 0xF800F8).fluid(LIQUID, new PotionFluid("potion_lingering", "lingering_potion.effect.").setLuminosity(3).setDensity(500).setViscosity(1500).setRarity(EnumRarity.UNCOMMON));
 
     /* Marker/Pseudo Materials - TODO: Match colours with electric tier defaults */
-    public static final Material RICH = of("rich").types(FERTILIZER, SLAG).noTints(FERTILIZER, SLAG).texture(FERTILIZER, "custom/rich_fertilizer").texture(SLAG, "custom/rich_slag");
-
-    public static final Material FLUX = of("flux").type(FERTILIZER).noTint(FERTILIZER).texture(FERTILIZER, "custom/flux_fertilizer");
+    public static final Material RICH = of("rich").types(FERTILIZER, SLAG).noTints(FERTILIZER, SLAG).texture(FERTILIZER, "items/fertilizer/rich", 0).texture(SLAG, "items/slag/rich", 0);
+    public static final Material FLUX = of("flux").type(FERTILIZER).noTint(FERTILIZER).texture(FERTILIZER, "items/fertilizer/flux", 0);
 
     public static void init() {
-        Material.BASIC.types(FERTILIZER, SLAG).noTints(FERTILIZER, SLAG).texture(FERTILIZER, "custom/basic_fertilizer").texture(SLAG, "custom/basic_slag");
+        Material.BASIC.types(FERTILIZER, SLAG).noTints(FERTILIZER, SLAG).texture(FERTILIZER, "items/fertilizer/basic", 0).texture(SLAG, "items/slag/basic", 0);
         Potions.init();
         // POTION.getFluid(LIQUID).setBlock(new PotionFluidBlock((PotionFluid) POTION.getFluid(LIQUID), LIQUID));
         // SPLASH_POTION.getFluid(LIQUID).setBlock(new PotionFluidBlock((PotionFluid) SPLASH_POTION.getFluid(LIQUID), LIQUID));

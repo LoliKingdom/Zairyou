@@ -86,7 +86,7 @@ public enum FluidType {
     }
 
     public String getTranslationKey() {
-        return String.join(".", Zairyou.ID, toString(), "name");
+        return String.join(".", Zairyou.ID, "fluid_type", toString(), "name");
     }
 
     @Override

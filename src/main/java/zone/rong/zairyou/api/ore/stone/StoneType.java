@@ -33,6 +33,10 @@ public enum StoneType implements IStringSerializable, ITranslatable {
         this.prefixes = prefixes;
     }
 
+    public String getModId() {
+        return modId;
+    }
+
     public Material getMaterial() {
         return backingMaterial;
     }
@@ -48,7 +52,7 @@ public enum StoneType implements IStringSerializable, ITranslatable {
 
     @Override
     public String getTranslationKey() {
-        return String.join(".", modId, toString(), "name");
+        return String.join(".", modId, "stone_type", toString(), "name");
     }
 
     @Override
