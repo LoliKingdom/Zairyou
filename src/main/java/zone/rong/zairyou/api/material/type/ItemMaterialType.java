@@ -6,7 +6,7 @@ import java.util.Locale;
 
 public enum ItemMaterialType implements IMaterialType {
 
-    COAL(Zairyou.ID, 1, "gem", "coal~"), // A gem variant, but for various coals
+    COAL(Zairyou.ID, 1, "gem", "coal~"),
 
     CRUSHED(Zairyou.ID, 1, "crushed"),
     CENTRIFUGED_CRUSHED(Zairyou.ID, 1, "crushedCentrifuged"),
@@ -17,7 +17,7 @@ public enum ItemMaterialType implements IMaterialType {
     TINY_DUST(Zairyou.ID, 1, "dustTiny"),
 
     INGOT(Zairyou.ID, 1, "ingot"),
-    HOT_INGOT(Zairyou.ID, 1, "ingot"),
+    HOT_INGOT(Zairyou.ID, 1, "ingotHot"),
     DOUBLE_INGOT(Zairyou.ID, 1, "ingotDouble"),
     DENSE_INGOT(Zairyou.ID, 1, "ingotDense"),
 
@@ -36,8 +36,15 @@ public enum ItemMaterialType implements IMaterialType {
 
     FOIL(Zairyou.ID, 1, "foil"),
 
+    SAW_BLADE(Zairyou.ID, 2, "toolHeadSaw"),
+
+    BUZZSAW_BLADE("gregtech", 2, "toolHeadBuzzSaw"),
+
+    BAIT("thermalfoundation", 1, "bait"),
     COIL("thermalfoundation", 2, "coil"),
+    CRYSTAL("thermalfoundation", 2, "crystal"),
     FERTILIZER("thermalfoundation", 1, "fertilizer"),
+    GLOB("thermalfoundation", 1, "glob"),
     SERVO("thermalfoundation", 1, "servo"),
     SLAG("thermalfoundation", 1, "slag~&", "crystalSlag~&", "itemSlag~&");
 

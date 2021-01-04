@@ -22,6 +22,7 @@ import static zone.rong.zairyou.api.material.type.ItemMaterialType.*;
 public class Materials {
 
     private static final ItemMaterialType[] METAL_TYPES = { DUST, SMALL_DUST, TINY_DUST, INGOT, NUGGET };
+    private static final ItemMaterialType[] DUSTS = { DUST, SMALL_DUST, TINY_DUST };
 
     /*
 
@@ -39,25 +40,37 @@ public class Materials {
      */
 
     public static final Material AIR = of("air", 0x58A7A5).fluid(LIQUID, fluid -> fluid.temperature(79).customName("liquid_air")).fluid(GASEOUS, fluid -> fluid.customTranslation().temperature(290));
-    public static final Material CHARCOAL = of("charcoal", 0x4C4335).types(DUST);
-    public static final Material COAL = of("coal", 0x464646).ore().types(DUST).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/coal_still").flow("blocks/fluids/coal_flow").noTint().customTranslation().density(900).viscosity(2000));
+    public static final Material CHARCOAL = of("charcoal", 0x4C4335).types(DUSTS);
+    public static final Material COAL = of("coal", 0x464646).ore().types(DUSTS).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/coal_still").flow("blocks/fluids/coal_flow").noTint().customTranslation().density(900).viscosity(2000));
     public static final Material COPPER = of("copper", 0xFF7400).ore().types(METAL_TYPES).fluid(MOLTEN, fluid -> fluid.temperature(1385)).tools(1, 144, 5.0F, 1.5F, -3.2F, 8, tools -> tools.axe().hoe().pickaxe().shovel().sword());
     public static final Material ELECTRUM = of("electrum", 0xFFFF64).types(METAL_TYPES, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
-    public static final Material GOLD = of("gold", 0xFFFF00).ore().types(DUST, SMALL_DUST, TINY_DUST, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
-    public static final Material REDSTONE = of("redstone", 0xC80000).ore().type(SERVO).noTint(SERVO).texture(SERVO, "items/servo/redstone", 0).fluid(MOLTEN, fluid -> fluid.noTint().customTranslation().still("blocks/fluids/redstone_still").flow("blocks/fluids/redstone_flow").luminosity(7).density(1200).viscosity(1500).rarity(EnumRarity.UNCOMMON));
-    public static final Material GLOWSTONE = of("glowstone", 0xD0B809).fluid(MOLTEN, fluid -> fluid.noTint().customTranslation().still("blocks/fluids/glowstone_still").flow("blocks/fluids/glowstone_flow").luminosity(15).density(-500).viscosity(100).gasLike().rarity(EnumRarity.UNCOMMON));
+    public static final Material IRON = of("iron", 0xAAAAAA).ore().types(METAL_TYPES, BUZZSAW_BLADE, SAW_BLADE).fluid(MOLTEN, fluid -> fluid.temperature(1803));
+    public static final Material GOLD = of("gold", 0xFFFF00).ore().types(METAL_TYPES, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
+    public static final Material REDSTONE = of("redstone", 0xC80000).ore().types(SERVO, CRYSTAL).noTint(SERVO).texture(SERVO, "items/servo/redstone", 0).fluid(MOLTEN, fluid -> fluid.noTint().customTranslation().still("blocks/fluids/redstone_still").flow("blocks/fluids/redstone_flow").luminosity(7).density(1200).viscosity(1500).rarity(EnumRarity.UNCOMMON));
+    public static final Material GLOWSTONE = of("glowstone", 0xD0B809).type(CRYSTAL).fluid(MOLTEN, fluid -> fluid.noTint().customTranslation().still("blocks/fluids/glowstone_still").flow("blocks/fluids/glowstone_flow").luminosity(15).density(-500).viscosity(100).gasLike().rarity(EnumRarity.UNCOMMON));
     public static final Material SILVER = of("silver", 0xC0C0C0).ore().types(METAL_TYPES, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1235));
+    public static final Material OBSIDIAN = of("obsidian", 0x211B2E).types(DUSTS, ROD);
+    public static final Material WOOD = of("wood", 0xE68821).types(DUSTS);
 
-    public static final Material AEROTHEUM = of("aerotheum", 0xD5D181).types(DUST).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/aerotheum_still").flow("blocks/fluids/aerotheum_flow").noTint().density(-800).viscosity(100).gasLike().rarity(EnumRarity.RARE));
-    public static final Material CRYOTHEUM = of("cryotheum", 0x49EFFF).types(DUST).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/cryotheum_still").flow("blocks/fluids/cryotheum_flow").noTint().density(4000).viscosity(4000).temperature(50).rarity(EnumRarity.RARE));
-    public static final Material PETROTHEUM = of("petrotheum", 0x6E5A5D).types(DUST).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/petrotheum_still").flow("blocks/fluids/petrotheum_flow").noTint().density(4000).viscosity(1500).temperature(350).rarity(EnumRarity.RARE));
-    public static final Material PYROTHEUM = of("pyrotheum", 0xE56000).types(DUST).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/pyrotheum_still").flow("blocks/fluids/pyrotheum_flow").noTint().luminosity(15).density(2000).viscosity(1200).temperature(4000).rarity(EnumRarity.RARE));
-    public static final Material NITER = of("niter", 0xFFC8C8).types(DUST);
+    public static final Material AEROTHEUM = of("aerotheum", 0xD5D181).types(DUSTS).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/aerotheum_still").flow("blocks/fluids/aerotheum_flow").noTint().density(-800).viscosity(100).gasLike().rarity(EnumRarity.RARE));
+    public static final Material CRYOTHEUM = of("cryotheum", 0x49EFFF).types(DUSTS).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/cryotheum_still").flow("blocks/fluids/cryotheum_flow").noTint().density(4000).viscosity(4000).temperature(50).rarity(EnumRarity.RARE));
+    public static final Material PETROTHEUM = of("petrotheum", 0x6E5A5D).types(DUSTS).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/petrotheum_still").flow("blocks/fluids/petrotheum_flow").noTint().density(4000).viscosity(1500).temperature(350).rarity(EnumRarity.RARE));
+    public static final Material PYROTHEUM = of("pyrotheum", 0xE56000).types(DUSTS).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/pyrotheum_still").flow("blocks/fluids/pyrotheum_flow").noTint().luminosity(15).density(2000).viscosity(1200).temperature(4000).rarity(EnumRarity.RARE));
+    public static final Material BLIZZ = of("blizz", 0x211B2E).types(DUSTS, ROD);
+    public static final Material BLITZ = of("blitz", 0x211B2E).types(DUSTS, ROD);
+    public static final Material BASALZ = of("basalz", 0x211B2E).types(DUSTS, ROD);
+    public static final Material CINNABAR = of("cinnabar", 0xBF4538).type(CRYSTAL);
 
-    public static final Material ENDER_EYE = of("ender_eye", 0xFFC8C8).types(DUST).fluid(MOLTEN, fluid -> fluid.customName("ender").still("blocks/fluids/ender_still").flow("blocks/fluids/ender_flow").noTint().luminosity(3).density(4000).viscosity(2500).rarity(EnumRarity.UNCOMMON));
-    public static final Material ENDER_PEARL = of("ender_pearl", 0xFFC8C8).types(DUST);
+    public static final Material NITER = of("niter", 0xFFC8C8).types(DUSTS);
+    public static final Material SULFUR = of("sulfur", 0xC8C800).types(DUSTS);
 
-    public static final Material PRIMAL_MANA = of("mana", 0x065E8E).types(INGOT, DUST).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/mana_still").flow("blocks/fluids/mana_flow").noTint().luminosity(15).density(600).viscosity(6000).rarity(EnumRarity.EPIC));
+    public static final Material TAR = of("tar", 0x2E2E2E).types(GLOB);
+    public static final Material ROSIN = of("rosin", 0xE68821).types(GLOB);
+
+    public static final Material ENDER_EYE = of("ender_eye", 0xFFC8C8).types(DUSTS);
+    public static final Material ENDER_PEARL = of("ender_pearl", 0xFFC8C8).types(DUSTS, CRYSTAL).fluid(MOLTEN, fluid -> fluid.customName("ender").still("blocks/fluids/ender_still").flow("blocks/fluids/ender_flow").noTint().luminosity(3).density(4000).viscosity(2500).rarity(EnumRarity.UNCOMMON));
+
+    public static final Material PRIMAL_MANA = of("mana", 0x065E8E).types(DUSTS, INGOT).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/mana_still").flow("blocks/fluids/mana_flow").noTint().luminosity(15).density(600).viscosity(6000).rarity(EnumRarity.EPIC));
 
     /* Pure Fluid Materials */
     public static final Material BIOCRUDE = of("biocrude", 0x346217).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/biocrude_still").flow("blocks/fluids/biocrude_flow").noTint().customTranslation().density(1500).viscosity(2500));
@@ -80,12 +93,12 @@ public class Materials {
     // public static final Material SPLASH_POTION = of("potion_splash", 0xF800F8).fluid(LIQUID, new PotionFluid("potion_splash", "splash_potion.effect.").setLuminosity(3).setDensity(500).setViscosity(1500).setRarity(EnumRarity.UNCOMMON));
     // public static final Material LINGERING_POTION = of("potion_lingering", 0xF800F8).fluid(LIQUID, new PotionFluid("potion_lingering", "lingering_potion.effect.").setLuminosity(3).setDensity(500).setViscosity(1500).setRarity(EnumRarity.UNCOMMON));
 
-    /* Marker/Pseudo Materials - TODO: Match colours with electric tier defaults */
-    public static final Material RICH = of("rich").types(FERTILIZER, SLAG).noTints(FERTILIZER, SLAG).texture(FERTILIZER, "items/fertilizer/rich", 0).texture(SLAG, "items/slag/rich", 0);
-    public static final Material FLUX = of("flux").type(FERTILIZER).noTint(FERTILIZER).texture(FERTILIZER, "items/fertilizer/flux", 0);
+    /* Marker/Pseudo Materials - TODO: Match colours with electric tier defaults(?) */
+    public static final Material RICH = of("rich").types(FERTILIZER, SLAG, BAIT).noTints(FERTILIZER, SLAG).texture(FERTILIZER, "items/fertilizer/rich", 0).texture(SLAG, "items/slag/rich", 0);
+    public static final Material FLUX = of("flux").types(FERTILIZER, BAIT).noTint(FERTILIZER).texture(FERTILIZER, "items/fertilizer/flux", 0);
 
     public static void init() {
-        Material.BASIC.types(FERTILIZER, SLAG).noTints(FERTILIZER, SLAG).texture(FERTILIZER, "items/fertilizer/basic", 0).texture(SLAG, "items/slag/basic", 0);
+        Material.BASIC.types(FERTILIZER, SLAG, BAIT).noTints(FERTILIZER, SLAG).texture(FERTILIZER, "items/fertilizer/basic", 0).texture(SLAG, "items/slag/basic", 0);
         // POTION.getFluid(LIQUID).setBlock(new PotionFluidBlock((PotionFluid) POTION.getFluid(LIQUID), LIQUID));
         // SPLASH_POTION.getFluid(LIQUID).setBlock(new PotionFluidBlock((PotionFluid) SPLASH_POTION.getFluid(LIQUID), LIQUID));
         // LINGERING_POTION.getFluid(LIQUID).setBlock(new PotionFluidBlock((PotionFluid) LINGERING_POTION.getFluid(LIQUID), LIQUID));

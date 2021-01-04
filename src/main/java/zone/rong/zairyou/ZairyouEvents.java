@@ -68,9 +68,6 @@ public class ZairyouEvents {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBlockRegister(RegistryEvent.Register<Block> event) {
-        GameRegistry.registerTileEntity(MachineTileEntity.class, MachineTileEntity.ID);
-        GameRegistry.registerTileEntity(PotionFluidTileEntity.class, PotionFluidTileEntity.ID);
-
         Material.REGISTRY.forEach((name, material) -> {
             material.getBlocks().forEach((type, block) -> event.getRegistry().register(block.setRegistryName(Zairyou.ID, name + "_" + type.toString())));
             for (final Fluid fluid : material.getFluids().values()) {
@@ -91,7 +88,7 @@ public class ZairyouEvents {
             for (final ItemMaterialType type : material.getAllowedItemTypes()) {
                 Item item = new MaterialItem(material, type).setRegistryName(Zairyou.ID, name + "_" + type.toString());
                 event.getRegistry().register(item);
-                material.setItem(type, item.delegate.get());
+                material.setItem(type, item);
             }
             for (final Fluid fluid : material.getFluids().values()) {
                 if (fluid.getBlock() != null) {
