@@ -7,7 +7,7 @@ import net.minecraft.item.EnumRarity;
 import net.minecraft.potion.PotionType;
 import net.minecraft.potion.PotionUtils;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.registries.IForgeRegistry;
 import zone.rong.zairyou.api.fluid.PotionFluid;
 import zone.rong.zairyou.api.material.Material;
 import zone.rong.zairyou.api.material.type.ItemMaterialType;
@@ -29,7 +29,6 @@ public class Materials {
 		fluidPotionSplash = new FluidPotion("potion_splash", "thermalfoundation", "splash_potion.effect.").setLuminosity(3).setDensity(500).setViscosity(1500).setRarity(EnumRarity.UNCOMMON);
 		fluidPotionLingering = new FluidPotion("potion_lingering", "thermalfoundation", "lingering_potion.effect.").setLuminosity(3).setDensity(500).setViscosity(1500).setRarity(EnumRarity.UNCOMMON);
 
-		fluidRedstone = new FluidCore("redstone", "thermalfoundation").setLuminosity(7).setDensity(1200).setViscosity(1500).setRarity(EnumRarity.UNCOMMON);
 		fluidGlowstone = new FluidCore("glowstone", "thermalfoundation").setLuminosity(15).setDensity(-500).setViscosity(100).setGaseous(true).setRarity(EnumRarity.UNCOMMON);
 		fluidEnder = new FluidCore("ender", "thermalfoundation").setLuminosity(3).setDensity(4000).setViscosity(2500).setRarity(EnumRarity.UNCOMMON);
 		fluidPyrotheum = new FluidCore("pyrotheum", "thermalfoundation").setLuminosity(15).setDensity(2000).setViscosity(1200).setTemperature(4000).setRarity(EnumRarity.RARE);
@@ -46,9 +45,19 @@ public class Materials {
     public static final Material ELECTRUM = of("electrum", 0xFFFF64).types(METAL_TYPES, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
     public static final Material GOLD = of("gold", 0xFFFF00).ore().types(DUST, SMALL_DUST, TINY_DUST, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
     public static final Material REDSTONE = of("redstone", 0xC80000).ore().type(SERVO).noTint(SERVO).texture(SERVO, "items/servo/redstone", 0).fluid(MOLTEN, fluid -> fluid.noTint().customTranslation().still("blocks/fluids/redstone_still").flow("blocks/fluids/redstone_flow").luminosity(7).density(1200).viscosity(1500).rarity(EnumRarity.UNCOMMON));
+    public static final Material GLOWSTONE = of("glowstone", 0xD0B809).fluid(MOLTEN, fluid -> fluid.noTint().customTranslation().still("blocks/fluids/glowstone_still").flow("blocks/fluids/glowstone_flow").luminosity(15).density(-500).viscosity(100).gasLike().rarity(EnumRarity.UNCOMMON));
     public static final Material SILVER = of("silver", 0xC0C0C0).ore().types(METAL_TYPES, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1235));
 
+    public static final Material AEROTHEUM = of("aerotheum", 0xD5D181).types(DUST).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/aerotheum_still").flow("blocks/fluids/aerotheum_flow").noTint().density(-800).viscosity(100).gasLike().rarity(EnumRarity.RARE));
+    public static final Material CRYOTHEUM = of("cryotheum", 0x49EFFF).types(DUST).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/cryotheum_still").flow("blocks/fluids/cryotheum_flow").noTint().density(4000).viscosity(4000).temperature(50).rarity(EnumRarity.RARE));
+    public static final Material PETROTHEUM = of("petrotheum", 0x6E5A5D).types(DUST).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/petrotheum_still").flow("blocks/fluids/petrotheum_flow").noTint().density(4000).viscosity(1500).temperature(350).rarity(EnumRarity.RARE));
+    public static final Material PYROTHEUM = of("pyrotheum", 0xE56000).types(DUST).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/pyrotheum_still").flow("blocks/fluids/pyrotheum_flow").noTint().luminosity(15).density(2000).viscosity(1200).temperature(4000).rarity(EnumRarity.RARE));
     public static final Material NITER = of("niter", 0xFFC8C8).types(DUST);
+
+    public static final Material ENDER_EYE = of("ender_eye", 0xFFC8C8).types(DUST).fluid(MOLTEN, fluid -> fluid.customName("ender").still("blocks/fluids/ender_still").flow("blocks/fluids/ender_flow").noTint().luminosity(3).density(4000).viscosity(2500).rarity(EnumRarity.UNCOMMON));
+    public static final Material ENDER_PEARL = of("ender_pearl", 0xFFC8C8).types(DUST);
+
+    public static final Material PRIMAL_MANA = of("mana", 0x065E8E).types(INGOT, DUST).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/mana_still").flow("blocks/fluids/mana_flow").noTint().luminosity(15).density(600).viscosity(6000).rarity(EnumRarity.EPIC));
 
     /* Pure Fluid Materials */
     public static final Material BIOCRUDE = of("biocrude", 0x346217).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/biocrude_still").flow("blocks/fluids/biocrude_flow").noTint().customTranslation().density(1500).viscosity(2500));
@@ -77,7 +86,6 @@ public class Materials {
 
     public static void init() {
         Material.BASIC.types(FERTILIZER, SLAG).noTints(FERTILIZER, SLAG).texture(FERTILIZER, "items/fertilizer/basic", 0).texture(SLAG, "items/slag/basic", 0);
-        Potions.init();
         // POTION.getFluid(LIQUID).setBlock(new PotionFluidBlock((PotionFluid) POTION.getFluid(LIQUID), LIQUID));
         // SPLASH_POTION.getFluid(LIQUID).setBlock(new PotionFluidBlock((PotionFluid) SPLASH_POTION.getFluid(LIQUID), LIQUID));
         // LINGERING_POTION.getFluid(LIQUID).setBlock(new PotionFluidBlock((PotionFluid) LINGERING_POTION.getFluid(LIQUID), LIQUID));
@@ -93,9 +101,9 @@ public class Materials {
             potionMaterials.put(PotionFormat.LINGERING, HashBiMap.create());
         }
 
-        public static void init() {
-            ForgeRegistries.POTION_TYPES.getValuesCollection().forEach(p -> {
-                if (p != PotionTypes.WATER) {
+        public static void init(IForgeRegistry<PotionType> registry) {
+            registry.getValuesCollection().forEach(p -> {
+                if (p != PotionTypes.WATER || p != PotionTypes.EMPTY) {
                     for (PotionFormat format : PotionFormat.VALUES) {
                         potionMaterials.get(format)
                                 .put(p, Material.of(format.name + "_" + PotionType.REGISTRY.getNameForObject(p).getResourcePath(), PotionUtils.getPotionColor(p))

@@ -16,6 +16,7 @@ import net.minecraftforge.fluids.FluidStack;
 import zone.rong.zairyou.Zairyou;
 import zone.rong.zairyou.api.fluid.ExtendedFluid;
 import zone.rong.zairyou.api.fluid.FluidType;
+import zone.rong.zairyou.api.item.MaterialItem;
 import zone.rong.zairyou.api.item.tool.ExtendedToolMaterial;
 import zone.rong.zairyou.api.item.tool.MaterialTools;
 import zone.rong.zairyou.api.material.type.BlockMaterialType;
@@ -24,6 +25,7 @@ import zone.rong.zairyou.api.material.type.ItemMaterialType;
 import zone.rong.zairyou.api.ore.OreBlock;
 import zone.rong.zairyou.api.ore.OreGrade;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
@@ -52,6 +54,9 @@ public class Material {
     private final String name, translationKey;
     private final int colour;
     private final Map<IMaterialType, ResourceLocation[]> textures;
+
+    private EnumMap<BlockMaterialType, UnaryOperator<? extends Block>> protoTypeBlocks;
+    private EnumMap<ItemMaterialType, UnaryOperator<? extends Item>> protoTypeItems;
 
     private EnumMap<BlockMaterialType, Block> typeBlocks;
     private EnumMap<ItemMaterialType, ItemStack> typeItems;
@@ -90,7 +95,7 @@ public class Material {
             }
             oreNames.add(stripped.concat(toCamelString()));
         }
-        return oreNames.toArray(new String[0]);
+        return oreNames.toArray(new String[typeOreNames.length]);
     }
 
     public String getTranslationKey() {
@@ -154,6 +159,15 @@ public class Material {
             return ItemStack.EMPTY;
         }
         return copy ? stack.copy() : stack;
+    }
+
+    @Nullable
+    public MaterialItem getItem(ItemMaterialType type) {
+        Item item = getItem(type, false).getItem();
+        if (item instanceof MaterialItem) {
+            return (MaterialItem) item;
+        }
+        return null;
     }
 
     public Fluid getFluid(FluidType type) {
@@ -233,31 +247,15 @@ public class Material {
     }
 
     @Deprecated
-    public Material type(BlockMaterialType type) {
-        /*
-        if (type == BlockMaterialType.ORE) {
-            throw new UnsupportedOperationException("Please register " + type.toString() + " with the valid method.");
+    public <T extends Block> Material type(BlockMaterialType type, Class<T> blockClass, UnaryOperator<T> blockCallback) {
+        if (this.protoTypeBlocks == null) {
+            this.protoTypeBlocks = new EnumMap<>(BlockMaterialType.class);
         }
-         */
-        if (this.typeBlocks == null) {
-            this.typeBlocks = new EnumMap<>(BlockMaterialType.class);
-        }
-        this.typeBlocks.put(type, null);
+        this.protoTypeBlocks.put(type, blockCallback);
         ResourceLocation[] locations = new ResourceLocation[type.getModelLayers()];
         this.textures.put(type, locations);
         for (int i = 0; i < type.getModelLayers(); i++) {
             locations[i] = new ResourceLocation(Zairyou.ID, String.join("/", "blocks", type.toString(), Integer.toString(i)));
-        }
-        return this;
-    }
-
-    @Deprecated
-    public Material types(BlockMaterialType... types) {
-        if (this.typeBlocks == null) {
-            this.typeBlocks = new EnumMap<>(BlockMaterialType.class);
-        }
-        for (BlockMaterialType type : types) {
-            type(type);
         }
         return this;
     }
@@ -345,19 +343,16 @@ public class Material {
         return block;
     }
 
-    public ItemStack setItem(ItemMaterialType type, ItemStack stack) {
+    public void setItem(ItemMaterialType type, ItemStack stack) {
         this.typeItems.put(type, stack);
-        return stack;
     }
 
-    public Item setItem(ItemMaterialType type, Item item, int meta) {
+    public void setItem(ItemMaterialType type, Item item, int meta) {
         this.typeItems.put(type, new ItemStack(item, 1, meta));
-        return item;
     }
 
-    public Item setItem(ItemMaterialType type, Item item) {
+    public void setItem(ItemMaterialType type, Item item) {
         this.typeItems.put(type, new ItemStack(item));
-        return item;
     }
 
     public String toCamelString() {

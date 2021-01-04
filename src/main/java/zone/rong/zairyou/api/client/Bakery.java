@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class Bakery {
 
-    @Deprecated private static FaceBakery FACE_BAKERY = null; // new FaceBakery();
+    // @Deprecated private static FaceBakery FACE_BAKERY = null;
     public static Bakery INSTANCE = new Bakery();
 
     public static void shutdown() {

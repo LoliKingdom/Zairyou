@@ -5,6 +5,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraftforge.oredict.ShapedOreRecipe;
+import net.minecraftforge.oredict.ShapelessOreRecipe;
 import zone.rong.zairyou.Zairyou;
 
 public class RecipeUtil {
@@ -27,6 +28,20 @@ public class RecipeUtil {
 
     public static ShapedOreRecipe addShaped(String name, boolean mirrored, Block result, Object... inputs) {
         return addShaped(name, mirrored, new ItemStack(result), inputs);
+    }
+
+    public static ShapelessOreRecipe addShapeless(String name, ItemStack result, Object... inputs) {
+        ShapelessOreRecipe recipe = new ShapelessOreRecipe(null, result, inputs);
+        recipe.setRegistryName(Zairyou.ID, name);
+        return recipe;
+    }
+
+    public static ShapelessOreRecipe addShapeless(String name, Item result, Object... inputs) {
+        return addShapeless(name, new ItemStack(result), inputs);
+    }
+
+    public static ShapelessOreRecipe addShapeless(String name, Block result, Object... inputs) {
+        return addShapeless(name, new ItemStack(result), inputs);
     }
 
     public static void addSmelting(ItemStack input, ItemStack output, float xp) {

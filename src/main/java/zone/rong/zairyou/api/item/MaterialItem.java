@@ -44,6 +44,10 @@ public class MaterialItem extends Item implements IModelOverride, IItemColor {
         return itemMaterialType;
     }
 
+    public String getPrimaryOreName() {
+        return oreNames[0];
+    }
+
     public String[] getOreNames() {
         return oreNames;
     }

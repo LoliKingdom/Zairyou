@@ -12,6 +12,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.potion.PotionType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.client.event.ModelBakeEvent;
@@ -26,6 +27,7 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -87,7 +89,9 @@ public class ZairyouEvents {
     public static void onItemRegister(RegistryEvent.Register<Item> event) {
         Material.REGISTRY.forEach((name, material) -> {
             for (final ItemMaterialType type : material.getAllowedItemTypes()) {
-                event.getRegistry().register(material.setItem(type, new MaterialItem(material, type).setRegistryName(Zairyou.ID, name + "_" + type.toString())));
+                Item item = new MaterialItem(material, type).setRegistryName(Zairyou.ID, name + "_" + type.toString());
+                event.getRegistry().register(item);
+                material.setItem(type, item.delegate.get());
             }
             for (final Fluid fluid : material.getFluids().values()) {
                 if (fluid.getBlock() != null) {
@@ -103,10 +107,13 @@ public class ZairyouEvents {
                 }
             });
         });
-        Materials.REDSTONE.setItem(ItemMaterialType.DUST, Items.REDSTONE);
-        Materials.GOLD.setItem(ItemMaterialType.INGOT, Items.GOLD_INGOT);
-        Materials.COAL.setItem(ItemMaterialType.COAL, Items.COAL, 0);
         Materials.CHARCOAL.setItem(ItemMaterialType.COAL, Items.COAL, 1);
+        Materials.CHARCOAL.setItem(ItemMaterialType.COAL, Items.COAL, 1);
+        Materials.COAL.setItem(ItemMaterialType.COAL, Items.COAL, 0);
+        Materials.GOLD.setItem(ItemMaterialType.INGOT, Items.GOLD_INGOT);
+        Materials.REDSTONE.setItem(ItemMaterialType.DUST, Items.REDSTONE);
+        Materials.ENDER_EYE.setItem(ItemMaterialType.GEM, Items.ENDER_EYE);
+        Materials.ENDER_PEARL.setItem(ItemMaterialType.GEM, Items.ENDER_PEARL);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -114,25 +121,47 @@ public class ZairyouEvents {
         IForgeRegistry<IRecipe> registry = event.getRegistry();
         Material.REGISTRY.values().forEach(m -> m.getItems().forEach((type, item) -> {
             switch (type) {
-                case TINY_DUST:
-                    registry.register(RecipeUtil.addShaped(m.getName() + "_tiny_dust_to_dust", false, m.getItem(ItemMaterialType.DUST, false),
-                            "xxx", "xxx", "xxx", 'x', item));
-                case SMALL_DUST:
-                    registry.register(RecipeUtil.addShaped(m.getName() + "_small_dust_to_dust", false, m.getItem(ItemMaterialType.DUST, false),
-                            "xx", "xx", 'x', item));
-                case DUST:
-                    ItemStack ingotStack = m.getItem(ItemMaterialType.INGOT, false);
-                    if (!ingotStack.isEmpty()) {
-                        RecipeUtil.addSmelting(item, ingotStack, 0.5F);
+                case TINY_DUST: {
+                    Object dustTiny = item.getItem() instanceof MaterialItem ? ((MaterialItem) item.getItem()).getPrimaryOreName() : item;
+                    registry.register(RecipeUtil.addShapeless(m.getName() + "_tiny_dusts_to_dust", m.getItem(ItemMaterialType.DUST, false),
+                            dustTiny, dustTiny, dustTiny, dustTiny, dustTiny, dustTiny, dustTiny, dustTiny, dustTiny));
+                    break;
+                }
+                case SMALL_DUST: {
+                    Object dustSmall = item.getItem() instanceof MaterialItem ? ((MaterialItem) item.getItem()).getPrimaryOreName() : item;
+                    registry.register(RecipeUtil.addShaped(m.getName() + "_small_dusts_to_dust", false, m.getItem(ItemMaterialType.DUST, false),
+                            "xx", "xx", 'x', dustSmall));
+                    break;
+                }
+                case DUST: {
+                    Object dust = item.getItem() instanceof MaterialItem ? ((MaterialItem) item.getItem()).getPrimaryOreName() : item;
+                    registry.register(RecipeUtil.addShapeless(m.getName() + "_dust_to_tiny_dusts", m.getStack(ItemMaterialType.TINY_DUST, 9), dust));
+                    ItemStack ingot = m.getItem(ItemMaterialType.INGOT, false);
+                    if (!ingot.isEmpty()) {
+                        RecipeUtil.addSmelting(item, ingot, 0.5F);
                     }
                     break;
+                }
+                case INGOT: {
+                    Object ingot = item.getItem() instanceof MaterialItem ? ((MaterialItem) item.getItem()).getPrimaryOreName() : item;
+                    registry.register(RecipeUtil.addShapeless(m.getName() + "_ingot_to_nuggets", m.getStack(ItemMaterialType.NUGGET, 9), ingot));
+                }
+                case NUGGET: {
+                    Object nugget = item.getItem() instanceof MaterialItem ? ((MaterialItem) item.getItem()).getPrimaryOreName() : item;
+                    registry.register(RecipeUtil.addShapeless(m.getName() + "_nuggets_to_ingot", m.getItem(ItemMaterialType.INGOT, false),
+                            nugget, nugget, nugget, nugget, nugget, nugget, nugget, nugget, nugget));
+                }
                 default:
                     break;
             }
         }));
     }
 
-    @Deprecated
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onPotionTypeRegister(RegistryEvent.Register<PotionType> event) {
+        Materials.Potions.init(event.getRegistry());
+    }
+
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public static void onHandlingItemColours(ColorHandlerEvent.Item event) {
@@ -167,11 +196,8 @@ public class ZairyouEvents {
     }
 
     @SubscribeEvent
+    @SideOnly(Side.CLIENT)
     public static void onTextureStitching(TextureStitchEvent.Pre event) {
-        // for (FluidType fluidType : FluidType.VALUES) {
-            // event.getMap().registerSprite(fluidType.getStillTexture());
-            // event.getMap().registerSprite(fluidType.getFlowingTexture());
-        // }
         Material.REGISTRY.values()
                 .stream()
                 .filter(m -> !m.getFluids().isEmpty())
@@ -253,6 +279,7 @@ public class ZairyouEvents {
     }
 
     @SubscribeEvent
+    @SideOnly(Side.CLIENT)
     public static void onModelBake(ModelBakeEvent event) {
         Material.REGISTRY.values()
                 .stream()
