@@ -4,10 +4,15 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import net.minecraft.init.PotionTypes;
 import net.minecraft.item.EnumRarity;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionType;
 import net.minecraft.potion.PotionUtils;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.registries.IForgeRegistry;
+import zone.rong.zairyou.api.fluid.DeprecatedPotionFluid;
+import zone.rong.zairyou.api.fluid.FluidType;
 import zone.rong.zairyou.api.fluid.PotionFluid;
 import zone.rong.zairyou.api.material.Material;
 import zone.rong.zairyou.api.material.type.ItemMaterialType;
@@ -42,10 +47,11 @@ public class Materials {
     public static final Material AIR = of("air", 0x58A7A5).fluid(LIQUID, fluid -> fluid.temperature(79).customName("liquid_air")).fluid(GASEOUS, fluid -> fluid.customTranslation().temperature(290));
     public static final Material CHARCOAL = of("charcoal", 0x4C4335).types(DUSTS);
     public static final Material COAL = of("coal", 0x464646).ore().types(DUSTS).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/coal_still").flow("blocks/fluids/coal_flow").noTint().customTranslation().density(900).viscosity(2000));
+    public static final Material COKE = of("coke", 0x4C4335).types(DUSTS, ItemMaterialType.COAL);
     public static final Material COPPER = of("copper", 0xFF7400).ore().types(METAL_TYPES).fluid(MOLTEN, fluid -> fluid.temperature(1385)).tools(1, 144, 5.0F, 1.5F, -3.2F, 8, tools -> tools.axe().hoe().pickaxe().shovel().sword());
     public static final Material ELECTRUM = of("electrum", 0xFFFF64).types(METAL_TYPES, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
-    public static final Material IRON = of("iron", 0xAAAAAA).ore().types(METAL_TYPES, BUZZSAW_BLADE, SAW_BLADE).fluid(MOLTEN, fluid -> fluid.temperature(1803));
-    public static final Material GOLD = of("gold", 0xFFFF00).ore().types(METAL_TYPES, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
+    public static final Material IRON = of("iron", 0xAAAAAA).ore().types(DUSTS, BUZZSAW_BLADE, SAW_BLADE).fluid(MOLTEN, fluid -> fluid.temperature(1803));
+    public static final Material GOLD = of("gold", 0xFFFF00).ore().types(DUSTS, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
     public static final Material REDSTONE = of("redstone", 0xC80000).ore().types(SERVO, CRYSTAL).noTint(SERVO).texture(SERVO, "items/servo/redstone", 0).fluid(MOLTEN, fluid -> fluid.noTint().customTranslation().still("blocks/fluids/redstone_still").flow("blocks/fluids/redstone_flow").luminosity(7).density(1200).viscosity(1500).rarity(EnumRarity.UNCOMMON));
     public static final Material GLOWSTONE = of("glowstone", 0xD0B809).type(CRYSTAL).fluid(MOLTEN, fluid -> fluid.noTint().customTranslation().still("blocks/fluids/glowstone_still").flow("blocks/fluids/glowstone_flow").luminosity(15).density(-500).viscosity(100).gasLike().rarity(EnumRarity.UNCOMMON));
     public static final Material SILVER = of("silver", 0xC0C0C0).ore().types(METAL_TYPES, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1235));
@@ -88,23 +94,90 @@ public class Materials {
     public static final Material STEAM = of("steam", 0xFFFFFF).fluid(GASEOUS, fluid -> fluid.still("blocks/fluids/steam_still").flow("blocks/fluids/steam_flow").noTint().customTranslation().viscosity(200).temperature(750));
     public static final Material TREE_OIL = of("tree_oil", 0x8F7638).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/tree_oil_still").flow("blocks/fluids/tree_oil_flow").noTint().customTranslation().density(900).viscosity(1200));
 
-    /** Potions **/
-    // public static final Material POTION = of("potion", 0xF800F8).fluid(LIQUID, new PotionFluid("potion", "potion.effect.").setLuminosity(3).setDensity(500).setViscosity(1500).setRarity(EnumRarity.UNCOMMON));
-    // public static final Material SPLASH_POTION = of("potion_splash", 0xF800F8).fluid(LIQUID, new PotionFluid("potion_splash", "splash_potion.effect.").setLuminosity(3).setDensity(500).setViscosity(1500).setRarity(EnumRarity.UNCOMMON));
-    // public static final Material LINGERING_POTION = of("potion_lingering", 0xF800F8).fluid(LIQUID, new PotionFluid("potion_lingering", "lingering_potion.effect.").setLuminosity(3).setDensity(500).setViscosity(1500).setRarity(EnumRarity.UNCOMMON));
-
     /* Marker/Pseudo Materials - TODO: Match colours with electric tier defaults(?) */
     public static final Material RICH = of("rich").types(FERTILIZER, SLAG, BAIT).noTints(FERTILIZER, SLAG).texture(FERTILIZER, "items/fertilizer/rich", 0).texture(SLAG, "items/slag/rich", 0);
     public static final Material FLUX = of("flux").types(FERTILIZER, BAIT).noTint(FERTILIZER).texture(FERTILIZER, "items/fertilizer/flux", 0);
 
     public static void init() {
         Material.BASIC.types(FERTILIZER, SLAG, BAIT).noTints(FERTILIZER, SLAG).texture(FERTILIZER, "items/fertilizer/basic", 0).texture(SLAG, "items/slag/basic", 0);
+        Potions.init();
         // POTION.getFluid(LIQUID).setBlock(new PotionFluidBlock((PotionFluid) POTION.getFluid(LIQUID), LIQUID));
         // SPLASH_POTION.getFluid(LIQUID).setBlock(new PotionFluidBlock((PotionFluid) SPLASH_POTION.getFluid(LIQUID), LIQUID));
         // LINGERING_POTION.getFluid(LIQUID).setBlock(new PotionFluidBlock((PotionFluid) LINGERING_POTION.getFluid(LIQUID), LIQUID));
     }
 
     public static class Potions {
+
+        /** Potions **/
+        public static final Material NORMAL = of("potion", 0xF800F8).fluid(LIQUID, new PotionFluid("potion", "potion.effect.").setLuminosity(3).setDensity(500).setViscosity(1500).setRarity(EnumRarity.UNCOMMON), false);
+        public static final Material SPLASH = of("potion_splash", 0xF800F8).fluid(LIQUID, new PotionFluid("potion_splash", "splash_potion.effect.").setLuminosity(3).setDensity(500).setViscosity(1500).setRarity(EnumRarity.UNCOMMON), false);
+        public static final Material LINGERING = of("potion_lingering", 0xF800F8).fluid(LIQUID, new PotionFluid("potion_lingering", "lingering_potion.effect.").setLuminosity(3).setDensity(500).setViscosity(1500).setRarity(EnumRarity.UNCOMMON), false);
+
+        public static void init() { }
+
+        public static FluidStack getNormalFluid(PotionType type, int amount) {
+            if (type == null || type == PotionTypes.EMPTY) {
+                return null;
+            }
+            if (type == PotionTypes.WATER) {
+                return new FluidStack(FluidRegistry.WATER, amount);
+            }
+            FluidStack stack = NORMAL.getStack(LIQUID, amount);
+            return topUp(stack, type);
+        }
+
+        public static FluidStack getSplashFluid(PotionType type, int amount) {
+            if (type == null || type == PotionTypes.EMPTY) {
+                return null;
+            }
+            if (type == PotionTypes.WATER) {
+                return new FluidStack(FluidRegistry.WATER, amount);
+            }
+            FluidStack stack = SPLASH.getStack(LIQUID, amount);
+            return topUp(stack, type);
+        }
+
+        public static FluidStack getLingeringFluid(PotionType type, int amount) {
+            if (type == null || type == PotionTypes.EMPTY) {
+                return null;
+            }
+            if (type == PotionTypes.WATER) {
+                return new FluidStack(FluidRegistry.WATER, amount);
+            }
+            FluidStack stack = LINGERING.getStack(LIQUID, amount);
+            return topUp(stack, type);
+        }
+
+        @SuppressWarnings("ConstantConditions")
+        private static FluidStack topUp(FluidStack stack, PotionType type) {
+            ResourceLocation resourcelocation = PotionType.REGISTRY.getNameForObject(type);
+            /* NOTE: This can actually happen. */
+            if (resourcelocation == null) {
+                return null;
+            }
+            if (stack.tag == null) {
+                stack.tag = new NBTTagCompound();
+            }
+            stack.tag.setString("Potion", resourcelocation.toString());
+            return stack;
+        }
+
+        public static boolean isPotion(FluidStack stack) {
+            return stack.getFluid().getName().equals(NORMAL.getName());
+        }
+
+        public static boolean isSplashPotion(FluidStack stack) {
+            return stack.getFluid().getName().equals(SPLASH.getName());
+        }
+
+        public static boolean isLingeringPotion(FluidStack stack) {
+            return stack.getFluid().getName().equals(LINGERING.getName());
+        }
+
+    }
+
+    @Deprecated
+    public static class DeprecatedPotions {
 
         private static final Map<PotionFormat, BiMap<PotionType, Material>> potionMaterials = new EnumMap<>(PotionFormat.class);
 
@@ -116,12 +189,14 @@ public class Materials {
 
         public static void init(IForgeRegistry<PotionType> registry) {
             registry.getValuesCollection().forEach(p -> {
-                if (p != PotionTypes.WATER || p != PotionTypes.EMPTY) {
-                    for (PotionFormat format : PotionFormat.VALUES) {
-                        potionMaterials.get(format)
-                                .put(p, Material.of(format.name + "_" + PotionType.REGISTRY.getNameForObject(p).getResourcePath(), PotionUtils.getPotionColor(p))
-                                .fluid(LIQUID, new PotionFluid(format, p)));
-                    }
+                if (p == PotionTypes.EMPTY) {
+                    return;
+                }
+                for (PotionFormat format : PotionFormat.VALUES) {
+                    Material m = Material.of(format.name + "_" + PotionType.REGISTRY.getNameForObject(p).getResourcePath(), PotionUtils.getPotionColor(p));
+                    potionMaterials.get(format).put(p, m);
+                    m.fluid(LIQUID, new DeprecatedPotionFluid(m, format, p), false);
+                    System.out.println("Material: " + m.getName() + " | PotionType: " + PotionType.REGISTRY.getNameForObject(p));
                 }
             });
         }

@@ -1,10 +1,7 @@
 package zone.rong.zairyou.api.material;
 
 import com.google.common.base.CaseFormat;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.*;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -27,6 +24,7 @@ import zone.rong.zairyou.api.ore.OreGrade;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
@@ -46,6 +44,18 @@ public class Material {
             throw new IllegalStateException(name + " has been registered already!");
         }
         return new Material(name, colour);
+    }
+
+    public static Material get(String name) {
+        return REGISTRY.getOrDefault(name, NONE);
+    }
+
+    public static ObjectCollection<Material> all() {
+        return REGISTRY.values();
+    }
+
+    public static void all(BiConsumer<String, Material> consumer) {
+        REGISTRY.forEach(consumer);
     }
 
     public static final Material NONE = of("none").tools(0, 0, 0F, 0F, 0F, 0);
@@ -290,23 +300,26 @@ public class Material {
         return this;
     }
 
-    public Material fluid(FluidType type, Fluid fluid) {
+    public Material fluid(FluidType type, Fluid fluid, boolean bucket) {
         if (this.typeFluids == null) {
             this.typeFluids = new EnumMap<>(FluidType.class);
         }
-        FluidRegistry.addBucketForFluid(fluid);
+        if (bucket) {
+            FluidRegistry.addBucketForFluid(fluid);
+        }
         this.typeFluids.put(type, fluid);
         return this;
     }
 
     public Material fluid(FluidType fluidType, UnaryOperator<ExtendedFluid.Builder> builderOperator) {
-        return fluid(fluidType, builderOperator.apply(new ExtendedFluid.Builder(this, fluidType)).build());
+        ExtendedFluid fluid = builderOperator.apply(new ExtendedFluid.Builder(this, fluidType)).build();
+        return fluid(fluidType, fluid, fluid.hasBucket());
     }
 
     public Material fluid(FluidType fluidType, UnaryOperator<ExtendedFluid.Builder> builderOperator, Consumer<Block> blockConsumer) {
-        Fluid fluid = builderOperator.apply(new ExtendedFluid.Builder(this, fluidType)).build();
+        ExtendedFluid fluid = builderOperator.apply(new ExtendedFluid.Builder(this, fluidType)).build();
         blockConsumer.accept(fluid.getBlock());
-        return fluid(fluidType, fluid);
+        return fluid(fluidType, fluid, fluid.hasBucket());
     }
 
     public Material texture(IMaterialType type, ResourceLocation location, int layer) {

@@ -9,6 +9,8 @@ public interface IMaterialType extends ITranslatable {
 
     String getModID();
 
+    String getModName();
+
     int getModelLayers();
 
     String[] getPrefixes();

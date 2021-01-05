@@ -12,7 +12,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.potion.PotionType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.client.event.ModelBakeEvent;
@@ -27,15 +26,12 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
 import zone.rong.zairyou.api.client.Bakery;
 import zone.rong.zairyou.api.client.IModelOverride;
 import zone.rong.zairyou.api.fluid.block.DefaultFluidBlock;
-import zone.rong.zairyou.api.fluid.block.tile.PotionFluidTileEntity;
 import zone.rong.zairyou.api.item.MaterialItem;
 import zone.rong.zairyou.api.material.Material;
 import zone.rong.zairyou.api.material.type.BlockMaterialType;
@@ -44,7 +40,6 @@ import zone.rong.zairyou.api.ore.OreBlock;
 import zone.rong.zairyou.api.ore.OreGrade;
 import zone.rong.zairyou.api.ore.OreItemBlock;
 import zone.rong.zairyou.api.ore.stone.StoneType;
-import zone.rong.zairyou.api.tile.MachineTileEntity;
 import zone.rong.zairyou.api.client.RenderUtils;
 import zone.rong.zairyou.api.util.RecipeUtil;
 import zone.rong.zairyou.objects.Materials;
@@ -107,7 +102,10 @@ public class ZairyouEvents {
         Materials.CHARCOAL.setItem(ItemMaterialType.COAL, Items.COAL, 1);
         Materials.CHARCOAL.setItem(ItemMaterialType.COAL, Items.COAL, 1);
         Materials.COAL.setItem(ItemMaterialType.COAL, Items.COAL, 0);
+        Materials.IRON.setItem(ItemMaterialType.INGOT, Items.IRON_INGOT);
+        Materials.IRON.setItem(ItemMaterialType.NUGGET, Items.IRON_NUGGET);
         Materials.GOLD.setItem(ItemMaterialType.INGOT, Items.GOLD_INGOT);
+        Materials.GOLD.setItem(ItemMaterialType.NUGGET, Items.GOLD_NUGGET);
         Materials.REDSTONE.setItem(ItemMaterialType.DUST, Items.REDSTONE);
         Materials.ENDER_EYE.setItem(ItemMaterialType.GEM, Items.ENDER_EYE);
         Materials.ENDER_PEARL.setItem(ItemMaterialType.GEM, Items.ENDER_PEARL);
@@ -142,6 +140,11 @@ public class ZairyouEvents {
                 case INGOT: {
                     Object ingot = item.getItem() instanceof MaterialItem ? ((MaterialItem) item.getItem()).getPrimaryOreName() : item;
                     registry.register(RecipeUtil.addShapeless(m.getName() + "_ingot_to_nuggets", m.getStack(ItemMaterialType.NUGGET, 9), ingot));
+                    if (m.hasType(ItemMaterialType.COIL)) {
+                        registry.register(RecipeUtil.addShaped(m.getName() + "_coil", true, m.getStack(ItemMaterialType.COIL, 1),
+                                "x  ", " r ", "  x", 'x', ingot, 'r', Items.REDSTONE));
+                    }
+                    break;
                 }
                 case NUGGET: {
                     Object nugget = item.getItem() instanceof MaterialItem ? ((MaterialItem) item.getItem()).getPrimaryOreName() : item;
@@ -152,11 +155,6 @@ public class ZairyouEvents {
                     break;
             }
         }));
-    }
-
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void onPotionTypeRegister(RegistryEvent.Register<PotionType> event) {
-        Materials.Potions.init(event.getRegistry());
     }
 
     @SubscribeEvent

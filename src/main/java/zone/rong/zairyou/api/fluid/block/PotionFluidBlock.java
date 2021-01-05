@@ -20,7 +20,6 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 import zone.rong.zairyou.api.fluid.FluidType;
-import zone.rong.zairyou.api.fluid.PotionFluid;
 import zone.rong.zairyou.api.fluid.block.tile.PotionFluidTileEntity;
 
 import javax.annotation.Nonnull;

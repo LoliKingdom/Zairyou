@@ -18,12 +18,14 @@ import java.util.function.Supplier;
 
 public class ExtendedFluid extends Fluid {
 
+    private final boolean hasBucket;
     private final Material backingMaterial;
     private final FluidType fluidType;
     private final Supplier<String> translation;
 
-    public ExtendedFluid(Builder builder) {
+    public ExtendedFluid(Builder builder, boolean hasBucket) {
         super(builder.name, builder.still == null ? builder.fluidType.getStillTexture() : builder.still, builder.flow == null ? builder.fluidType.getFlowingTexture() : builder.flow, builder.overlay);
+        this.hasBucket = hasBucket;
         this.backingMaterial = builder.material;
         this.fluidType = builder.fluidType;
         if (!builder.noTint) {
@@ -43,6 +45,10 @@ public class ExtendedFluid extends Fluid {
         return translation.get();
     }
 
+    public boolean hasBucket() {
+        return hasBucket;
+    }
+
     public static class Builder {
 
         private String name;
@@ -51,6 +57,7 @@ public class ExtendedFluid extends Fluid {
         private final FluidType fluidType;
 
         private int colour;
+        private boolean hasBucket = true;
         private ResourceLocation still, flow, overlay;
         private boolean noTint, gasLike, customTranslation = false;
         private IntSupplier luminosity, density, viscosity, temperature;
@@ -76,6 +83,11 @@ public class ExtendedFluid extends Fluid {
 
         public Builder customTranslation() {
             this.customTranslation = true;
+            return this;
+        }
+
+        public Builder noBucket() {
+            this.hasBucket = false;
             return this;
         }
 
@@ -145,7 +157,7 @@ public class ExtendedFluid extends Fluid {
         }
 
         public ExtendedFluid build() {
-            ExtendedFluid fluid = new ExtendedFluid(this);
+            ExtendedFluid fluid = new ExtendedFluid(this, this.hasBucket);
             fluid.setBlock(this.fluidBlock == null ? new DefaultFluidBlock(fluid, this.fluidType) : this.fluidBlock.apply(fluid))
                     .setLuminosity(this.luminosity == null ? this.fluidType.getBaseLuminosity() : this.luminosity.getAsInt())
                     .setDensity(this.density == null ? this.fluidType.getBaseDensity() : this.density.getAsInt())

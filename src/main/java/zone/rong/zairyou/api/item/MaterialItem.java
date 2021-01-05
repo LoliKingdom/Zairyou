@@ -15,8 +15,6 @@ import zone.rong.zairyou.api.client.IModelOverride;
 import zone.rong.zairyou.api.client.RenderUtils;
 import zone.rong.zairyou.api.material.Material;
 import zone.rong.zairyou.api.material.type.ItemMaterialType;
-import zone.rong.zairyou.api.ore.OreBlock;
-import zone.rong.zairyou.api.ore.stone.StoneType;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -26,7 +24,6 @@ public class MaterialItem extends Item implements IModelOverride, IItemColor {
 
     private final Material material;
     private final ItemMaterialType itemMaterialType;
-
     private final String[] oreNames;
 
     public MaterialItem(Material material, ItemMaterialType itemMaterialType) {
@@ -60,7 +57,7 @@ public class MaterialItem extends Item implements IModelOverride, IItemColor {
     @Nullable
     @Override
     public String getCreatorModId(ItemStack stack) {
-        return itemMaterialType.getModID();
+        return itemMaterialType.getModName();
     }
 
     @Override
