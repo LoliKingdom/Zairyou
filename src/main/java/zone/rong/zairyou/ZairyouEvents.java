@@ -28,10 +28,12 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.registries.IForgeRegistry;
 import zone.rong.zairyou.api.client.Bakery;
 import zone.rong.zairyou.api.client.IModelOverride;
 import zone.rong.zairyou.api.fluid.block.DefaultFluidBlock;
+import zone.rong.zairyou.api.item.BasicItem;
 import zone.rong.zairyou.api.item.MaterialItem;
 import zone.rong.zairyou.api.material.Material;
 import zone.rong.zairyou.api.material.type.BlockMaterialType;
@@ -53,10 +55,17 @@ public class ZairyouEvents {
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public static void onToolTipShown(ItemTooltipEvent event) {
-        if (event.getFlags().isAdvanced() && event.getItemStack().getItem() instanceof MaterialItem) {
-            MaterialItem matItem = (MaterialItem) event.getItemStack().getItem();
-            for (String ore : matItem.getOreNames()) {
-                event.getToolTip().add(ore);
+        if (event.getFlags().isAdvanced()) {
+            Item item = event.getItemStack().getItem();
+            if (item instanceof MaterialItem) {
+                MaterialItem matItem = (MaterialItem) event.getItemStack().getItem();
+                for (String ore : matItem.getOreNames()) {
+                    event.getToolTip().add(ore);
+                }
+            } else if (item instanceof BasicItem) {
+                for (int id : OreDictionary.getOreIDs(event.getItemStack())) {
+                    event.getToolTip().add(OreDictionary.getOreName(id));
+                }
             }
         }
     }
@@ -79,6 +88,7 @@ public class ZairyouEvents {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onItemRegister(RegistryEvent.Register<Item> event) {
+        BasicItem.REGISTRY.values().forEach(event.getRegistry()::register);
         Material.REGISTRY.forEach((name, material) -> {
             for (final ItemMaterialType type : material.getAllowedItemTypes()) {
                 Item item = new MaterialItem(material, type).setRegistryName(Zairyou.ID, name + "_" + type.toString());
@@ -218,6 +228,8 @@ public class ZairyouEvents {
                 .map(s -> (IModelOverride) s.getItem())
                 .forEach(i -> i.addTextures(stitch));
 
+        BasicItem.REGISTRY.values().forEach(i -> i.addTextures(stitch));
+
         for (final StoneType stoneType : StoneType.VALUES) {
             event.getMap().registerSprite(stoneType.getBaseTexture());
         }
@@ -232,6 +244,7 @@ public class ZairyouEvents {
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public static void onModelRegister(ModelRegistryEvent event) {
+        BasicItem.REGISTRY.values().forEach(BasicItem::onModelRegister);
         Material.REGISTRY.values()
                 .forEach(m -> {
                     m.getBlocks().values()
@@ -276,6 +289,7 @@ public class ZairyouEvents {
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public static void onModelBake(ModelBakeEvent event) {
+        BasicItem.REGISTRY.values().forEach(b -> b.onModelBake(event));
         Material.REGISTRY.values()
                 .stream()
                 .flatMap(m -> m.getFluids().values().stream())

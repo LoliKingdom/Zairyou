@@ -70,8 +70,8 @@ public class Materials {
     public static final Material NITER = of("niter", 0xFFC8C8).types(DUSTS);
     public static final Material SULFUR = of("sulfur", 0xC8C800).types(DUSTS);
 
-    public static final Material TAR = of("tar", 0x2E2E2E).types(GLOB);
-    public static final Material ROSIN = of("rosin", 0xE68821).types(GLOB);
+    public static final Material TAR = of("tar", 0x2E2E2E);
+    // public static final Material ROSIN = of("rosin", 0xE68821).types(GLOB);
 
     public static final Material ENDER_EYE = of("ender_eye", 0xFFC8C8).types(DUSTS);
     public static final Material ENDER_PEARL = of("ender_pearl", 0xFFC8C8).types(DUSTS, CRYSTAL).fluid(MOLTEN, fluid -> fluid.customName("ender").still("blocks/fluids/ender_still").flow("blocks/fluids/ender_flow").noTint().luminosity(3).density(4000).viscosity(2500).rarity(EnumRarity.UNCOMMON));

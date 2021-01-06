@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import zone.rong.zairyou.api.creativetab.PotionCreativeTab;
 import zone.rong.zairyou.api.item.MaterialItem;
 import zone.rong.zairyou.api.material.Material;
+import zone.rong.zairyou.objects.Items;
 import zone.rong.zairyou.objects.Materials;
 
 @Mod(modid = Zairyou.ID, name = Zairyou.NAME, version = "0.1")
@@ -34,6 +35,7 @@ public class Zairyou {
     public void preInit(FMLPreInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(this);
         Materials.init();
+        Items.init();
     }
 
     @Mod.EventHandler
@@ -41,6 +43,7 @@ public class Zairyou {
 
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
+        Items.oreDictInit();
         Material.REGISTRY.values().stream()
                 .map(Material::getItems)
                 .flatMap(m -> m.values().stream())
