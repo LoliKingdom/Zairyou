@@ -8,7 +8,10 @@ import java.util.Locale;
 
 public enum BlockMaterialType implements IMaterialType {
 
-    ORE(Zairyou.ID, 0, "ore");
+    BLOCK(Zairyou.ID, 0, "ore"),
+    FRAME(Zairyou.ID, 0, "frame", "frameGt"),
+    ORE(Zairyou.ID, 0, "ore"),
+    STONE(Zairyou.ID, 0, "stone~&");
 
     private final String modId, modName;
     private final int modelLayers;

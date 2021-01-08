@@ -88,24 +88,25 @@ public class ZairyouEvents {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onItemRegister(RegistryEvent.Register<Item> event) {
-        BasicItem.REGISTRY.values().forEach(event.getRegistry()::register);
+        IForgeRegistry<Item> registry = event.getRegistry();
+        BasicItem.REGISTRY.values().forEach(registry::register);
         Material.REGISTRY.forEach((name, material) -> {
             for (final ItemMaterialType type : material.getAllowedItemTypes()) {
                 Item item = new MaterialItem(material, type).setRegistryName(Zairyou.ID, name + "_" + type.toString());
-                event.getRegistry().register(item);
+                registry.register(item);
                 material.setItem(type, item);
             }
             for (final Fluid fluid : material.getFluids().values()) {
                 if (fluid.getBlock() != null) {
                     Block fluidBlock = fluid.getBlock();
-                    event.getRegistry().register(new ItemBlock(fluidBlock).setRegistryName(Zairyou.ID, "fluid_" + fluid.getName()).setCreativeTab(CreativeTabs.MATERIALS));
+                    registry.register(new ItemBlock(fluidBlock).setRegistryName(Zairyou.ID, "fluid_" + fluid.getName()).setCreativeTab(CreativeTabs.MATERIALS));
                 }
             }
             material.getBlocks().forEach((type, block) -> {
                 if (type == BlockMaterialType.ORE) {
-                    event.getRegistry().register(new OreItemBlock((OreBlock) block).setRegistryName(block.getRegistryName()));
+                    registry.register(new OreItemBlock((OreBlock) block).setRegistryName(block.getRegistryName()));
                 } else {
-                    event.getRegistry().register(new ItemBlock(block).setRegistryName(block.getRegistryName()));
+                    registry.register(new ItemBlock(block).setRegistryName(block.getRegistryName()));
                 }
             });
         });

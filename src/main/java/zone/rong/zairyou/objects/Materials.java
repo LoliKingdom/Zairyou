@@ -12,7 +12,6 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.registries.IForgeRegistry;
 import zone.rong.zairyou.api.fluid.DeprecatedPotionFluid;
-import zone.rong.zairyou.api.fluid.FluidType;
 import zone.rong.zairyou.api.fluid.PotionFluid;
 import zone.rong.zairyou.api.material.Material;
 import zone.rong.zairyou.api.material.type.ItemMaterialType;
@@ -20,6 +19,7 @@ import zone.rong.zairyou.api.material.type.ItemMaterialType;
 import java.util.EnumMap;
 import java.util.Map;
 
+import static zone.rong.zairyou.api.material.element.Element.*;
 import static zone.rong.zairyou.api.material.Material.of;
 import static zone.rong.zairyou.api.fluid.FluidType.*;
 import static zone.rong.zairyou.api.material.type.ItemMaterialType.*;
@@ -55,7 +55,7 @@ public class Materials {
     public static final Material REDSTONE = of("redstone", 0xC80000).ore().types(SERVO, CRYSTAL).noTint(SERVO).texture(SERVO, "items/servo/redstone", 0).fluid(MOLTEN, fluid -> fluid.noTint().customTranslation().still("blocks/fluids/redstone_still").flow("blocks/fluids/redstone_flow").luminosity(7).density(1200).viscosity(1500).rarity(EnumRarity.UNCOMMON));
     public static final Material GLOWSTONE = of("glowstone", 0xD0B809).type(CRYSTAL).fluid(MOLTEN, fluid -> fluid.noTint().customTranslation().still("blocks/fluids/glowstone_still").flow("blocks/fluids/glowstone_flow").luminosity(15).density(-500).viscosity(100).gasLike().rarity(EnumRarity.UNCOMMON));
     public static final Material SILVER = of("silver", 0xC0C0C0).ore().types(METAL_TYPES, COIL).fluid(MOLTEN, fluid -> fluid.temperature(1235));
-    public static final Material OBSIDIAN = of("obsidian", 0x211B2E).types(DUSTS, ROD);
+    public static final Material OBSIDIAN = of("obsidian", 0x211B2E).formula(b -> b.element(f -> f.put(Mg, 1).put(Fe, 1).put(Si, 2).put(O, 8))).types(DUSTS, ROD);
     public static final Material WOOD = of("wood", 0xE68821).types(DUSTS);
 
     public static final Material AEROTHEUM = of("aerotheum", 0xD5D181).types(DUSTS).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/aerotheum_still").flow("blocks/fluids/aerotheum_flow").noTint().density(-800).viscosity(100).gasLike().rarity(EnumRarity.RARE));
@@ -65,10 +65,10 @@ public class Materials {
     public static final Material BLIZZ = of("blizz", 0x211B2E).types(DUSTS, ROD);
     public static final Material BLITZ = of("blitz", 0x211B2E).types(DUSTS, ROD);
     public static final Material BASALZ = of("basalz", 0x211B2E).types(DUSTS, ROD);
-    public static final Material CINNABAR = of("cinnabar", 0xBF4538).type(CRYSTAL);
+    public static final Material CINNABAR = of("cinnabar", 0xBF4538).formula(b -> b.element(Hg).element(S)).type(CRYSTAL);
 
-    public static final Material NITER = of("niter", 0xFFC8C8).types(DUSTS);
-    public static final Material SULFUR = of("sulfur", 0xC8C800).types(DUSTS);
+    public static final Material NITER = of("niter", 0xFFC8C8).formula(b -> b.element(K).element(N).element(O, 3)).types(DUSTS);
+    public static final Material SULFUR = of("sulfur", 0xC8C800).formula(S).types(DUSTS);
 
     public static final Material TAR = of("tar", 0x2E2E2E);
     // public static final Material ROSIN = of("rosin", 0xE68821).types(GLOB);

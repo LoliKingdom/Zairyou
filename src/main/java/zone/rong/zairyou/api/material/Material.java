@@ -16,6 +16,8 @@ import zone.rong.zairyou.api.fluid.FluidType;
 import zone.rong.zairyou.api.item.MaterialItem;
 import zone.rong.zairyou.api.item.tool.ExtendedToolMaterial;
 import zone.rong.zairyou.api.item.tool.MaterialTools;
+import zone.rong.zairyou.api.material.element.Element;
+import zone.rong.zairyou.api.material.element.FormulaBuilder;
 import zone.rong.zairyou.api.material.type.BlockMaterialType;
 import zone.rong.zairyou.api.material.type.IMaterialType;
 import zone.rong.zairyou.api.material.type.ItemMaterialType;
@@ -64,6 +66,8 @@ public class Material {
     private final String name, translationKey;
     private final int colour;
     private final Map<IMaterialType, ResourceLocation[]> textures;
+
+    private String chemicalFormula = "";
 
     private EnumMap<BlockMaterialType, UnaryOperator<? extends Block>> protoTypeBlocks;
     private EnumMap<ItemMaterialType, UnaryOperator<? extends Item>> protoTypeItems;
@@ -217,6 +221,23 @@ public class Material {
     @Deprecated
     public TextureSet getTextureSet() {
         return TextureSet.NONE;
+    }
+
+    public Material formula(String formula) {
+        this.chemicalFormula = formula;
+        return this;
+    }
+
+    public Material formula(UnaryOperator<FormulaBuilder> builder) {
+        return formula(builder.apply(FormulaBuilder.of()).build());
+    }
+
+    public Material formula(Element element, int atoms) {
+        return formula(FormulaBuilder.of().element(element, atoms).build());
+    }
+
+    public Material formula(Element element) {
+        return formula(FormulaBuilder.of().element(element).build());
     }
 
     public Material tools(Item.ToolMaterial toolMaterial, int attackSpeed) {

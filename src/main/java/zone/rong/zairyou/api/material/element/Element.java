@@ -1,4 +1,4 @@
-package zone.rong.zairyou.api.material;
+package zone.rong.zairyou.api.material.element;
 
 public enum Element {
 
@@ -162,7 +162,7 @@ public enum Element {
         }
     }
 
-    public String getName() {
+    public String getFullName() {
         return name;
     }
 
@@ -178,8 +178,4 @@ public enum Element {
         return protons + neutrons;
     }
 
-    @Override
-    public String toString() {
-        return super.toString();
-    }
 }
