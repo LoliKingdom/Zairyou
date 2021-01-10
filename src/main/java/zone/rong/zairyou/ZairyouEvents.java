@@ -87,15 +87,6 @@ public class ZairyouEvents {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onItemRegister(RegistryEvent.Register<Item> event) {
-        Materials.CHARCOAL.setItem(ItemMaterialType.COAL, Items.COAL, 1);
-        Materials.COAL.setItem(ItemMaterialType.COAL, Items.COAL, 0);
-        Materials.IRON.setItem(ItemMaterialType.INGOT, Items.IRON_INGOT);
-        Materials.IRON.setItem(ItemMaterialType.NUGGET, Items.IRON_NUGGET);
-        Materials.GOLD.setItem(ItemMaterialType.INGOT, Items.GOLD_INGOT);
-        Materials.GOLD.setItem(ItemMaterialType.NUGGET, Items.GOLD_NUGGET);
-        Materials.REDSTONE.setItem(ItemMaterialType.DUST, Items.REDSTONE);
-        Materials.ENDER_EYE.setItem(ItemMaterialType.GEM, Items.ENDER_EYE);
-        Materials.ENDER_PEARL.setItem(ItemMaterialType.GEM, Items.ENDER_PEARL);
         IForgeRegistry<Item> registry = event.getRegistry();
         BasicItem.REGISTRY.values().forEach(registry::register);
         Material.all((name, material) -> {

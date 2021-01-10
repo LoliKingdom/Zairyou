@@ -1,5 +1,6 @@
 package zone.rong.zairyou.objects;
 
+import net.minecraft.init.Items;
 import net.minecraft.init.PotionTypes;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.nbt.NBTTagCompound;
@@ -26,7 +27,7 @@ public class Materials {
     public static final Material COPPER = of("copper", 0xFF7400).ore().flag(GENERATE_DEFAULT_METAL_TYPES).fluid(MOLTEN, fluid -> fluid.temperature(1385))/*.tools(1, 144, 5.0F, 1.5F, -3.2F, 8, tools -> tools.axe().hoe().pickaxe().shovel().sword())*/.build();
     public static final Material ELECTRUM = of("electrum", 0xFFFF64).flag(GENERATE_DEFAULT_METAL_TYPES).items(COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337)).build();
     public static final Material IRON = of("iron", 0xAAAAAA).ore().flag(GENERATE_DEFAULT_METAL_TYPES).items(BUZZSAW_BLADE, SAW_BLADE).fluid(MOLTEN, fluid -> fluid.temperature(1803)).build();
-    public static final Material GOLD = of("gold", 0xFFFF00).ore().flag(GENERATE_DEFAULT_METAL_TYPES).items(COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337)).build();
+    public static final Material GOLD = of("gold", 0xFFFF0B).ore().flag(GENERATE_DEFAULT_METAL_TYPES).items(COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337)).build();
     public static final Material REDSTONE = of("redstone", 0xC80000).ore().items(CRYSTAL).fluid(MOLTEN, fluid -> fluid.noTint().customTranslation().still("blocks/fluids/redstone_still").flow("blocks/fluids/redstone_flow").luminosity(7).density(1200).viscosity(1500).rarity(EnumRarity.UNCOMMON)).build();
     public static final Material GLOWSTONE = of("glowstone", 0xD0B809).items(CRYSTAL).fluid(MOLTEN, fluid -> fluid.noTint().customTranslation().still("blocks/fluids/glowstone_still").flow("blocks/fluids/glowstone_flow").luminosity(15).density(-500).viscosity(100).gasLike().rarity(EnumRarity.UNCOMMON)).build();
     public static final Material SILVER = of("silver", 0xC0C0C0).ore().flag(GENERATE_DEFAULT_METAL_TYPES).items(COIL).fluid(MOLTEN, fluid -> fluid.temperature(1235)).build();
@@ -76,6 +77,15 @@ public class Materials {
 
     public static void init() {
         Potions.init();
+        Materials.CHARCOAL.setItem(ItemMaterialType.COAL, Items.COAL, 1);
+        Materials.COAL.setItem(ItemMaterialType.COAL, Items.COAL, 0);
+        Materials.IRON.setItem(ItemMaterialType.INGOT, Items.IRON_INGOT);
+        Materials.IRON.setItem(ItemMaterialType.NUGGET, Items.IRON_NUGGET);
+        Materials.GOLD.setItem(ItemMaterialType.INGOT, Items.GOLD_INGOT);
+        Materials.GOLD.setItem(ItemMaterialType.NUGGET, Items.GOLD_NUGGET);
+        Materials.REDSTONE.setItem(ItemMaterialType.DUST, Items.REDSTONE);
+        Materials.ENDER_EYE.setItem(ItemMaterialType.GEM, Items.ENDER_EYE);
+        Materials.ENDER_PEARL.setItem(ItemMaterialType.GEM, Items.ENDER_PEARL);
     }
 
     public static class Potions {
