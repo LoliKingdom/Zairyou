@@ -23,7 +23,7 @@ public class FormulaBuilder {
         formulaBuilder.append(element.name());
         if (atoms != 1) {
             for (char n : Integer.toString(atoms).toCharArray()) {
-                formulaBuilder.append((char) (n + 2080));
+                formulaBuilder.append((char) ('\u2080' + (n - '0')));
             }
         }
         return this;

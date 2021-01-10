@@ -9,6 +9,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.ModelLoader;
@@ -64,7 +65,7 @@ public class MaterialItem extends Item implements IModelOverride, IItemColor {
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         String formula = material.getChemicalFormula();
         if (!formula.isEmpty()) {
-            tooltip.add(formula);
+            tooltip.add(TextFormatting.AQUA.toString() + formula);
         }
     }
 

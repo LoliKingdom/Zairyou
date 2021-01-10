@@ -1,11 +1,15 @@
 package zone.rong.zairyou.api.material;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fml.common.Loader;
 import zone.rong.zairyou.Zairyou;
+import zone.rong.zairyou.api.event.MaterialRegisterEvent;
 import zone.rong.zairyou.api.fluid.ExtendedFluid;
 import zone.rong.zairyou.api.fluid.FluidType;
 import zone.rong.zairyou.api.material.element.Element;
@@ -18,8 +22,10 @@ import zone.rong.zairyou.api.ore.OreGrade;
 
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import static zone.rong.zairyou.api.material.type.ItemMaterialType.*;
@@ -40,17 +46,21 @@ public class MaterialBuilder {
 
     private String chemicalFormula = "";
 
-    public EnumMap<BlockMaterialType, Function<Material, Block>> blocks;
-    public EnumMap<BlockMaterialType, ResourceLocation[]> blockTextures;
+    private EnumMap<BlockMaterialType, Function<Material, Block>> blocks;
+    private EnumMap<BlockMaterialType, ResourceLocation[]> blockTextures;
 
-    public EnumMap<ItemMaterialType, ItemStack> items;
-    public EnumMap<ItemMaterialType, ResourceLocation[]> itemTextures;
+    private EnumMap<ItemMaterialType, ItemStack> items;
+    private EnumMap<ItemMaterialType, ResourceLocation[]> itemTextures;
 
     private EnumMap<FluidType, Function<Material, Fluid>> fluids;
 
     private Set<IMaterialType> disabledTint;
 
+    private List<UnaryOperator<MaterialBuilder>> delegatingCode;
+
     private long flags = 0L;
+
+    boolean building = false;
 
     MaterialBuilder(String name, int colour) {
         this.name = name;
@@ -149,6 +159,10 @@ public class MaterialBuilder {
     }
 
     public MaterialBuilder tex(ItemMaterialType itemMaterialType, ResourceLocation location, int layer) {
+        if (!building) {
+            createDelegate(b -> b.tex(itemMaterialType, location, layer));
+            return this;
+        }
         if (this.itemTextures == null || !this.itemTextures.containsKey(itemMaterialType)) {
             throw new IllegalStateException("ItemMaterialType not found, cannot change the texture of its item.");
         }
@@ -161,6 +175,10 @@ public class MaterialBuilder {
     }
 
     public MaterialBuilder tex(ItemMaterialType itemMaterialType, String location, int layer) {
+        if (!building) {
+            createDelegate(b -> b.tex(itemMaterialType, location, layer));
+            return this;
+        }
         int colonIndex = location.indexOf(':');
         if (colonIndex == -1) {
             return tex(itemMaterialType, new ResourceLocation(Zairyou.ID, location), layer);
@@ -168,7 +186,34 @@ public class MaterialBuilder {
         return tex(itemMaterialType, new ResourceLocation(location), layer);
     }
 
+    public MaterialBuilder tex(ItemMaterialType... itemMaterialTypes) {
+        if (!building) {
+            createDelegate(b -> b.tex(itemMaterialTypes));
+            return this;
+        }
+        if (this.itemTextures == null) {
+            throw new IllegalStateException("ItemMaterialType not found, cannot change the texture of its item.");
+        }
+        for (ItemMaterialType itemMaterialType : itemMaterialTypes) {
+            if (!this.itemTextures.containsKey(itemMaterialType)) {
+                throw new IllegalStateException("ItemMaterialType not found, cannot change the texture of its item.");
+            }
+            ResourceLocation[] locations = this.itemTextures.get(itemMaterialType);
+            for (int i = 0; i < locations.length; i++) {
+                locations[i] = new ResourceLocation(Zairyou.ID, String.join("/", "items", itemMaterialType.toString(), "custom", this.name + "_" + i));
+            }
+        }
+        return this;
+    }
+
     public MaterialBuilder noTint(ItemMaterialType type) {
+        if (!building) {
+            createDelegate(b -> b.noTint(type));
+            return this;
+        }
+        if (this.items == null || !this.items.containsKey(type)) {
+            throw new IllegalStateException("ItemMaterialType not found, cannot decide on whether to tint the item or not.");
+        }
         if (this.disabledTint == null) {
             this.disabledTint = new ObjectOpenHashSet<>();
         }
@@ -198,7 +243,12 @@ public class MaterialBuilder {
     }
 
     public Material build() {
+        building = true;
+        MinecraftForge.EVENT_BUS.post(new MaterialRegisterEvent(this.name, this.colour, this, Loader.instance().activeModContainer()));
         checkFlags();
+        if (this.delegatingCode != null) {
+            this.delegatingCode.forEach(s -> s.apply(this));
+        }
         return new Material(name, colour, chemicalFormula, flags, blocks, blockTextures, items, itemTextures, fluids, disabledTint);
     }
 
@@ -210,6 +260,13 @@ public class MaterialBuilder {
         if ((this.flags & GENERATE_DUST_VARIANTS.bit) > 0) {
             items(DUST, SMALL_DUST, TINY_DUST);
         }
+    }
+
+    private void createDelegate(UnaryOperator<MaterialBuilder> delegatingCode) {
+        if (this.delegatingCode == null) {
+            this.delegatingCode = new ObjectArrayList<>();
+        }
+        this.delegatingCode.add(delegatingCode);
     }
 
 }
