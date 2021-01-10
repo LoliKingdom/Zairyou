@@ -4,12 +4,16 @@ import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import zone.rong.zairyou.api.client.Bakery;
 import zone.rong.zairyou.api.client.IModelOverride;
 import zone.rong.zairyou.api.client.RenderUtils;
@@ -18,6 +22,7 @@ import zone.rong.zairyou.api.material.type.ItemMaterialType;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 public class MaterialItem extends Item implements IModelOverride, IItemColor {
@@ -52,6 +57,15 @@ public class MaterialItem extends Item implements IModelOverride, IItemColor {
     @Override
     public String getItemStackDisplayName(ItemStack stack) {
         return I18n.format(itemMaterialType.getTranslationKey(), I18n.format(material.getTranslationKey()));
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
+        String formula = material.getChemicalFormula();
+        if (!formula.isEmpty()) {
+            tooltip.add(formula);
+        }
     }
 
     @Nullable

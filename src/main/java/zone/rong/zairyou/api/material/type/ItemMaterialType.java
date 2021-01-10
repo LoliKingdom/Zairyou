@@ -46,8 +46,8 @@ public enum ItemMaterialType implements IMaterialType {
     COIL("thermalfoundation", 2, "coil"),
     CRYSTAL("thermalfoundation", 2, "crystal"),
     FERTILIZER("thermalfoundation", 1, "fertilizer"),
-    // GLOB("thermalfoundation", 1, "glob"), // Fixme hmm
-    SERVO("thermalfoundation", 1, "servo"),
+    // GLOB("thermalfoundation", 1, "glob"), BasicItem
+    // SERVO("thermalfoundation", 1, "servo"), BasicItem
     SLAG("thermalfoundation", 1, "slag~&", "crystalSlag~&", "itemSlag~&");
 
     // public static final ItemMaterialType[] VALUES = values();

@@ -41,8 +41,8 @@ zairyou.material_type.double_ingot.name=Double %s Ingot
 zairyou.material_type.dense_ingot.name=Dense %s Ingot
 
 zairyou.material_type.dust.name=%s Dust
-zairyou.material_type.small_dust.name=Small %s Dust
-zairyou.material_type.tiny_dust.name=Tiny %s Dust
+zairyou.material_type.small_dust.name=Small Piles of %s Dust
+zairyou.material_type.tiny_dust.name=Tiny Piles of %s Dust
 
 zairyou.material_type.nugget.name=%s Nugget
 

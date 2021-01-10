@@ -45,7 +45,8 @@ public interface IMaterialTool extends IItemColor {
     default int increaseDurability(ItemStack stack, int durability) {
         NBTTagCompound mainTag = getMainTag(stack);
         int newDurability = getDurability(mainTag);
-        int maxUses = getMaterial(mainTag).getToolMaterial().getBase().getMaxUses();
+        // TODO: int maxUses = getMaterial(mainTag).getToolMaterial().getBase().getMaxUses();
+        int maxUses = 0;
         if (newDurability + durability > maxUses) {
             newDurability = maxUses;
         } else {

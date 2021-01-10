@@ -6,7 +6,6 @@ import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.color.IBlockColor;
 import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
@@ -46,6 +45,7 @@ import zone.rong.zairyou.api.client.RenderUtils;
 import zone.rong.zairyou.api.util.RecipeUtil;
 import zone.rong.zairyou.objects.Materials;
 
+import java.util.Map;
 import java.util.Set;
 
 @Mod.EventBusSubscriber
@@ -72,7 +72,7 @@ public class ZairyouEvents {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBlockRegister(RegistryEvent.Register<Block> event) {
-        Material.REGISTRY.forEach((name, material) -> {
+        Material.all((name, material) -> {
             material.getBlocks().forEach((type, block) -> event.getRegistry().register(block.setRegistryName(Zairyou.ID, name + "_" + type.toString())));
             for (final Fluid fluid : material.getFluids().values()) {
                 if (FluidRegistry.isFluidDefault(fluid)) {
@@ -83,23 +83,28 @@ public class ZairyouEvents {
                 }
             }
         });
-
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onItemRegister(RegistryEvent.Register<Item> event) {
+        Materials.CHARCOAL.setItem(ItemMaterialType.COAL, Items.COAL, 1);
+        Materials.COAL.setItem(ItemMaterialType.COAL, Items.COAL, 0);
+        Materials.IRON.setItem(ItemMaterialType.INGOT, Items.IRON_INGOT);
+        Materials.IRON.setItem(ItemMaterialType.NUGGET, Items.IRON_NUGGET);
+        Materials.GOLD.setItem(ItemMaterialType.INGOT, Items.GOLD_INGOT);
+        Materials.GOLD.setItem(ItemMaterialType.NUGGET, Items.GOLD_NUGGET);
+        Materials.REDSTONE.setItem(ItemMaterialType.DUST, Items.REDSTONE);
+        Materials.ENDER_EYE.setItem(ItemMaterialType.GEM, Items.ENDER_EYE);
+        Materials.ENDER_PEARL.setItem(ItemMaterialType.GEM, Items.ENDER_PEARL);
         IForgeRegistry<Item> registry = event.getRegistry();
         BasicItem.REGISTRY.values().forEach(registry::register);
-        Material.REGISTRY.forEach((name, material) -> {
-            for (final ItemMaterialType type : material.getAllowedItemTypes()) {
-                Item item = new MaterialItem(material, type).setRegistryName(Zairyou.ID, name + "_" + type.toString());
-                registry.register(item);
-                material.setItem(type, item);
-            }
-            for (final Fluid fluid : material.getFluids().values()) {
-                if (fluid.getBlock() != null) {
-                    Block fluidBlock = fluid.getBlock();
-                    registry.register(new ItemBlock(fluidBlock).setRegistryName(Zairyou.ID, "fluid_" + fluid.getName()).setCreativeTab(CreativeTabs.MATERIALS));
+        Material.all((name, material) -> {
+            for (final Map.Entry<ItemMaterialType, ItemStack> entry : material.getItems().entrySet()) {
+                if (entry.getValue().isEmpty()) {
+                    ItemMaterialType type = entry.getKey();
+                    Item item = new MaterialItem(material, type).setRegistryName(Zairyou.ID, name + "_" + type.toString());
+                    registry.register(item);
+                    material.setItem(type, item);
                 }
             }
             material.getBlocks().forEach((type, block) -> {
@@ -110,39 +115,29 @@ public class ZairyouEvents {
                 }
             });
         });
-        Materials.CHARCOAL.setItem(ItemMaterialType.COAL, Items.COAL, 1);
-        Materials.CHARCOAL.setItem(ItemMaterialType.COAL, Items.COAL, 1);
-        Materials.COAL.setItem(ItemMaterialType.COAL, Items.COAL, 0);
-        Materials.IRON.setItem(ItemMaterialType.INGOT, Items.IRON_INGOT);
-        Materials.IRON.setItem(ItemMaterialType.NUGGET, Items.IRON_NUGGET);
-        Materials.GOLD.setItem(ItemMaterialType.INGOT, Items.GOLD_INGOT);
-        Materials.GOLD.setItem(ItemMaterialType.NUGGET, Items.GOLD_NUGGET);
-        Materials.REDSTONE.setItem(ItemMaterialType.DUST, Items.REDSTONE);
-        Materials.ENDER_EYE.setItem(ItemMaterialType.GEM, Items.ENDER_EYE);
-        Materials.ENDER_PEARL.setItem(ItemMaterialType.GEM, Items.ENDER_PEARL);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onRecipeRegister(RegistryEvent.Register<IRecipe> event) {
         IForgeRegistry<IRecipe> registry = event.getRegistry();
-        Material.REGISTRY.values().forEach(m -> m.getItems().forEach((type, item) -> {
+        Material.all((name, material) -> material.getItems().forEach((type, item) -> {
             switch (type) {
                 case TINY_DUST: {
                     Object dustTiny = item.getItem() instanceof MaterialItem ? ((MaterialItem) item.getItem()).getPrimaryOreName() : item;
-                    registry.register(RecipeUtil.addShapeless(m.getName() + "_tiny_dusts_to_dust", m.getItem(ItemMaterialType.DUST, false),
+                    registry.register(RecipeUtil.addShapeless(name + "_tiny_dusts_to_dust", material.getItem(ItemMaterialType.DUST, false),
                             dustTiny, dustTiny, dustTiny, dustTiny, dustTiny, dustTiny, dustTiny, dustTiny, dustTiny));
                     break;
                 }
                 case SMALL_DUST: {
                     Object dustSmall = item.getItem() instanceof MaterialItem ? ((MaterialItem) item.getItem()).getPrimaryOreName() : item;
-                    registry.register(RecipeUtil.addShaped(m.getName() + "_small_dusts_to_dust", false, m.getItem(ItemMaterialType.DUST, false),
+                    registry.register(RecipeUtil.addShaped(name + "_small_dusts_to_dust", false, material.getItem(ItemMaterialType.DUST, false),
                             "xx", "xx", 'x', dustSmall));
                     break;
                 }
                 case DUST: {
                     Object dust = item.getItem() instanceof MaterialItem ? ((MaterialItem) item.getItem()).getPrimaryOreName() : item;
-                    registry.register(RecipeUtil.addShapeless(m.getName() + "_dust_to_tiny_dusts", m.getStack(ItemMaterialType.TINY_DUST, 9), dust));
-                    ItemStack ingot = m.getItem(ItemMaterialType.INGOT, false);
+                    registry.register(RecipeUtil.addShapeless(name + "_dust_to_tiny_dusts", material.getStack(ItemMaterialType.TINY_DUST, 9), dust));
+                    ItemStack ingot = material.getItem(ItemMaterialType.INGOT, false);
                     if (!ingot.isEmpty()) {
                         RecipeUtil.addSmelting(item, ingot, 0.5F);
                     }
@@ -150,16 +145,16 @@ public class ZairyouEvents {
                 }
                 case INGOT: {
                     Object ingot = item.getItem() instanceof MaterialItem ? ((MaterialItem) item.getItem()).getPrimaryOreName() : item;
-                    registry.register(RecipeUtil.addShapeless(m.getName() + "_ingot_to_nuggets", m.getStack(ItemMaterialType.NUGGET, 9), ingot));
-                    if (m.hasType(ItemMaterialType.COIL)) {
-                        registry.register(RecipeUtil.addShaped(m.getName() + "_coil", true, m.getStack(ItemMaterialType.COIL, 1),
+                    registry.register(RecipeUtil.addShapeless(name + "_ingot_to_nuggets", material.getStack(ItemMaterialType.NUGGET, 9), ingot));
+                    if (material.hasType(ItemMaterialType.COIL)) {
+                        registry.register(RecipeUtil.addShaped(name + "_coil", true, material.getItem(ItemMaterialType.COIL, false),
                                 "x  ", " r ", "  x", 'x', ingot, 'r', Items.REDSTONE));
                     }
                     break;
                 }
                 case NUGGET: {
                     Object nugget = item.getItem() instanceof MaterialItem ? ((MaterialItem) item.getItem()).getPrimaryOreName() : item;
-                    registry.register(RecipeUtil.addShapeless(m.getName() + "_nuggets_to_ingot", m.getItem(ItemMaterialType.INGOT, false),
+                    registry.register(RecipeUtil.addShapeless(name + "_nuggets_to_ingot", material.getItem(ItemMaterialType.INGOT, false),
                             nugget, nugget, nugget, nugget, nugget, nugget, nugget, nugget, nugget));
                 }
                 default:

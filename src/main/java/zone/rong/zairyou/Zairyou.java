@@ -22,8 +22,6 @@ public class Zairyou {
 
     public static final Logger LOGGER = LogManager.getLogger(ID);
 
-    // public static final PotionCreativeTab POTION_TAB = new PotionCreativeTab();
-
     static {
         FluidRegistry.enableUniversalBucket();
     }

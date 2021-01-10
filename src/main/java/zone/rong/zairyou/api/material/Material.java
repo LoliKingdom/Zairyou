@@ -6,29 +6,20 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import zone.rong.zairyou.Zairyou;
-import zone.rong.zairyou.api.fluid.ExtendedFluid;
 import zone.rong.zairyou.api.fluid.FluidType;
 import zone.rong.zairyou.api.item.MaterialItem;
-import zone.rong.zairyou.api.item.tool.ExtendedToolMaterial;
-import zone.rong.zairyou.api.item.tool.MaterialTools;
-import zone.rong.zairyou.api.material.element.Element;
-import zone.rong.zairyou.api.material.element.FormulaBuilder;
 import zone.rong.zairyou.api.material.type.BlockMaterialType;
 import zone.rong.zairyou.api.material.type.IMaterialType;
 import zone.rong.zairyou.api.material.type.ItemMaterialType;
-import zone.rong.zairyou.api.ore.OreBlock;
-import zone.rong.zairyou.api.ore.OreGrade;
+import zone.rong.zairyou.api.util.Util;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
+import java.util.function.Function;
 
 /**
  * Material. That's it.
@@ -36,17 +27,6 @@ import java.util.function.UnaryOperator;
 public class Material {
 
     public static final Object2ObjectMap<String, Material> REGISTRY = new Object2ObjectOpenHashMap<>();
-
-    public static Material of(String name) {
-        return of(name, 0x0);
-    }
-
-    public static Material of(String name, int colour) {
-        if (REGISTRY.containsKey(name)) {
-            throw new IllegalStateException(name + " has been registered already!");
-        }
-        return new Material(name, colour);
-    }
 
     public static Material get(String name) {
         return REGISTRY.getOrDefault(name, NONE);
@@ -60,34 +40,46 @@ public class Material {
         REGISTRY.forEach(consumer);
     }
 
-    public static final Material NONE = of("none").tools(0, 0, 0F, 0F, 0F, 0);
-    public static final Material BASIC = of("basic");
+    public static final Material NONE = MaterialBuilder.of("none").build();
 
-    private final String name, translationKey;
+    private final String name, translationKey, chemicalFormula;
     private final int colour;
-    private final Map<IMaterialType, ResourceLocation[]> textures;
+    private final long flags;
 
-    private String chemicalFormula = "";
+    private final EnumMap<BlockMaterialType, Block> blocks;
+    private final EnumMap<BlockMaterialType, ResourceLocation[]> blockTextures;
 
-    private EnumMap<BlockMaterialType, UnaryOperator<? extends Block>> protoTypeBlocks;
-    private EnumMap<ItemMaterialType, UnaryOperator<? extends Item>> protoTypeItems;
+    private final EnumMap<ItemMaterialType, ItemStack> items;
+    private final EnumMap<ItemMaterialType, ResourceLocation[]> itemTextures;
 
-    private EnumMap<BlockMaterialType, Block> typeBlocks;
-    private EnumMap<ItemMaterialType, ItemStack> typeItems;
-    private EnumMap<FluidType, Fluid> typeFluids;
-    // private final TextureSet textureSet;
+    private final EnumMap<FluidType, Fluid> fluids;
 
-    private boolean hasTools = false;
+    private final Set<IMaterialType> disabledTint;
 
-    private Set<IMaterialType> disabledTint;
-    private ExtendedToolMaterial toolMaterial;
-    private MaterialTools tools;
+    // private final ExtendedToolMaterial toolMaterial;
+    // private final MaterialTools tools;
 
-    protected Material(String name, int colour) {
+    protected Material(String name,
+                       int colour,
+                       String chemicalFormula,
+                       long flags,
+                       Map<BlockMaterialType, Function<Material, Block>> blocks,
+                       Map<BlockMaterialType, ResourceLocation[]> blockTextures,
+                       Map<ItemMaterialType, ItemStack> items,
+                       Map<ItemMaterialType, ResourceLocation[]> itemTextures,
+                       Map<FluidType, Function<Material, Fluid>> fluids,
+                       Set<IMaterialType> disabledTint) {
         this.name = name;
         this.translationKey = String.join(".", Zairyou.ID, "material", name, "name");
         this.colour = colour;
-        this.textures = new Object2ObjectOpenHashMap<>();
+        this.flags = flags;
+        this.chemicalFormula = chemicalFormula;
+        this.blocks = blocks == null ? null : Util.convertValues(BlockMaterialType.class, blocks, k -> k, e -> e.getValue().apply(this));
+        this.blockTextures = blockTextures == null ? null : Util.keepEnumMap(BlockMaterialType.class, blockTextures, k -> k, e -> e);
+        this.items = items == null ? null : Util.keepEnumMap(ItemMaterialType.class, items, k -> k, e -> e);
+        this.itemTextures = itemTextures == null ? null : Util.keepEnumMap(ItemMaterialType.class, itemTextures, k -> k, e -> e);
+        this.fluids = fluids == null ? null : Util.convertValues(FluidType.class, fluids, k -> k, e -> e.getValue().apply(this));
+        this.disabledTint = disabledTint;
         REGISTRY.put(name, this);
     }
 
@@ -100,7 +92,7 @@ public class Material {
         List<String> oreNames = new ObjectArrayList<>();
         for (final String ore : typeOreNames) {
             final String stripped = ore.replaceAll("\\p{Punct}", "");
-            if (ore.endsWith("~") || (ore.endsWith("~&") && this == Material.BASIC)) {
+            if (ore.endsWith("~") || (ore.endsWith("~&") && this.name.equals("basic"))) {
                 oreNames.add(stripped);
                 continue;
             }
@@ -120,38 +112,39 @@ public class Material {
         return colour;
     }
 
+    public String getChemicalFormula() {
+        return chemicalFormula;
+    }
+
     public boolean hasTint(IMaterialType type) {
         return this.disabledTint == null || !this.disabledTint.contains(type);
     }
 
     public boolean hasType(BlockMaterialType type) {
-        return this.typeBlocks != null && this.typeBlocks.containsKey(type);
+        return this.blocks != null && this.blocks.containsKey(type);
     }
 
     public boolean hasType(ItemMaterialType type) {
-        return this.typeItems != null && this.typeItems.containsKey(type);
+        return this.items != null && this.items.containsKey(type);
     }
 
-    public Set<BlockMaterialType> getAllowedBlockTypes() {
-        return this.typeBlocks == null ? Collections.emptySet() : this.typeBlocks.keySet();
-    }
-
-    public Set<ItemMaterialType> getAllowedItemTypes() {
-        return this.typeItems == null ? Collections.emptySet() : this.typeItems.keySet();
+    public boolean hasFlag(MaterialFlag flag) {
+        return (this.flags & flag.bit) > 0;
     }
 
     public Map<BlockMaterialType, Block> getBlocks() {
-        return this.typeBlocks == null ? Collections.emptyMap() : this.typeBlocks;
+        return this.blocks == null ? Collections.emptyMap() : this.blocks;
     }
 
     public Map<ItemMaterialType, ItemStack> getItems() {
-        return this.typeItems == null ? Collections.emptyMap() : this.typeItems;
+        return this.items == null ? Collections.emptyMap() : this.items;
     }
 
     public Map<FluidType, Fluid> getFluids() {
-        return this.typeFluids == null ? Collections.emptyMap() : this.typeFluids;
+        return this.fluids == null ? Collections.emptyMap() : this.fluids;
     }
 
+    /*
     public ExtendedToolMaterial getToolMaterial() {
         return toolMaterial;
     }
@@ -159,17 +152,18 @@ public class Material {
     public MaterialTools getTools() {
         return tools;
     }
+     */
 
     public Block getBlock(BlockMaterialType type) {
-        return this.typeBlocks == null ? null : this.typeBlocks.get(type);
+        return this.blocks == null ? null : this.blocks.get(type);
     }
 
     public ItemStack getItem(ItemMaterialType type, boolean copy) {
-        if (this.typeItems == null) {
+        if (this.items == null) {
             return ItemStack.EMPTY;
         }
-        ItemStack stack = this.typeItems.get(type);
-        if (stack == null) {
+        ItemStack stack = this.items.get(type);
+        if (stack == null || stack.isEmpty()) {
             return ItemStack.EMPTY;
         }
         return copy ? stack.copy() : stack;
@@ -185,7 +179,7 @@ public class Material {
     }
 
     public Fluid getFluid(FluidType type) {
-        return this.typeFluids == null ? null : this.typeFluids.get(type);
+        return this.fluids == null ? null : this.fluids.get(type);
     }
 
     public ItemStack getStack(BlockMaterialType type, int count) {
@@ -206,187 +200,37 @@ public class Material {
         return new FluidStack(getFluid(type), amount);
     }
 
-    public ResourceLocation getTexture(IMaterialType type, int layer) {
-        return this.textures.get(type)[layer];
+    public ResourceLocation getTexture(ItemMaterialType type, int layer) {
+        return this.itemTextures.get(type)[layer];
     }
 
-    public ResourceLocation[] getTextures(IMaterialType type) {
-        return this.textures.get(type);
+    public ResourceLocation getTexture(BlockMaterialType type, int layer) {
+        return this.blockTextures.get(type)[layer];
     }
 
-    public boolean hasTools() {
-        return hasTools;
+    public ResourceLocation[] getTextures(ItemMaterialType type) {
+        return this.itemTextures.get(type);
     }
 
-    @Deprecated
-    public TextureSet getTextureSet() {
-        return TextureSet.NONE;
-    }
-
-    public Material formula(String formula) {
-        this.chemicalFormula = formula;
-        return this;
-    }
-
-    public Material formula(UnaryOperator<FormulaBuilder> builder) {
-        return formula(builder.apply(FormulaBuilder.of()).build());
-    }
-
-    public Material formula(Element element, int atoms) {
-        return formula(FormulaBuilder.of().element(element, atoms).build());
-    }
-
-    public Material formula(Element element) {
-        return formula(FormulaBuilder.of().element(element).build());
-    }
-
-    public Material tools(Item.ToolMaterial toolMaterial, int attackSpeed) {
-        this.hasTools = true;
-        this.toolMaterial = new ExtendedToolMaterial(toolMaterial, attackSpeed);
-        this.tools = new MaterialTools(this.toolMaterial);
-        return this;
-    }
-
-    public Material tools(Item.ToolMaterial toolMaterial, int attackSpeed, UnaryOperator<MaterialTools> applicableTools) {
-        this.hasTools = true;
-        this.toolMaterial = new ExtendedToolMaterial(toolMaterial, attackSpeed);
-        this.tools = applicableTools.apply(new MaterialTools(this.toolMaterial));
-        return this;
-    }
-
-    public Material tools(int harvestLevel, int maxUses, float efficiency, float attackDamage, float attackSpeed, int enchantability) {
-        this.hasTools = true;
-        this.toolMaterial = new ExtendedToolMaterial(EnumHelper.addToolMaterial(name, harvestLevel, maxUses, efficiency, attackDamage, enchantability), attackSpeed);
-        this.tools = new MaterialTools(this.toolMaterial).axe().hoe().pickaxe().shovel().sword();
-        return this;
-    }
-
-    public Material tools(int harvestLevel, int maxUses, float efficiency, float attackDamage, float attackSpeed, int enchantability, UnaryOperator<MaterialTools> applicableTools) {
-        this.hasTools = true;
-        this.toolMaterial = new ExtendedToolMaterial(EnumHelper.addToolMaterial(name, harvestLevel, maxUses, efficiency, attackDamage, enchantability), attackSpeed);
-        this.tools = applicableTools.apply(new MaterialTools(this.toolMaterial));
-        return this;
-    }
-
-    // TODO: placeholder
-    public Material ore() {
-        if (this.typeBlocks == null) {
-            this.typeBlocks = new EnumMap<>(BlockMaterialType.class);
-        }
-        this.typeBlocks.put(BlockMaterialType.ORE, new OreBlock(this, OreGrade.NORMAL));
-        return this;
-    }
-
-    @Deprecated
-    public <T extends Block> Material type(BlockMaterialType type, Class<T> blockClass, UnaryOperator<T> blockCallback) {
-        if (this.protoTypeBlocks == null) {
-            this.protoTypeBlocks = new EnumMap<>(BlockMaterialType.class);
-        }
-        this.protoTypeBlocks.put(type, blockCallback);
-        ResourceLocation[] locations = new ResourceLocation[type.getModelLayers()];
-        this.textures.put(type, locations);
-        for (int i = 0; i < type.getModelLayers(); i++) {
-            locations[i] = new ResourceLocation(Zairyou.ID, String.join("/", "blocks", type.toString(), Integer.toString(i)));
-        }
-        return this;
-    }
-
-    public Material type(ItemMaterialType type) {
-        if (this.typeItems == null) {
-            this.typeItems = new EnumMap<>(ItemMaterialType.class);
-        }
-        this.typeItems.put(type, null);
-        ResourceLocation[] locations = new ResourceLocation[type.getModelLayers()];
-        this.textures.put(type, locations);
-        for (int i = 0; i < type.getModelLayers(); i++) {
-            locations[i] = new ResourceLocation(Zairyou.ID, String.join("/", "items", type.toString(), Integer.toString(i)));
-        }
-        return this;
-    }
-
-    public Material types(ItemMaterialType... types) {
-        for (ItemMaterialType type : types) {
-            type(type);
-        }
-        return this;
-    }
-
-    public Material types(ItemMaterialType[] types, ItemMaterialType... moreTypes) {
-        for (ItemMaterialType type : types) {
-            type(type);
-        }
-        for (ItemMaterialType type : moreTypes) {
-            type(type);
-        }
-        return this;
-    }
-
-    public Material fluid(FluidType type, Fluid fluid, boolean bucket) {
-        if (this.typeFluids == null) {
-            this.typeFluids = new EnumMap<>(FluidType.class);
-        }
-        if (bucket) {
-            FluidRegistry.addBucketForFluid(fluid);
-        }
-        this.typeFluids.put(type, fluid);
-        return this;
-    }
-
-    public Material fluid(FluidType fluidType, UnaryOperator<ExtendedFluid.Builder> builderOperator) {
-        ExtendedFluid fluid = builderOperator.apply(new ExtendedFluid.Builder(this, fluidType)).build();
-        return fluid(fluidType, fluid, fluid.hasBucket());
-    }
-
-    public Material fluid(FluidType fluidType, UnaryOperator<ExtendedFluid.Builder> builderOperator, Consumer<Block> blockConsumer) {
-        ExtendedFluid fluid = builderOperator.apply(new ExtendedFluid.Builder(this, fluidType)).build();
-        blockConsumer.accept(fluid.getBlock());
-        return fluid(fluidType, fluid, fluid.hasBucket());
-    }
-
-    public Material texture(IMaterialType type, ResourceLocation location, int layer) {
-        this.textures.get(type)[layer] = location;
-        return this;
-    }
-
-    public Material texture(IMaterialType type, String domain, String id, int layer) {
-        return texture(type, new ResourceLocation(domain, id), layer);
-    }
-
-    public Material texture(IMaterialType type, String id, int layer) {
-        return texture(type, new ResourceLocation(Zairyou.ID, id), layer);
-    }
-
-    public Material noTint(ItemMaterialType type) {
-        if (this.disabledTint == null) {
-            this.disabledTint = new ObjectOpenHashSet<>();
-        }
-        this.disabledTint.add(type);
-        return this;
-    }
-
-    public Material noTints(ItemMaterialType... types) {
-        if (this.disabledTint == null) {
-            this.disabledTint = new ObjectOpenHashSet<>();
-        }
-        Collections.addAll(this.disabledTint, types);
-        return this;
+    public ResourceLocation[] getTextures(BlockMaterialType type) {
+        return this.blockTextures.get(type);
     }
 
     public Block setBlock(BlockMaterialType type, Block block) {
-        this.typeBlocks.put(type, block);
+        this.blocks.put(type, block);
         return block;
     }
 
     public void setItem(ItemMaterialType type, ItemStack stack) {
-        this.typeItems.put(type, stack);
+        this.items.put(type, stack);
     }
 
     public void setItem(ItemMaterialType type, Item item, int meta) {
-        this.typeItems.put(type, new ItemStack(item, 1, meta));
+        this.items.put(type, new ItemStack(item, 1, meta));
     }
 
     public void setItem(ItemMaterialType type, Item item) {
-        this.typeItems.put(type, new ItemStack(item));
+        this.items.put(type, new ItemStack(item));
     }
 
     public String toCamelString() {

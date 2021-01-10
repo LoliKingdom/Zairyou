@@ -25,8 +25,8 @@ public class ExtendedFluid extends Fluid {
 
     public ExtendedFluid(Builder builder, boolean hasBucket) {
         super(builder.name, builder.still == null ? builder.fluidType.getStillTexture() : builder.still, builder.flow == null ? builder.fluidType.getFlowingTexture() : builder.flow, builder.overlay);
-        this.hasBucket = hasBucket;
         this.backingMaterial = builder.material;
+        this.hasBucket = hasBucket;
         this.fluidType = builder.fluidType;
         if (!builder.noTint) {
             setColor(RenderUtils.convertRGB2ARGB(fluidType.getBaseAlpha(), builder.colour));
@@ -38,6 +38,9 @@ public class ExtendedFluid extends Fluid {
             this.translation = () -> I18n.format(fluidType.getTranslationKey(), I18n.format(backingMaterial.getTranslationKey()));
         }
         FluidRegistry.registerFluid(this);
+        if (hasBucket) {
+            FluidRegistry.addBucketForFluid(this);
+        }
     }
 
     @Override
@@ -51,10 +54,10 @@ public class ExtendedFluid extends Fluid {
 
     public static class Builder {
 
-        private String name;
-
         private final Material material;
         private final FluidType fluidType;
+
+        private String name;
 
         private int colour;
         private boolean hasBucket = true;
@@ -65,9 +68,9 @@ public class ExtendedFluid extends Fluid {
         private EnumRarity rarity;
 
         public Builder(Material material, FluidType fluidType) {
-            this.name = material.getName();
             this.material = material;
             this.fluidType = fluidType;
+            this.name = material.getName();
             this.colour = material.getColour();
         }
 

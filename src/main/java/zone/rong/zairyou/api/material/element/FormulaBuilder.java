@@ -15,12 +15,12 @@ public class FormulaBuilder {
     FormulaBuilder() { }
 
     public FormulaBuilder element(Element element) {
-        formulaBuilder.append(element.name()); // .append((char) atoms + 2080);
+        formulaBuilder.append(element.name());
         return this;
     }
 
     public FormulaBuilder element(Element element, int atoms) {
-        formulaBuilder.append(element.name()); // .append((char) atoms + 2080);
+        formulaBuilder.append(element.name());
         if (atoms != 1) {
             for (char n : Integer.toString(atoms).toCharArray()) {
                 formulaBuilder.append((char) (n + 2080));
@@ -29,7 +29,7 @@ public class FormulaBuilder {
         return this;
     }
 
-    public FormulaBuilder element(UnaryOperator<ImmutableMap.Builder<Element, Integer>> builder) {
+    public FormulaBuilder elements(UnaryOperator<ImmutableMap.Builder<Element, Integer>> builder) {
         builder.apply(new ImmutableMap.Builder<>()).build().forEach(this::element);
         return this;
     }
