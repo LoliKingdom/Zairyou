@@ -3,15 +3,19 @@ package zone.rong.zairyou.api.material;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fml.common.Loader;
 import zone.rong.zairyou.Zairyou;
 import zone.rong.zairyou.api.event.MaterialRegisterEvent;
 import zone.rong.zairyou.api.fluid.ExtendedFluid;
 import zone.rong.zairyou.api.fluid.FluidType;
+import zone.rong.zairyou.api.item.tool.ExtendedToolMaterial;
+import zone.rong.zairyou.api.item.tool.MaterialTools;
 import zone.rong.zairyou.api.material.element.Element;
 import zone.rong.zairyou.api.material.element.FormulaBuilder;
 import zone.rong.zairyou.api.material.type.BlockMaterialType;
@@ -25,7 +29,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import static zone.rong.zairyou.api.material.type.ItemMaterialType.*;
@@ -51,6 +54,8 @@ public class MaterialBuilder {
 
     private EnumMap<ItemMaterialType, ItemStack> items;
     private EnumMap<ItemMaterialType, ResourceLocation[]> itemTextures;
+
+    private ExtendedToolMaterial toolMaterial;
 
     private EnumMap<FluidType, Function<Material, Fluid>> fluids;
 
@@ -108,37 +113,29 @@ public class MaterialBuilder {
         return this;
     }
 
-    /*
-
-    public Material tools(Item.ToolMaterial toolMaterial, int attackSpeed) {
-        this.hasTools = true;
+    public MaterialBuilder tools(Item.ToolMaterial toolMaterial, int attackSpeed) {
         this.toolMaterial = new ExtendedToolMaterial(toolMaterial, attackSpeed);
-        this.tools = new MaterialTools(this.toolMaterial);
+        // this.tools = new MaterialTools(this.toolMaterial);
         return this;
     }
 
-    public Material tools(Item.ToolMaterial toolMaterial, int attackSpeed, UnaryOperator<MaterialTools> applicableTools) {
-        this.hasTools = true;
+    public MaterialBuilder tools(Item.ToolMaterial toolMaterial, int attackSpeed, UnaryOperator<MaterialTools> applicableTools) {
         this.toolMaterial = new ExtendedToolMaterial(toolMaterial, attackSpeed);
-        this.tools = applicableTools.apply(new MaterialTools(this.toolMaterial));
+        // this.tools = applicableTools.apply(new MaterialTools(this.toolMaterial));
         return this;
     }
 
-    public Material tools(int harvestLevel, int maxUses, float efficiency, float attackDamage, float attackSpeed, int enchantability) {
-        this.hasTools = true;
+    public MaterialBuilder tools(int harvestLevel, int maxUses, float efficiency, float attackDamage, float attackSpeed, int enchantability) {
         this.toolMaterial = new ExtendedToolMaterial(EnumHelper.addToolMaterial(name, harvestLevel, maxUses, efficiency, attackDamage, enchantability), attackSpeed);
-        this.tools = new MaterialTools(this.toolMaterial).axe().hoe().pickaxe().shovel().sword();
+        // this.tools = new MaterialTools(this.toolMaterial).axe().hoe().pickaxe().shovel().sword();
         return this;
     }
 
-    public Material tools(int harvestLevel, int maxUses, float efficiency, float attackDamage, float attackSpeed, int enchantability, UnaryOperator<MaterialTools> applicableTools) {
-        this.hasTools = true;
+    public MaterialBuilder tools(int harvestLevel, int maxUses, float efficiency, float attackDamage, float attackSpeed, int enchantability, UnaryOperator<MaterialTools> applicableTools) {
         this.toolMaterial = new ExtendedToolMaterial(EnumHelper.addToolMaterial(name, harvestLevel, maxUses, efficiency, attackDamage, enchantability), attackSpeed);
-        this.tools = applicableTools.apply(new MaterialTools(this.toolMaterial));
+        // this.tools = applicableTools.apply(new MaterialTools(this.toolMaterial));
         return this;
     }
-
-     */
 
     public MaterialBuilder provideFluid(FluidType type, Function<Material, Fluid> fluid) {
         if (this.fluids == null) {

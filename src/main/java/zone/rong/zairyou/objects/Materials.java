@@ -29,7 +29,7 @@ public class Materials {
     public static final Material COPPER = of("copper", 0xE77C56).ore().flag(GENERATE_DEFAULT_METAL_TYPES).noTints(DUST, INGOT).tex(DUST, INGOT).fluid(MOLTEN, fluid -> fluid.temperature(1385))/*.tools(1, 144, 5.0F, 1.5F, -3.2F, 8, tools -> tools.axe().hoe().pickaxe().shovel().sword())*/.build();
     public static final Material DIAMOND = of("diamond", 0xA1FBE8).ore().flag(GENERATE_DEFAULT_METAL_TYPES).noTints(DUST, INGOT).tex(DUST, INGOT).build();
     public static final Material EMERALD = of("emerald", 0x17DD62).ore().flag(GENERATE_DEFAULT_METAL_TYPES).noTints(DUST, INGOT).tex(DUST, INGOT).build();
-    public static final Material FLINT = of("flint", 0x17DD62).build();
+    public static final Material FLINT = of("flint", 0x7F7F7F).build();
     public static final Material IRON = of("iron", 0xAAAAAA).ore().flag(GENERATE_DEFAULT_METAL_TYPES).items(BUZZSAW_BLADE, SAW_BLADE).fluid(MOLTEN, fluid -> fluid.temperature(1803)).build();
     public static final Material GOLD = of("gold", 0xFFFF0B).ore().flag(GENERATE_DEFAULT_METAL_TYPES).items(COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337)).build();
     public static final Material REDSTONE = of("redstone", 0xC80000).ore().items(CRYSTAL).fluid(MOLTEN, fluid -> fluid.noTint().customTranslation().still("blocks/fluids/redstone_still").flow("blocks/fluids/redstone_flow").luminosity(7).density(1200).viscosity(1500).rarity(EnumRarity.UNCOMMON)).build();
