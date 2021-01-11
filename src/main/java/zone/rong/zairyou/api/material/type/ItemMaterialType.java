@@ -17,11 +17,20 @@ public enum ItemMaterialType implements IMaterialType {
     NUGGET("minecraft", 1, M / 9, "nugget"),
     ROD("minecraft", 1, M / 2, "rod", "stick"),
 
+    DENSE_PLATE("gregtech", 1, M * 9, "plateDense"),
+    DOUBLE_PLATE("gregtech", 1, M * 2, "plateDouble"),
+    CRUSHED("gregtech", 1, -1, "crushed"),
+    CENTRIFUGED_CRUSHED("gregtech", 1, -1, "crushedCentrifuged"),
     DOUBLE_INGOT("gregtech", 1, M * 2, "ingotDouble"),
+    FOIL("gregtech", 1, M / 4, "foil"),
     GEAR("gregtech", 1, M * 4, "gear"),
     HOT_INGOT("gregtech", 1, M, "ingotHot"),
     LENS("gregtech", 2, (M * 3) / 4, "lens"),
+    PLATE("gregtech", 1, M, "plate"),
+    PURIFIED_CRUSHED("gregtech", 1, -1, "crushedPurified"),
     RING("gregtech", 1, M / 4, "ring"),
+    TINY_DUST("gregtech", 1, M / 9, "dustTiny"),
+    SMALL_DUST("gregtech", 1, M / 4, "dustSmall"),
 
     AXE_HEAD("gregtech", 2, M * 3, "toolHeadAxe*"),
     BUZZSAW_BLADE("gregtech", 2, M * 4, "toolHeadBuzzSaw*"),
@@ -42,21 +51,6 @@ public enum ItemMaterialType implements IMaterialType {
     FLAWED_GEM("tfc", 1, M / 2, "chipped", "gemChipped*"),
     FLAWLESS_GEM("tfc", 1, M * 2, "chipped", "gemChipped*"),
     EXQUISITE_GEM("tfc", 1, M * 4, "exquisite", "gemExquisite*"),
-
-    CRUSHED(Zairyou.ID, 1, -1, "crushed"),
-    CENTRIFUGED_CRUSHED(Zairyou.ID, 1, -1, "crushedCentrifuged"),
-    PURIFIED_CRUSHED(Zairyou.ID, 1, -1, "crushedPurified"),
-
-    SMALL_DUST(Zairyou.ID, 1, M / 4, "dustSmall"),
-    TINY_DUST(Zairyou.ID, 1, M / 9, "dustTiny"),
-
-    // DENSE_INGOT(Zairyou.ID, 1, M * 9, "ingotDense"),
-
-    PLATE(Zairyou.ID, 1, M, "plate"),
-    DOUBLE_PLATE(Zairyou.ID, 1, M * 2, "plateDouble"),
-    DENSE_PLATE(Zairyou.ID, 1, M * 9, "plateDense"),
-
-    FOIL(Zairyou.ID, 1, M / 4, "foil"),
 
     BAIT("thermalfoundation", 1, -1, "bait"),
     COIL("thermalfoundation", 2, M * 2, "coil"),

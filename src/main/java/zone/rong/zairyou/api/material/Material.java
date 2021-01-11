@@ -74,11 +74,11 @@ public class Material {
         this.colour = colour;
         this.flags = flags;
         this.chemicalFormula = chemicalFormula;
-        this.blocks = blocks == null ? null : Util.convertValues(BlockMaterialType.class, blocks, k -> k, e -> e.getValue().apply(this));
-        this.blockTextures = blockTextures == null ? null : Util.keepEnumMap(BlockMaterialType.class, blockTextures, k -> k, e -> e);
-        this.items = items == null ? null : Util.keepEnumMap(ItemMaterialType.class, items, k -> k, e -> e);
-        this.itemTextures = itemTextures == null ? null : Util.keepEnumMap(ItemMaterialType.class, itemTextures, k -> k, e -> e);
-        this.fluids = fluids == null ? null : Util.convertValues(FluidType.class, fluids, k -> k, e -> e.getValue().apply(this));
+        this.blocks = blocks == null ? null : Util.keepEnumMapAndConvertValues(BlockMaterialType.class, blocks, k -> k, e -> e.getValue().apply(this));
+        this.blockTextures = blockTextures == null ? null : Util.keepEnumMap(blockTextures, k -> k, e -> e);
+        this.items = items == null ? null : Util.keepEnumMap(items, k -> k, e -> e);
+        this.itemTextures = itemTextures == null ? null : Util.keepEnumMap(itemTextures, k -> k, e -> e);
+        this.fluids = fluids == null ? null : Util.keepEnumMapAndConvertValues(FluidType.class, fluids, k -> k, e -> e.getValue().apply(this));
         this.disabledTint = disabledTint;
         REGISTRY.put(name, this);
     }
