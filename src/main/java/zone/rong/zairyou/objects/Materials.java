@@ -434,20 +434,52 @@ public class Materials {
 
     /** Generic - GregTech-esque **/
 
-    public static final Material Aluminium = of("aluminium", 0x80C8F0).build();
-    public static final Material Beryllium = of("beryllium", 0x64B464).build();
-    public static final Material Bismuth = of("bismuth", 0x64A0A0).build();
-    public static final Material Carbon = of("carbon", 0x141414).build();
-    public static final Material Chrome = of("chrome", 0xffE6E6).build();
-    public static final Material Cobalt = of("cobalt", 0x5050FA).build();
-    public static final Material Iridium = of("iridium", 0xF0F0F5).build();
-    public static final Material Lanthanum = of("lanthanum", 0xFFFFFF).build();
+    public static final Material ALUMINIUM = of("aluminium", 0x80C8F0).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material BERYLLIUM = of("beryllium", 0x64B464).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material BISMUTH = of("bismuth", 0x64A0A0).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material CARBON = of("carbon", 0x141414).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material CHROME = of("chrome", 0xffE6E6).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material COBALT = of("cobalt", 0x5050FA).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material IRIDIUM = of("iridium", 0xF0F0F5).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material LANTHANUM = of("lanthanum", 0xFFFFFF).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material LEAD = of("lead", 0x8C648C).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material MANGANESE = of("manganese", 0xFAFAFA).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material MOLYBDENUM = of("molybdenum", 0xB4B4DC).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material NEODYMIUM = of("neodymium", 0x646464).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material NICKEL = of("nickel", 0xc8c8FA).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material OSMIUM = of("osmium", 0x3232FF).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material PALLADIUM = of("palladium", 0x808080).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material PLATINUM = of("platinum", 0xFFFFC8).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material PLUTONIUM_244 = of("plutonium", 0xF03232).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material PLUTONIUM_241 = of("plutonium_241", 0xFA4646).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material SILVER = of("silver", 0x79A7E0).ore().flag(GENERATE_DEFAULT_METAL_TYPES).items(COIL).fluid(MOLTEN, fluid -> fluid.temperature(1235)).build();
+    public static final Material THORIUM = of("thorium", 0x001E00).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material TITANIUM = of("titanium", 0xDCA0F0).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material TUNGSTEN = of("tungsten", 0x323232).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material URANIUM_238 = of("uranium", 0x32F032).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material URANIUM_235 = of("uranium_235", 0x46FA46).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material GRAPHITE = of("graphite", 0x808080).flag(GENERATE_DUST_VARIANTS).build();
+
+    /** Metallurgy **/
+
+    // Overworld TODO: colours
+    public static final Material DEEP_IRON = of("deep_iron", 0x808080).build();
+    public static final Material PROMETHEUM = of("prometheum", 0x808080).build();
+    public static final Material OURECLASE = of("oureclase", 0x808080).build();
+    public static final Material INFUSCOLIUM = of("infuscolium", 0x808080).build();
+    public static final Material ADAMANTINE = of("adamantine", 0x808080).build();
+    public static final Material RUBRACIUM = of("rubracium", 0x808080).build();
+    public static final Material ATLARUS = of("atlarus", 0x808080).build();
+    public static final Material CARMOT = of("carmot", 0x808080).build();
+    public static final Material MITHRIL = of("mithril", 0x808080).build();
+    public static final Material ORICHALCUM = of("orichalcum", 0x808080).build();
+    public static final Material ASTRAL_SILVER = of("astral_silver", 0x808080).build();
+    public static final Material LUTETIUM = of("lutetium", 0x808080).build();
 
     /** Thermal Foundation **/
 
     public static final Material COKE = of("coke", 0x4C4335).flag(GENERATE_DUST_VARIANTS).items(ItemMaterialType.COAL).build();
     public static final Material ELECTRUM = of("electrum", 0xFFFF64).flag(GENERATE_DEFAULT_METAL_TYPES).items(COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337)).build();
-    public static final Material SILVER = of("silver", 0x79A7E0).ore().flag(GENERATE_DEFAULT_METAL_TYPES).items(COIL).fluid(MOLTEN, fluid -> fluid.temperature(1235)).build();
 
     public static final Material AEROTHEUM = of("aerotheum", 0xD5D181).flag(GENERATE_DUST_VARIANTS).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/aerotheum_still").flow("blocks/fluids/aerotheum_flow").noTint().density(-800).viscosity(100).gasLike().rarity(EnumRarity.RARE)).build();
     public static final Material CRYOTHEUM = of("cryotheum", 0x49EFFF).flag(GENERATE_DUST_VARIANTS).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/cryotheum_still").flow("blocks/fluids/cryotheum_flow").noTint().density(4000).viscosity(4000).temperature(50).rarity(EnumRarity.RARE)).build();
