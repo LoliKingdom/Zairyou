@@ -45,6 +45,9 @@ repositories {
     maven {
         url = 'https://repo.spongepowered.org/maven'
     }
+    maven {
+        url = "https://www.cursemaven.com"
+    }
 }
 
 dependencies {
@@ -52,6 +55,10 @@ dependencies {
     embed ('org.spongepowered:mixin:0.8.1-SNAPSHOT') { // Don't include in the build
         transitive = false
     }
+
+    deobfCompile "curse.maven:tfcraft-302973:3136903"
+
+    deobfCompile "curse.maven:jei-238222:3043174"
 
 }
 

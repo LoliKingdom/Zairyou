@@ -1,5 +1,7 @@
 package zone.rong.zairyou.api.material;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
@@ -23,13 +25,13 @@ import zone.rong.zairyou.api.material.type.IMaterialType;
 import zone.rong.zairyou.api.material.type.ItemMaterialType;
 import zone.rong.zairyou.api.ore.OreBlock;
 import zone.rong.zairyou.api.ore.OreGrade;
+import zone.rong.zairyou.api.util.Util;
 
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Set;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 import static zone.rong.zairyou.api.material.type.ItemMaterialType.*;
 import static zone.rong.zairyou.api.material.MaterialFlag.*;
@@ -47,29 +49,35 @@ public class MaterialBuilder {
     public final String name;
     public final int colour;
 
-    private String chemicalFormula = "";
+    protected String chemicalFormula = "";
 
-    private EnumMap<BlockMaterialType, Function<Material, Block>> blocks;
-    private EnumMap<BlockMaterialType, ResourceLocation[]> blockTextures;
+    protected EnumMap<BlockMaterialType, Function<Material, Block>> blocks;
+    protected EnumMap<BlockMaterialType, ResourceLocation[]> blockTextures;
 
-    private EnumMap<ItemMaterialType, ItemStack> items;
-    private EnumMap<ItemMaterialType, ResourceLocation[]> itemTextures;
+    protected EnumMap<ItemMaterialType, ItemStack> items;
+    protected EnumMap<ItemMaterialType, ResourceLocation[]> itemTextures;
 
-    private ExtendedToolMaterial toolMaterial;
+    protected ExtendedToolMaterial toolMaterial;
 
-    private EnumMap<FluidType, Function<Material, Fluid>> fluids;
+    protected EnumMap<FluidType, Function<Material, Fluid>> fluids;
 
-    private Set<IMaterialType> disabledTint;
+    protected Set<IMaterialType> disabledTint;
 
-    private List<UnaryOperator<MaterialBuilder>> delegatingCode;
+    protected Map<Class<?>, AbstractMaterialBuilderAppender<?, ?>> appenders;
+    protected List<UnaryOperator<MaterialBuilder>> delegatingCode;
 
-    private long flags = 0L;
+    protected long flags = 0L;
 
     boolean building = false;
 
-    MaterialBuilder(String name, int colour) {
+    private MaterialBuilder(String name, int colour) {
         this.name = name;
         this.colour = colour;
+    }
+
+    protected MaterialBuilder(MaterialBuilder existing) {
+        this.name = existing.name;
+        this.colour = existing.colour;
     }
 
     public MaterialBuilder formula(String formula) {
@@ -239,14 +247,38 @@ public class MaterialBuilder {
         return this;
     }
 
+    public <T extends AbstractMaterialBuilderAppender<T, ?>> T get(Class<T> clazz) {
+        try {
+            if (this.appenders != null && this.appenders.containsKey(clazz)) {
+                return (T) this.appenders.get(clazz);
+            }
+            T instance = clazz.getConstructor(MaterialBuilder.class).newInstance(this);
+            registerAppender(clazz, instance);
+            return instance;
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public long getFlag() {
+        return flags;
+    }
+
     public Material build() {
         building = true;
         MinecraftForge.EVENT_BUS.post(new MaterialRegisterEvent(this.name, this.colour, this, Loader.instance().activeModContainer()));
         checkFlags();
+        Map<?, ?> viewers;
+        if (this.appenders != null) {
+            viewers = Util.remap(this.appenders, k -> k.getValue().getViewerClass(), e -> e.getValue().building());
+        } else {
+            viewers = Object2ObjectMaps.emptyMap();
+        }
         if (this.delegatingCode != null) {
             this.delegatingCode.forEach(s -> s.apply(this));
         }
-        return new Material(name, colour, chemicalFormula, flags, blocks, blockTextures, items, itemTextures, fluids, disabledTint);
+        return new Material(name, colour, chemicalFormula, flags, blocks, blockTextures, items, itemTextures, fluids, disabledTint, (Map<Class<?>, AbstractMaterialBuilderAppender.Viewer<?>>) viewers);
     }
 
     private void checkFlags() {
@@ -264,6 +296,13 @@ public class MaterialBuilder {
             this.delegatingCode = new ObjectArrayList<>();
         }
         this.delegatingCode.add(delegatingCode);
+    }
+
+    private void registerAppender(Class<?> clazz, AbstractMaterialBuilderAppender<?, ?> appender) {
+        if (this.appenders == null) {
+            this.appenders = new Object2ObjectOpenHashMap<>();
+        }
+        this.appenders.put(clazz, appender);
     }
 
 }

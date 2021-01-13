@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
+import org.apache.commons.lang3.tuple.Pair;
 import zone.rong.zairyou.Zairyou;
 import zone.rong.zairyou.api.fluid.FluidType;
 import zone.rong.zairyou.api.item.MaterialItem;
@@ -59,6 +60,8 @@ public class Material {
     // private final ExtendedToolMaterial toolMaterial;
     // private final MaterialTools tools;
 
+    private final Map<Class<?>, AbstractMaterialBuilderAppender.Viewer<?>> viewers;
+
     protected Material(String name,
                        int colour,
                        String chemicalFormula,
@@ -68,7 +71,8 @@ public class Material {
                        Map<ItemMaterialType, ItemStack> items,
                        Map<ItemMaterialType, ResourceLocation[]> itemTextures,
                        Map<FluidType, Function<Material, Fluid>> fluids,
-                       Set<IMaterialType> disabledTint) {
+                       Set<IMaterialType> disabledTint,
+                       Map<Class<?>, AbstractMaterialBuilderAppender.Viewer<?>> viewers) {
         this.name = name;
         this.translationKey = String.join(".", Zairyou.ID, "material", name, "name");
         this.colour = colour;
@@ -80,6 +84,7 @@ public class Material {
         this.itemTextures = itemTextures == null ? null : Util.keepEnumMap(itemTextures, k -> k, e -> e);
         this.fluids = fluids == null ? null : Util.keepEnumMapAndConvertValues(FluidType.class, fluids, k -> k, e -> e.getValue().apply(this));
         this.disabledTint = disabledTint;
+        this.viewers = viewers;
         REGISTRY.put(name, this);
     }
 
@@ -114,6 +119,11 @@ public class Material {
 
     public String getChemicalFormula() {
         return chemicalFormula;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends AbstractMaterialBuilderAppender.Viewer<?>> T view(Class<T> clazz) {
+        return (T) this.viewers.get(clazz);
     }
 
     public boolean hasTint(IMaterialType type) {

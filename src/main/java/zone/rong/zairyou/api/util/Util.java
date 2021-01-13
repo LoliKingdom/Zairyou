@@ -1,5 +1,7 @@
 package zone.rong.zairyou.api.util;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -39,6 +41,18 @@ public class Util {
         return originalMap.entrySet()
                 .stream()
                 .collect(Collectors.toMap(e -> keyMapper.apply(e.getKey()), valueMapper, (l, r) -> { throw new IllegalArgumentException(); }, () -> new EnumMap<>(clazz)));
+    }
+
+    public static <K, NK, V, NV> Map<NK, NV> remap(Map<K, V> originalMap, Function<Map.Entry<K, V>, NK> keyMapper, Function<Map.Entry<K, V>, NV> valueMapper) {
+        return originalMap.entrySet()
+                .stream()
+                .collect(Collectors.toMap(keyMapper, valueMapper, (l, r) -> { throw new IllegalArgumentException(); }, Object2ObjectOpenHashMap::new));
+    }
+
+    public static <K, V, NV> Map<K, NV> remapValues(Map<K, V> originalMap, Function<Map.Entry<K, V>, NV> valueMapper) {
+        return originalMap.entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, valueMapper, (l, r) -> { throw new IllegalArgumentException(); }, Object2ObjectOpenHashMap::new));
     }
 
 }

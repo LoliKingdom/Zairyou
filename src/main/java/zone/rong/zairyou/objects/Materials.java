@@ -1,6 +1,5 @@
 package zone.rong.zairyou.objects;
 
-import com.google.common.collect.ImmutableMap;
 import net.minecraft.init.Items;
 import net.minecraft.init.PotionTypes;
 import net.minecraft.item.EnumRarity;
@@ -12,12 +11,16 @@ import net.minecraftforge.fluids.FluidStack;
 import zone.rong.zairyou.api.fluid.PotionFluid;
 import zone.rong.zairyou.api.material.Material;
 import zone.rong.zairyou.api.material.type.ItemMaterialType;
+import zone.rong.zairyou.modsupport.api.tfc.item.TFCMaterialBuilder;
+import zone.rong.zairyou.modsupport.api.tfc.item.TFCMaterialViewer;
 
 import static zone.rong.zairyou.api.material.element.Element.*;
 import static zone.rong.zairyou.api.material.MaterialBuilder.of;
 import static zone.rong.zairyou.api.material.MaterialFlag.*;
 import static zone.rong.zairyou.api.fluid.FluidType.*;
 import static zone.rong.zairyou.api.material.type.ItemMaterialType.*;
+
+import static net.dries007.tfc.api.types.Metal.Tier.*;
 
 public class Materials {
 
@@ -439,7 +442,7 @@ public class Materials {
     public static final Material BISMUTH = of("bismuth", 0x64A0A0).flag(GENERATE_DUST_VARIANTS).build();
     public static final Material CARBON = of("carbon", 0x141414).flag(GENERATE_DUST_VARIANTS).build();
     public static final Material CHROME = of("chrome", 0xffE6E6).flag(GENERATE_DUST_VARIANTS).build();
-    public static final Material COBALT = of("cobalt", 0x5050FA).flag(GENERATE_DUST_VARIANTS).build();
+    public static final Material COBALT = of("cobalt", 0x5050FA).flag(GENERATE_DUST_VARIANTS).get(TFCMaterialBuilder.class).tier(TIER_VI).back().build();
     public static final Material IRIDIUM = of("iridium", 0xF0F0F5).flag(GENERATE_DUST_VARIANTS).build();
     public static final Material LANTHANUM = of("lanthanum", 0xFFFFFF).flag(GENERATE_DUST_VARIANTS).build();
     public static final Material LEAD = of("lead", 0x8C648C).flag(GENERATE_DUST_VARIANTS).build();
