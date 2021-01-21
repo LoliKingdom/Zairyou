@@ -6,6 +6,7 @@ import zone.rong.zairyou.Zairyou;
 
 import java.util.Locale;
 
+// TODO: Extra argument for Block creation
 public enum BlockMaterialType implements IMaterialType {
 
     BLOCK(Zairyou.ID, 0, "ore"),

@@ -59,6 +59,11 @@ public class FormulaBuilder {
         return this;
     }
 
+    public FormulaBuilder allotrope(Element element, String representation) {
+        formulaBuilder.append('s').append('(').append(element.name()).append(',').append(' ').append(representation).append(')');
+        return this;
+    }
+
     public String build() {
         return formulaBuilder.toString();
     }

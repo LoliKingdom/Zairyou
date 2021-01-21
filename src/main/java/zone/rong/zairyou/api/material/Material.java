@@ -6,21 +6,32 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
-import org.apache.commons.lang3.tuple.Pair;
 import zone.rong.zairyou.Zairyou;
+import zone.rong.zairyou.api.fluid.ExtendedFluid;
 import zone.rong.zairyou.api.fluid.FluidType;
 import zone.rong.zairyou.api.item.MaterialItem;
+import zone.rong.zairyou.api.item.tool.ExtendedToolMaterial;
+import zone.rong.zairyou.api.item.tool.MaterialTools;
+import zone.rong.zairyou.api.material.element.Element;
+import zone.rong.zairyou.api.material.element.FormulaBuilder;
 import zone.rong.zairyou.api.material.type.BlockMaterialType;
 import zone.rong.zairyou.api.material.type.IMaterialType;
 import zone.rong.zairyou.api.material.type.ItemMaterialType;
-import zone.rong.zairyou.api.util.Util;
+import zone.rong.zairyou.api.ore.OreBlock;
+import zone.rong.zairyou.api.ore.OreGrade;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
+import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
+
+import static zone.rong.zairyou.api.material.MaterialFlag.GENERATE_DEFAULT_METAL_TYPES;
+import static zone.rong.zairyou.api.material.MaterialFlag.GENERATE_DUST_VARIANTS;
+import static zone.rong.zairyou.api.material.type.ItemMaterialType.*;
 
 /**
  * Material. That's it.
@@ -41,50 +52,54 @@ public class Material {
         REGISTRY.forEach(consumer);
     }
 
-    public static final Material NONE = MaterialBuilder.of("none").build();
+    public static void all(Consumer<Material> consumer) {
+        all().forEach(consumer);
+    }
 
-    private final String name, translationKey, chemicalFormula;
+    public static Material of(String name, int colour) {
+        return new Material(name, colour, null);
+    }
+
+    public static Material of(String name, int colour, Element element) {
+        return new Material(name, colour, element);
+    }
+
+    public static Material of(String name) {
+        return new Material(name, 0x0, null);
+    }
+    
+    public static final Material NONE = of("none");
+    private static boolean frozen = false;
+
+    private final String name, translationKey;
+    private final Element baseElement;
     private final int colour;
-    private final long flags;
 
-    private final EnumMap<BlockMaterialType, Block> blocks;
-    private final EnumMap<BlockMaterialType, ResourceLocation[]> blockTextures;
+    private long flags = 0L;
+    private String chemicalFormula = "";
 
-    private final EnumMap<ItemMaterialType, ItemStack> items;
-    private final EnumMap<ItemMaterialType, ResourceLocation[]> itemTextures;
+    protected List<UnaryOperator<Material>> delegatingCode;
 
-    private final EnumMap<FluidType, Fluid> fluids;
+    private EnumMap<BlockMaterialType, Block> blocks;
+    private EnumMap<BlockMaterialType, ResourceLocation[]> blockTextures;
 
-    private final Set<IMaterialType> disabledTint;
+    private EnumMap<ItemMaterialType, ItemStack> items;
+    private EnumMap<ItemMaterialType, ResourceLocation[]> itemTextures;
 
-    // private final ExtendedToolMaterial toolMaterial;
-    // private final MaterialTools tools;
+    private EnumMap<FluidType, Fluid> fluids;
 
-    private final Map<Class<?>, AbstractMaterialBuilderAppender.Viewer<?>> viewers;
+    protected ExtendedToolMaterial toolMaterial;
 
-    protected Material(String name,
-                       int colour,
-                       String chemicalFormula,
-                       long flags,
-                       Map<BlockMaterialType, Function<Material, Block>> blocks,
-                       Map<BlockMaterialType, ResourceLocation[]> blockTextures,
-                       Map<ItemMaterialType, ItemStack> items,
-                       Map<ItemMaterialType, ResourceLocation[]> itemTextures,
-                       Map<FluidType, Function<Material, Fluid>> fluids,
-                       Set<IMaterialType> disabledTint,
-                       Map<Class<?>, AbstractMaterialBuilderAppender.Viewer<?>> viewers) {
+    private Set<IMaterialType> disabledTint;
+
+    private Material(String name, int colour, Element element) {
         this.name = name;
         this.translationKey = String.join(".", Zairyou.ID, "material", name, "name");
         this.colour = colour;
-        this.flags = flags;
-        this.chemicalFormula = chemicalFormula;
-        this.blocks = blocks == null ? null : Util.keepEnumMapAndConvertValues(BlockMaterialType.class, blocks, k -> k, e -> e.getValue().apply(this));
-        this.blockTextures = blockTextures == null ? null : Util.keepEnumMap(blockTextures, k -> k, e -> e);
-        this.items = items == null ? null : Util.keepEnumMap(items, k -> k, e -> e);
-        this.itemTextures = itemTextures == null ? null : Util.keepEnumMap(itemTextures, k -> k, e -> e);
-        this.fluids = fluids == null ? null : Util.keepEnumMapAndConvertValues(FluidType.class, fluids, k -> k, e -> e.getValue().apply(this));
-        this.disabledTint = disabledTint;
-        this.viewers = viewers;
+        this.baseElement = element;
+        if (this.baseElement != null) {
+            this.formula(this.baseElement);
+        }
         REGISTRY.put(name, this);
     }
 
@@ -119,11 +134,6 @@ public class Material {
 
     public String getChemicalFormula() {
         return chemicalFormula;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends AbstractMaterialBuilderAppender.Viewer<?>> T view(Class<T> clazz) {
-        return (T) this.viewers.get(clazz);
     }
 
     public boolean hasTint(IMaterialType type) {
@@ -247,4 +257,201 @@ public class Material {
         return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, this.name);
     }
 
+    public Material formula(String formula) {
+        this.chemicalFormula = formula;
+        return this;
+    }
+
+    public Material formula(UnaryOperator<FormulaBuilder> builder) {
+        return formula(builder.apply(FormulaBuilder.of()).build());
+    }
+
+    public Material formula(Element element, int atoms) {
+        return formula(FormulaBuilder.of().element(element, atoms).build());
+    }
+
+    public Material formula(Element element) {
+        return formula(FormulaBuilder.of().element(element).build());
+    }
+
+    // TODO: placeholder
+    public Material ore() {
+        if (this.blocks == null) {
+            this.blocks = new EnumMap<>(BlockMaterialType.class);
+        }
+        this.blocks.put(BlockMaterialType.ORE, new OreBlock(this, OreGrade.NORMAL));
+        return this;
+    }
+
+    public Material items(ItemMaterialType... itemMaterialTypes) {
+        if (itemMaterialTypes.length == 0) {
+            throw new IllegalArgumentException("No ItemMaterialTypes specified for " + this.name + " material!");
+        }
+        if (this.items == null) {
+            this.items = new EnumMap<>(ItemMaterialType.class);
+            this.itemTextures = new EnumMap<>(ItemMaterialType.class);
+        }
+        for (ItemMaterialType itemMaterialType : itemMaterialTypes) {
+            this.items.put(itemMaterialType, ItemStack.EMPTY);
+            this.itemTextures.put(itemMaterialType, TextureSet.DULL.getTextureLocations(itemMaterialType));
+        }
+        return this;
+    }
+
+    public Material tools(Item.ToolMaterial toolMaterial, int attackSpeed) {
+        this.toolMaterial = new ExtendedToolMaterial(toolMaterial, attackSpeed);
+        // this.tools = new MaterialTools(this.toolMaterial);
+        return this;
+    }
+
+    public Material tools(Item.ToolMaterial toolMaterial, int attackSpeed, UnaryOperator<MaterialTools> applicableTools) {
+        this.toolMaterial = new ExtendedToolMaterial(toolMaterial, attackSpeed);
+        // this.tools = applicableTools.apply(new MaterialTools(this.toolMaterial));
+        return this;
+    }
+
+    public Material tools(int harvestLevel, int maxUses, float efficiency, float attackDamage, float attackSpeed, int enchantability) {
+        this.toolMaterial = new ExtendedToolMaterial(EnumHelper.addToolMaterial(name, harvestLevel, maxUses, efficiency, attackDamage, enchantability), attackSpeed);
+        // this.tools = new MaterialTools(this.toolMaterial).axe().hoe().pickaxe().shovel().sword();
+        return this;
+    }
+
+    public Material tools(int harvestLevel, int maxUses, float efficiency, float attackDamage, float attackSpeed, int enchantability, UnaryOperator<MaterialTools> applicableTools) {
+        this.toolMaterial = new ExtendedToolMaterial(EnumHelper.addToolMaterial(name, harvestLevel, maxUses, efficiency, attackDamage, enchantability), attackSpeed);
+        // this.tools = applicableTools.apply(new MaterialTools(this.toolMaterial));
+        return this;
+    }
+
+    public Material provideFluid(FluidType type, Fluid fluid) {
+        if (this.fluids == null) {
+            this.fluids = new EnumMap<>(FluidType.class);
+        }
+        /*
+        if (bucket) {
+            FluidRegistry.addBucketForFluid(fluid);
+        }
+         */
+        this.fluids.put(type, fluid);
+        return this;
+    }
+
+    public Material fluid(FluidType fluidType, UnaryOperator<ExtendedFluid.Builder> builderOperator) {
+        Fluid fluid = builderOperator.apply(new ExtendedFluid.Builder(this, fluidType)).build();
+        return provideFluid(fluidType, fluid);
+    }
+
+    public Material tex(ItemMaterialType itemMaterialType, ResourceLocation location, int layer) {
+        if (!frozen) {
+            createDelegate(m -> m.tex(itemMaterialType, location, layer));
+            return this;
+        }
+        if (this.itemTextures == null || !this.itemTextures.containsKey(itemMaterialType)) {
+            throw new IllegalStateException("ItemMaterialType not found for " + this.name + ", cannot change the texture of its item.");
+        }
+        ResourceLocation[] locations = this.itemTextures.get(itemMaterialType);
+        if (locations.length <= layer) {
+            throw new IllegalStateException(itemMaterialType + " does not have layer " + layer);
+        }
+        locations[layer] = location;
+        return this;
+    }
+
+    public Material tex(ItemMaterialType itemMaterialType, String location, int layer) {
+        int colonIndex = location.indexOf(':');
+        if (colonIndex == -1) {
+            return tex(itemMaterialType, new ResourceLocation(Zairyou.ID, location), layer);
+        }
+        return tex(itemMaterialType, new ResourceLocation(location), layer);
+    }
+
+    public Material tex(ItemMaterialType... itemMaterialTypes) {
+        if (!frozen) {
+            createDelegate(m -> m.tex(itemMaterialTypes));
+            return this;
+        }
+        if (this.itemTextures == null) {
+            throw new IllegalStateException("ItemMaterialType not found for " + this.name + ", cannot change the texture of its item.");
+        }
+        for (ItemMaterialType itemMaterialType : itemMaterialTypes) {
+            if (!this.itemTextures.containsKey(itemMaterialType)) {
+                throw new IllegalStateException("ItemMaterialType not found for " + this.name + ", cannot change the texture of its item.");
+            }
+            ResourceLocation[] locations = this.itemTextures.get(itemMaterialType);
+            for (int i = 0; i < locations.length; i++) {
+                locations[i] = new ResourceLocation(Zairyou.ID, String.join("/", "items", itemMaterialType.toString(), "custom", this.name + "_" + i));
+            }
+        }
+        return this;
+    }
+
+    public Material noTint(ItemMaterialType type) {
+        if (!frozen) {
+            createDelegate(m -> m.noTint(type));
+            return this;
+        }
+        if (this.items == null || !this.items.containsKey(type)) {
+            throw new IllegalStateException("ItemMaterialType not found, cannot decide on whether to tint the item or not.");
+        }
+        if (this.disabledTint == null) {
+            this.disabledTint = new ObjectOpenHashSet<>();
+        }
+        this.disabledTint.add(type);
+        return this;
+    }
+
+    public Material noTints(ItemMaterialType... types) {
+        if (!frozen) {
+            createDelegate(m -> m.noTints(types));
+            return this;
+        }
+        if (this.items == null) {
+            throw new IllegalStateException("ItemMaterialType not found, cannot decide on whether to tint the item or not.");
+        }
+        if (this.disabledTint == null) {
+            this.disabledTint = new ObjectOpenHashSet<>();
+        }
+        for (ItemMaterialType type : types) {
+            if (!this.items.containsKey(type)) {
+                throw new IllegalStateException("ItemMaterialType not found, cannot decide on whether to tint the item or not.");
+            }
+            this.disabledTint.add(type);
+        }
+        return this;
+    }
+
+    public Material flag(MaterialFlag... flags) {
+        if (flags.length == 0) {
+            throw new IllegalArgumentException("Flags not specified for " + this.name + " material!");
+        }
+        for (MaterialFlag flag : flags) {
+            this.flags |= flag.bit;
+        }
+        return this;
+    }
+
+    public void prepare() {
+        frozen = true;
+        checkFlags();
+        if (this.delegatingCode != null) {
+            this.delegatingCode.forEach(s -> s.apply(this));
+        }
+    }
+
+    private void checkFlags() {
+        if ((this.flags & GENERATE_DEFAULT_METAL_TYPES.bit) > 0) {
+            items(INGOT, NUGGET);
+            this.flags |= GENERATE_DUST_VARIANTS.bit;
+        }
+        if ((this.flags & GENERATE_DUST_VARIANTS.bit) > 0) {
+            items(DUST, SMALL_DUST, TINY_DUST);
+        }
+    }
+
+    private void createDelegate(UnaryOperator<Material> delegatingCode) {
+        if (this.delegatingCode == null) {
+            this.delegatingCode = new ObjectArrayList<>();
+        }
+        this.delegatingCode.add(delegatingCode);
+    }
+    
 }

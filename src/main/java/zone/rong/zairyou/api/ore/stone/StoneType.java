@@ -4,10 +4,11 @@ import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ResourceLocation;
 import zone.rong.zairyou.Zairyou;
 import zone.rong.zairyou.api.material.Material;
-import zone.rong.zairyou.api.material.MaterialBuilder;
 import zone.rong.zairyou.api.util.ITranslatable;
 
 import java.util.Locale;
+
+import static zone.rong.zairyou.api.material.Material.*;
 
 public enum StoneType implements IStringSerializable, ITranslatable {
 
@@ -28,7 +29,7 @@ public enum StoneType implements IStringSerializable, ITranslatable {
 
     StoneType(String modId, ResourceLocation baseTexture, String... prefixes) {
         this.modId = modId;
-        this.backingMaterial = MaterialBuilder.of(toString()).build();
+        this.backingMaterial = of(toString());
         this.baseTexture = baseTexture;
         this.topTexture = baseTexture;
         this.prefixes = prefixes;

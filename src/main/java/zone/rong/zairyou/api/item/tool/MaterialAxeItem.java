@@ -1,9 +1,5 @@
 package zone.rong.zairyou.api.item.tool;
 
-import net.minecraft.item.ItemAxe;
-import net.minecraft.item.ItemStack;
-import zone.rong.zairyou.api.material.Material;
-
 /*
 public class MaterialAxeItem extends ItemAxe implements IMaterialTool {
 

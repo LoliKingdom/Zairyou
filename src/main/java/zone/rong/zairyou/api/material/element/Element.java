@@ -61,7 +61,7 @@ public enum Element {
     Xe(54, 77, -1, null, "Xenon", false),
     Cs(55, 77, -1, null, "Caesium", false),
     Ba(56, 81, -1, null, "Barium", false),
-    La(57, 81, -1, null, "Lantanium", false),
+    La(57, 81, -1, null, "Lanthanum", false),
     Ce(58, 82, -1, null, "Cerium", false),
     Pr(59, 81, -1, null, "Praseodymium", false),
     Nd(60, 84, -1, null, "Neodymium", false),
@@ -78,7 +78,7 @@ public enum Element {
     Lu(71, 103, -1, null, "Lutetium", false),
     Hf(72, 106, -1, null, "Hafnium", false),
     Ta(73, 107, -1, null, "Tantalum", false),
-    W(74, 109, -1, null, "Wolframium", false),
+    W(74, 109, -1, null, "Tungsten", false),
     Re(75, 111, -1, null, "Rhenium", false),
     Os(76, 114, -1, null, "Osmium", false),
     Ir(77, 115, -1, null, "Iridium", false),
@@ -152,14 +152,6 @@ public enum Element {
         this.decayTo = decayTo;
         this.name = name;
         this.isIsotope = isIsotope;
-    }
-
-    public static Element get(String materialName) {
-        try {
-            return Element.valueOf(materialName);
-        } catch (IllegalArgumentException notFound) {
-            return H;
-        }
     }
 
     public String getFullName() {

@@ -43,7 +43,6 @@ import zone.rong.zairyou.api.ore.OreItemBlock;
 import zone.rong.zairyou.api.ore.stone.StoneType;
 import zone.rong.zairyou.api.client.RenderUtils;
 import zone.rong.zairyou.api.util.RecipeUtil;
-import zone.rong.zairyou.objects.Materials;
 
 import java.util.Map;
 import java.util.Set;
@@ -157,12 +156,12 @@ public class ZairyouEvents {
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public static void onHandlingItemColours(ColorHandlerEvent.Item event) {
-        Material.REGISTRY.values().forEach(m -> m.getBlocks().forEach((type, block) -> {
+        Material.all(m -> m.getBlocks().forEach((type, block) -> {
             if (block instanceof IItemColor && m.hasTint(type)) {
                 event.getItemColors().registerItemColorHandler((IItemColor) block, block);
             }
         }));
-        Material.REGISTRY.values().forEach(m -> m.getItems().forEach((type, item) -> {
+        Material.all(m -> m.getItems().forEach((type, item) -> {
             Item i = item.getItem();
             if (i instanceof IItemColor && m.hasTint(type)) {
                 event.getItemColors().registerItemColorHandler((IItemColor) i, i);
@@ -173,7 +172,7 @@ public class ZairyouEvents {
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public static void onHandlingBlockColours(ColorHandlerEvent.Block event) {
-        Material.REGISTRY.values().forEach(m -> {
+        Material.all(m -> {
             m.getBlocks().forEach((type, block) -> {
                 if (block instanceof IBlockColor && m.hasTint(type)) {
                     event.getBlockColors().registerBlockColorHandler((IBlockColor) block, block);
@@ -190,7 +189,7 @@ public class ZairyouEvents {
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public static void onTextureStitching(TextureStitchEvent.Pre event) {
-        Material.REGISTRY.values()
+        Material.all()
                 .stream()
                 .filter(m -> !m.getFluids().isEmpty())
                 .flatMap(m -> m.getFluids().values().stream())
@@ -201,14 +200,14 @@ public class ZairyouEvents {
 
         final Set<ResourceLocation> stitch = new ObjectOpenHashSet<>();
 
-        Material.REGISTRY.values()
+        Material.all()
                 .stream()
                 .flatMap(m -> m.getBlocks().values().stream())
                 .filter(b -> b instanceof IModelOverride)
                 .map(b -> (IModelOverride) b)
                 .forEach(b -> b.addTextures(stitch));
 
-        Material.REGISTRY.values()
+        Material.all()
                 .stream()
                 .flatMap(m -> m.getItems().values().stream())
                 .filter(s -> s.getItem() instanceof IModelOverride)
@@ -232,18 +231,17 @@ public class ZairyouEvents {
     @SideOnly(Side.CLIENT)
     public static void onModelRegister(ModelRegistryEvent event) {
         BasicItem.REGISTRY.values().forEach(BasicItem::onModelRegister);
-        Material.REGISTRY.values()
-                .forEach(m -> {
-                    m.getBlocks().values()
-                            .stream()
-                            .filter(b -> b instanceof IModelOverride)
-                            .map(b -> (IModelOverride) b)
-                            .forEach(IModelOverride::onModelRegister);
-                    m.getItems().values()
-                            .stream()
-                            .filter(s -> s.getItem() instanceof IModelOverride)
-                            .map(s -> (IModelOverride) s.getItem())
-                            .forEach(IModelOverride::onModelRegister);
+        Material.all(m -> {
+            m.getBlocks().values()
+                    .stream()
+                    .filter(b -> b instanceof IModelOverride)
+                    .map(b -> (IModelOverride) b)
+                    .forEach(IModelOverride::onModelRegister);
+            m.getItems().values()
+                    .stream()
+                    .filter(s -> s.getItem() instanceof IModelOverride)
+                    .map(s -> (IModelOverride) s.getItem())
+                    .forEach(IModelOverride::onModelRegister);
                     /*
                     m.getItems().forEach((t, i) -> {
                         if (i instanceof MaterialItem) {
@@ -253,13 +251,13 @@ public class ZairyouEvents {
                         }
                     });
                      */
-                    m.getFluids().forEach((t, f) -> {
-                        Block block = f.getBlock();
-                        if (block instanceof DefaultFluidBlock) {
-                            ModelLoader.setCustomStateMapper(block, RenderUtils.SIMPLE_STATE_MAPPER.apply(block));
-                        }
-                    });
-                });
+            m.getFluids().forEach((t, f) -> {
+                Block block = f.getBlock();
+                if (block instanceof DefaultFluidBlock) {
+                    ModelLoader.setCustomStateMapper(block, RenderUtils.SIMPLE_STATE_MAPPER.apply(block));
+                }
+            });
+        });
         /*
         ModelLoader.setCustomStateMapper(temporaryBlock, new StateMapperBase() {
             @Override
@@ -277,7 +275,7 @@ public class ZairyouEvents {
     @SideOnly(Side.CLIENT)
     public static void onModelBake(ModelBakeEvent event) {
         BasicItem.REGISTRY.values().forEach(b -> b.onModelBake(event));
-        Material.REGISTRY.values()
+        Material.all()
                 .stream()
                 .flatMap(m -> m.getFluids().values().stream())
                 .forEach(f -> {
@@ -288,14 +286,14 @@ public class ZairyouEvents {
                         event.getModelRegistry().putObject(RenderUtils.getSimpleModelLocation(block), bakedModel);
                     }
                 });
-        Material.REGISTRY.values()
+        Material.all()
                 .stream()
                 .flatMap(m -> m.getBlocks().values().stream())
                 .filter(b -> b instanceof IModelOverride)
                 .map(b -> (IModelOverride) b)
                 .forEach(b -> b.onModelBake(event));
 
-        Material.REGISTRY.values()
+        Material.all()
                 .stream()
                 .flatMap(m -> m.getItems().values().stream())
                 .filter(s -> s.getItem() instanceof IModelOverride)
