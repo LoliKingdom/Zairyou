@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import static zone.rong.zairyou.api.material.MaterialFlag.GENERATE_DEFAULT_METAL_TYPES;
@@ -38,7 +39,12 @@ import static zone.rong.zairyou.api.material.type.ItemMaterialType.*;
  */
 public class Material {
 
-    public static final Object2ObjectMap<String, Material> REGISTRY = new Object2ObjectOpenHashMap<>();
+    private static final Object2ObjectMap<String, Material> REGISTRY = new Object2ObjectOpenHashMap<>();
+    private static final Object2ObjectMap<Class<?>, Function<Material, ?>> APPENDER_REGISTRY = new Object2ObjectOpenHashMap<>();
+
+    public static <T extends IMaterialAppender<T>> void registerAppender(Class<T> clazz, Function<Material, T> construct) {
+        APPENDER_REGISTRY.put(clazz, construct);
+    }
 
     public static Material get(String name) {
         return REGISTRY.getOrDefault(name, NONE);
@@ -67,30 +73,32 @@ public class Material {
     public static Material of(String name) {
         return new Material(name, 0x0, null);
     }
-    
+
     public static final Material NONE = of("none");
     private static boolean frozen = false;
 
-    private final String name, translationKey;
-    private final Element baseElement;
-    private final int colour;
+    protected final String name, translationKey;
+    protected final Element baseElement;
+    protected final int colour;
 
-    private long flags = 0L;
-    private String chemicalFormula = "";
+    protected long flags = 0L;
+    protected String chemicalFormula = "";
+
+    protected Object2ObjectMap<Class<?>, IMaterialAppender<?>> appenders;
 
     protected List<UnaryOperator<Material>> delegatingCode;
 
-    private EnumMap<BlockMaterialType, Block> blocks;
-    private EnumMap<BlockMaterialType, ResourceLocation[]> blockTextures;
+    protected EnumMap<BlockMaterialType, Block> blocks;
+    protected EnumMap<BlockMaterialType, ResourceLocation[]> blockTextures;
 
-    private EnumMap<ItemMaterialType, ItemStack> items;
-    private EnumMap<ItemMaterialType, ResourceLocation[]> itemTextures;
+    protected EnumMap<ItemMaterialType, ItemStack> items;
+    protected EnumMap<ItemMaterialType, ResourceLocation[]> itemTextures;
 
-    private EnumMap<FluidType, Fluid> fluids;
+    protected EnumMap<FluidType, Fluid> fluids;
 
     protected ExtendedToolMaterial toolMaterial;
 
-    private Set<IMaterialType> disabledTint;
+    protected Set<IMaterialType> disabledTint;
 
     private Material(String name, int colour, Element element) {
         this.name = name;
@@ -101,6 +109,17 @@ public class Material {
             this.formula(this.baseElement);
         }
         REGISTRY.put(name, this);
+    }
+
+    public <T extends IMaterialAppender<T>> T cast(Class<T> clazz) {
+        if (this.appenders == null) {
+            this.appenders = new Object2ObjectOpenHashMap<>();
+        }
+        T appender = (T) this.appenders.get(clazz);
+        if (appender == null) {
+            this.appenders.put(clazz, appender = (T) APPENDER_REGISTRY.get(clazz).apply(this));
+        }
+        return appender;
     }
 
     public String getName() {
@@ -453,5 +472,5 @@ public class Material {
         }
         this.delegatingCode.add(delegatingCode);
     }
-    
+
 }

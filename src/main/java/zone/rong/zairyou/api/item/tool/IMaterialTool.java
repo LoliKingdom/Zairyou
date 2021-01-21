@@ -23,11 +23,11 @@ public interface IMaterialTool extends IItemColor {
     }
 
     default Material getMaterial(ItemStack stack) {
-        return Material.REGISTRY.get(getMainTag(stack).getTag(materialTag));
+        return Material.get(getMainTag(stack).getString(materialTag));
     }
 
     default Material getMaterial(NBTTagCompound mainTag) {
-        return Material.REGISTRY.get(mainTag.getTag(materialTag));
+        return Material.get(mainTag.getString(materialTag));
     }
 
     default int getDurability(ItemStack stack) {

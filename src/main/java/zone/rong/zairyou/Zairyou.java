@@ -2,6 +2,7 @@ package zone.rong.zairyou;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -11,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zone.rong.zairyou.api.item.MaterialItem;
 import zone.rong.zairyou.api.material.Material;
+import zone.rong.zairyou.modsupport.api.tfc.TFCModule;
 import zone.rong.zairyou.objects.ZairyouItems;
 import zone.rong.zairyou.objects.Materials;
 
@@ -24,6 +26,9 @@ public class Zairyou {
 
     static {
         FluidRegistry.enableUniversalBucket();
+        if (Loader.isModLoaded("tfc")) {
+            TFCModule.init();
+        }
     }
 
     @Mod.EventHandler
@@ -39,7 +44,8 @@ public class Zairyou {
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         ZairyouItems.oreDictInit();
-        Material.REGISTRY.values().stream()
+        Material.all()
+                .stream()
                 .map(Material::getItems)
                 .flatMap(m -> m.values().stream())
                 .filter(s -> s.getItem() instanceof MaterialItem)
