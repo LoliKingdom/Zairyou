@@ -58,7 +58,9 @@ public enum ItemMaterialType implements IMaterialType {
     FERTILIZER("thermalfoundation", 1, -1, "fertilizer"),
     // GLOB("thermalfoundation", 1, "glob"), BasicItem
     // SERVO("thermalfoundation", 1, "servo"), BasicItem
-    SLAG("thermalfoundation", 1, -1, "slag~&", "crystalSlag~&", "itemSlag~&");
+    SLAG("thermalfoundation", 1, -1, "slag~&", "crystalSlag~&", "itemSlag~&"),
+
+    GRINDING_BALL("enderio", 1, (M * 5) / 24, "ball");
 
     // public static final ItemMaterialType[] VALUES = values();
 

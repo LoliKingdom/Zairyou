@@ -140,6 +140,10 @@ public class ZairyouEvents {
                         registry.register(RecipeUtil.addShaped(name + "_coil", true, material.getItem(ItemMaterialType.COIL, false),
                                 "x  ", " r ", "  x", 'x', ingot, 'r', Items.REDSTONE));
                     }
+                    if (material.hasType(ItemMaterialType.GRINDING_BALL)) {
+                        registry.register(RecipeUtil.addShaped(name + "_grinding_ball", false, material.getStack(ItemMaterialType.GRINDING_BALL, 24),
+                                " x ", "xxx", " x ", 'x', ingot));
+                    }
                     break;
                 }
                 case NUGGET: {
