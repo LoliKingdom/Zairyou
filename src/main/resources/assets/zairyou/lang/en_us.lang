@@ -29,6 +29,8 @@ zairyou.material.flux.name=Flux
 
 zairyou.material_type.ore.name=%s%s %s Ore
 
+zairyou.material_type.block.name=%s Block
+
 zairyou.material_type.coal.name=%s Coal
 
 zairyou.material_type.crushed.name=Crushed %s

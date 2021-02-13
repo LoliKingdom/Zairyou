@@ -1,7 +1,7 @@
 package zone.rong.zairyou.modsupport.api.tfc;
 
 import net.minecraftforge.fml.common.Loader;
-import zone.rong.zairyou.api.IZairyouModule;
+import zone.rong.zairyou.api.module.IZairyouModule;
 import zone.rong.zairyou.api.material.Material;
 
 public class TFCModule implements IZairyouModule {

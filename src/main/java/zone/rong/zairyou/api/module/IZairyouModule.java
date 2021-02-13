@@ -1,4 +1,4 @@
-package zone.rong.zairyou.api;
+package zone.rong.zairyou.api.module;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;

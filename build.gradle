@@ -34,6 +34,7 @@ minecraft {
     ]
     clientJvmArgs.addAll(args)
     serverJvmArgs.addAll(args)
+    useDepAts = true
 }
 
 configurations {
@@ -71,7 +72,8 @@ jar {
                 "FMLCorePluginContainsFMLMod": true,
                 "FMLCorePlugin": 'zone.rong.zairyou.ZairyouCoreMod',
                 "ForceLoadAsMod": true,
-                "TweakClass": 'org.spongepowered.asm.launch.MixinTweaker'
+                "TweakClass": 'org.spongepowered.asm.launch.MixinTweaker',
+                "FMLAT": "lolilib_at.cfg"
         ])
     }
 }
@@ -93,4 +95,6 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
+
+    rename '(.+_at.cfg)', 'META-INF/$1'
 }

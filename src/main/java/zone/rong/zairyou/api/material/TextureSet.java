@@ -29,8 +29,8 @@ public enum TextureSet {
 
     static Map<IMaterialType, ResourceLocation[]> cachedLocations = new Object2ObjectOpenHashMap<>();
 
-    static final BiFunction<BlockMaterialType, TextureSet, String> blockLocation = (b, t) -> String.join("/", "blocks", b.toString(), t.toString());
-    static final BiFunction<ItemMaterialType, TextureSet, String> itemLocation = (i, t) -> String.join("/", "items", i.toString(), t.toString());
+    static final BiFunction<BlockMaterialType, TextureSet, String> blockLocation = (b, t) -> String.join("/", "blocks", b.getId(), t.toString());
+    static final BiFunction<ItemMaterialType, TextureSet, String> itemLocation = (i, t) -> String.join("/", "items", i.getId(), t.toString());
 
     public ResourceLocation[] getTextureLocations(BlockMaterialType blockMaterialType) {
         ResourceLocation[] locations = cachedLocations.get(blockMaterialType);

@@ -6,9 +6,7 @@ import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.color.IBlockColor;
 import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
@@ -29,20 +27,20 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.registries.IForgeRegistry;
+import zone.rong.zairyou.api.block.IItemBlockProvider;
+import zone.rong.zairyou.api.block.IMetaBlock;
+import zone.rong.zairyou.api.block.INestedMetaBlock;
 import zone.rong.zairyou.api.client.Bakery;
 import zone.rong.zairyou.api.client.IModelOverride;
 import zone.rong.zairyou.api.fluid.block.DefaultFluidBlock;
 import zone.rong.zairyou.api.item.BasicItem;
 import zone.rong.zairyou.api.item.MaterialItem;
 import zone.rong.zairyou.api.material.Material;
-import zone.rong.zairyou.api.material.type.BlockMaterialType;
+import zone.rong.zairyou.api.material.MaterialProperty;
 import zone.rong.zairyou.api.material.type.ItemMaterialType;
-import zone.rong.zairyou.api.ore.OreBlock;
 import zone.rong.zairyou.api.ore.OreGrade;
-import zone.rong.zairyou.api.ore.OreItemBlock;
 import zone.rong.zairyou.api.ore.stone.StoneType;
 import zone.rong.zairyou.api.client.RenderUtils;
-import zone.rong.zairyou.api.util.RecipeUtil;
 
 import java.util.Map;
 import java.util.Set;
@@ -72,7 +70,23 @@ public class ZairyouEvents {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBlockRegister(RegistryEvent.Register<Block> event) {
         Material.all((name, material) -> {
-            material.getBlocks().forEach((type, block) -> event.getRegistry().register(block.setRegistryName(Zairyou.ID, name + "_" + type.toString())));
+            material.getBlocks().forEach((type, block) -> {
+                if (block instanceof IMetaBlock) {
+                    ((IMetaBlock<?>) block).alignBlockStateContainer();
+                    if (!event.getRegistry().containsValue(block)) {
+                        event.getRegistry().register(block);
+                    }
+                } else {
+                    event.getRegistry().register(block);
+                }
+                if (block instanceof INestedMetaBlock) {
+                    INestedMetaBlock<?, ?> nextBlock = ((INestedMetaBlock<?, ?>) block).getNextBlock();
+                    while (nextBlock != null) {
+                        event.getRegistry().register((Block) nextBlock);
+                        nextBlock = nextBlock.getNextBlock();
+                    }
+                }
+            });
             for (final Fluid fluid : material.getFluids().values()) {
                 if (FluidRegistry.isFluidDefault(fluid)) {
                     final Block block = fluid.getBlock();
@@ -82,6 +96,7 @@ public class ZairyouEvents {
                 }
             }
         });
+        MaterialProperty.frozen = true;
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -92,16 +107,23 @@ public class ZairyouEvents {
             for (final Map.Entry<ItemMaterialType, ItemStack> entry : material.getItems().entrySet()) {
                 if (entry.getValue().isEmpty()) {
                     ItemMaterialType type = entry.getKey();
-                    Item item = new MaterialItem(material, type).setRegistryName(Zairyou.ID, name + "_" + type.toString());
+                    Item item = new MaterialItem(material, type).setRegistryName(Zairyou.ID, name + "_" + type.getId());
                     registry.register(item);
                     material.setItem(type, item);
                 }
             }
             material.getBlocks().forEach((type, block) -> {
-                if (type == BlockMaterialType.ORE) {
-                    registry.register(new OreItemBlock((OreBlock) block).setRegistryName(block.getRegistryName()));
-                } else {
-                    registry.register(new ItemBlock(block).setRegistryName(block.getRegistryName()));
+                if (block instanceof IItemBlockProvider) {
+                    if (!event.getRegistry().containsValue(((IItemBlockProvider<?>) block).getItemBlock())) {
+                        registry.register(((IItemBlockProvider<?>) block).getItemBlock());
+                    }
+                    if (block instanceof INestedMetaBlock) {
+                        INestedMetaBlock<?, ?> nextBlock = ((INestedMetaBlock<?, ?>) block).getNextBlock();
+                        while (nextBlock != null) {
+                            registry.register(((IItemBlockProvider<?>) nextBlock).getItemBlock());
+                            nextBlock = nextBlock.getNextBlock();
+                        }
+                    }
                 }
             });
         });
@@ -109,52 +131,7 @@ public class ZairyouEvents {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onRecipeRegister(RegistryEvent.Register<IRecipe> event) {
-        IForgeRegistry<IRecipe> registry = event.getRegistry();
-        Material.all((name, material) -> material.getItems().forEach((type, item) -> {
-            switch (type) {
-                case TINY_DUST: {
-                    Object dustTiny = item.getItem() instanceof MaterialItem ? ((MaterialItem) item.getItem()).getPrimaryOreName() : item;
-                    registry.register(RecipeUtil.addShapeless(name + "_tiny_dusts_to_dust", material.getItem(ItemMaterialType.DUST, false),
-                            dustTiny, dustTiny, dustTiny, dustTiny, dustTiny, dustTiny, dustTiny, dustTiny, dustTiny));
-                    break;
-                }
-                case SMALL_DUST: {
-                    Object dustSmall = item.getItem() instanceof MaterialItem ? ((MaterialItem) item.getItem()).getPrimaryOreName() : item;
-                    registry.register(RecipeUtil.addShaped(name + "_small_dusts_to_dust", false, material.getItem(ItemMaterialType.DUST, false),
-                            "xx", "xx", 'x', dustSmall));
-                    break;
-                }
-                case DUST: {
-                    Object dust = item.getItem() instanceof MaterialItem ? ((MaterialItem) item.getItem()).getPrimaryOreName() : item;
-                    registry.register(RecipeUtil.addShapeless(name + "_dust_to_tiny_dusts", material.getStack(ItemMaterialType.TINY_DUST, 9), dust));
-                    ItemStack ingot = material.getItem(ItemMaterialType.INGOT, false);
-                    if (!ingot.isEmpty()) {
-                        RecipeUtil.addSmelting(item, ingot, 0.5F);
-                    }
-                    break;
-                }
-                case INGOT: {
-                    Object ingot = item.getItem() instanceof MaterialItem ? ((MaterialItem) item.getItem()).getPrimaryOreName() : item;
-                    registry.register(RecipeUtil.addShapeless(name + "_ingot_to_nuggets", material.getStack(ItemMaterialType.NUGGET, 9), ingot));
-                    if (material.hasType(ItemMaterialType.COIL)) {
-                        registry.register(RecipeUtil.addShaped(name + "_coil", true, material.getItem(ItemMaterialType.COIL, false),
-                                "x  ", " r ", "  x", 'x', ingot, 'r', Items.REDSTONE));
-                    }
-                    if (material.hasType(ItemMaterialType.GRINDING_BALL)) {
-                        registry.register(RecipeUtil.addShaped(name + "_grinding_ball", false, material.getStack(ItemMaterialType.GRINDING_BALL, 24),
-                                " x ", "xxx", " x ", 'x', ingot));
-                    }
-                    break;
-                }
-                case NUGGET: {
-                    Object nugget = item.getItem() instanceof MaterialItem ? ((MaterialItem) item.getItem()).getPrimaryOreName() : item;
-                    registry.register(RecipeUtil.addShapeless(name + "_nuggets_to_ingot", material.getItem(ItemMaterialType.INGOT, false),
-                            nugget, nugget, nugget, nugget, nugget, nugget, nugget, nugget, nugget));
-                }
-                default:
-                    break;
-            }
-        }));
+        Material.all((name, material) -> material.getItems().forEach((type, item) -> type.getRecipes().forEach(r -> r.onRecipeRegister(event.getRegistry(), type, material))));
     }
 
     @SubscribeEvent
@@ -163,6 +140,13 @@ public class ZairyouEvents {
         Material.all(m -> m.getBlocks().forEach((type, block) -> {
             if (block instanceof IItemColor && m.hasTint(type)) {
                 event.getItemColors().registerItemColorHandler((IItemColor) block, block);
+                if (block instanceof INestedMetaBlock) {
+                    INestedMetaBlock<?, ?> nextBlock = ((INestedMetaBlock<?, ?>) block).getNextBlock();
+                    while (nextBlock != null) {
+                        event.getItemColors().registerItemColorHandler((IItemColor) nextBlock, (Block) nextBlock);
+                        nextBlock = nextBlock.getNextBlock();
+                    }
+                }
             }
         }));
         Material.all(m -> m.getItems().forEach((type, item) -> {
@@ -180,6 +164,13 @@ public class ZairyouEvents {
             m.getBlocks().forEach((type, block) -> {
                 if (block instanceof IBlockColor && m.hasTint(type)) {
                     event.getBlockColors().registerBlockColorHandler((IBlockColor) block, block);
+                    if (block instanceof INestedMetaBlock) {
+                        INestedMetaBlock<?, ?> nextBlock = ((INestedMetaBlock<?, ?>) block).getNextBlock();
+                        while (nextBlock != null) {
+                            event.getBlockColors().registerBlockColorHandler((IBlockColor) nextBlock, (Block) nextBlock);
+                            nextBlock = nextBlock.getNextBlock();
+                        }
+                    }
                 }
             });
             m.getFluids().forEach((type, fluid) -> {
@@ -209,7 +200,16 @@ public class ZairyouEvents {
                 .flatMap(m -> m.getBlocks().values().stream())
                 .filter(b -> b instanceof IModelOverride)
                 .map(b -> (IModelOverride) b)
-                .forEach(b -> b.addTextures(stitch));
+                .forEach(b -> {
+                    b.addTextures(stitch);
+                    if (b instanceof INestedMetaBlock) {
+                        INestedMetaBlock<?, ?> nextBlock = ((INestedMetaBlock<?, ?>) b).getNextBlock();
+                        while (nextBlock != null) {
+                            ((IModelOverride) nextBlock).addTextures(stitch);
+                            nextBlock = nextBlock.getNextBlock();
+                        }
+                    }
+                });
 
         Material.all()
                 .stream()
@@ -240,7 +240,16 @@ public class ZairyouEvents {
                     .stream()
                     .filter(b -> b instanceof IModelOverride)
                     .map(b -> (IModelOverride) b)
-                    .forEach(IModelOverride::onModelRegister);
+                    .forEach(b -> {
+                        b.onModelRegister();
+                        if (b instanceof INestedMetaBlock) {
+                            INestedMetaBlock<?, ?> nextBlock = ((INestedMetaBlock<?, ?>) b).getNextBlock();
+                            while (nextBlock != null) {
+                                ((IModelOverride) nextBlock).onModelRegister();
+                                nextBlock = nextBlock.getNextBlock();
+                            }
+                        }
+                    });
             m.getItems().values()
                     .stream()
                     .filter(s -> s.getItem() instanceof IModelOverride)
@@ -295,7 +304,16 @@ public class ZairyouEvents {
                 .flatMap(m -> m.getBlocks().values().stream())
                 .filter(b -> b instanceof IModelOverride)
                 .map(b -> (IModelOverride) b)
-                .forEach(b -> b.onModelBake(event));
+                .forEach(b -> {
+                    b.onModelBake(event);
+                    if (b instanceof INestedMetaBlock) {
+                        INestedMetaBlock<?, ?> nextBlock = ((INestedMetaBlock<?, ?>) b).getNextBlock();
+                        while (nextBlock != null) {
+                            ((IModelOverride) nextBlock).onModelBake(event);
+                            nextBlock = nextBlock.getNextBlock();
+                        }
+                    }
+                });
 
         Material.all()
                 .stream()

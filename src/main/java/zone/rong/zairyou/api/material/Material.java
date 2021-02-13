@@ -10,18 +10,16 @@ import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import zone.rong.zairyou.Zairyou;
+import zone.rong.zairyou.api.block.IZairyouBlockBuilder;
 import zone.rong.zairyou.api.fluid.ExtendedFluid;
 import zone.rong.zairyou.api.fluid.FluidType;
 import zone.rong.zairyou.api.item.MaterialItem;
 import zone.rong.zairyou.api.item.tool.ExtendedToolMaterial;
-import zone.rong.zairyou.api.item.tool.MaterialTools;
 import zone.rong.zairyou.api.material.element.Element;
 import zone.rong.zairyou.api.material.element.FormulaBuilder;
 import zone.rong.zairyou.api.material.type.BlockMaterialType;
 import zone.rong.zairyou.api.material.type.IMaterialType;
 import zone.rong.zairyou.api.material.type.ItemMaterialType;
-import zone.rong.zairyou.api.ore.OreBlock;
-import zone.rong.zairyou.api.ore.OreGrade;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -30,16 +28,15 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import static zone.rong.zairyou.api.material.MaterialFlag.GENERATE_DEFAULT_METAL_TYPES;
-import static zone.rong.zairyou.api.material.MaterialFlag.GENERATE_DUST_VARIANTS;
-import static zone.rong.zairyou.api.material.type.ItemMaterialType.*;
-
 /**
  * Material. That's it.
  */
-public class Material {
+public class Material implements Comparable<Material> {
 
-    private static final Object2ObjectMap<String, Material> REGISTRY = new Object2ObjectOpenHashMap<>();
+    public static final Item.ToolMaterial NONE_TOOL = EnumHelper.addToolMaterial("none", -1, 1, 1, 1, 1);
+    public static final ExtendedToolMaterial NONE_TOOL_EXTENDED = new ExtendedToolMaterial(NONE_TOOL, -1);
+
+    private static final Object2ObjectMap<String, Material> REGISTRY = new Object2ObjectRBTreeMap<>();
     private static final Object2ObjectMap<Class<?>, Function<Material, ?>> APPENDER_REGISTRY = new Object2ObjectOpenHashMap<>();
 
     public static <T extends IMaterialAppender<T>> void registerAppender(Class<T> clazz, Function<Material, T> construct) {
@@ -63,23 +60,37 @@ public class Material {
     }
 
     public static Material of(String name, int colour) {
-        return new Material(name, colour, null);
-    }
-
-    public static Material of(String name, int colour, Element element) {
-        return new Material(name, colour, element);
+        return of(name, colour, null, NONE_TOOL_EXTENDED);
     }
 
     public static Material of(String name) {
-        return new Material(name, 0x0, null);
+        return of(name, 0x0, null, NONE_TOOL_EXTENDED);
+    }
+
+    public static Material of(String name, int colour, Element element) {
+        return of(name, colour, element, NONE_TOOL_EXTENDED);
+    }
+
+    public static Material of(String name, int colour, Element element, int harvestLevel, int durability, float efficiency, float attackDamage, float attackSpeed, int enchantability) {
+        return of(name, colour, element, EnumHelper.addToolMaterial(name, harvestLevel, durability, efficiency, attackDamage, enchantability), attackSpeed);
+    }
+
+    public static Material of(String name, int colour, Element element, Item.ToolMaterial toolMaterial, float attackSpeed) {
+        return of(name, colour, element, new ExtendedToolMaterial(toolMaterial, attackSpeed));
+    }
+
+    public static Material of(String name, int colour, Element element, ExtendedToolMaterial extendedToolMaterial) {
+        return new Material(name, colour, element, extendedToolMaterial);
     }
 
     public static final Material NONE = of("none");
+
     private static boolean frozen = false;
 
     protected final String name, translationKey;
     protected final Element baseElement;
     protected final int colour;
+    protected final ExtendedToolMaterial toolMaterial;
 
     protected long flags = 0L;
     protected String chemicalFormula = "";
@@ -88,19 +99,17 @@ public class Material {
 
     protected List<UnaryOperator<Material>> delegatingCode;
 
-    protected EnumMap<BlockMaterialType, Block> blocks;
-    protected EnumMap<BlockMaterialType, ResourceLocation[]> blockTextures;
+    protected Map<BlockMaterialType<?>, Block> blocks;
+    protected Map<BlockMaterialType<?>, ResourceLocation[]> blockTextures;
 
-    protected EnumMap<ItemMaterialType, ItemStack> items;
-    protected EnumMap<ItemMaterialType, ResourceLocation[]> itemTextures;
+    protected Map<ItemMaterialType, ItemStack> items;
+    protected Map<ItemMaterialType, ResourceLocation[]> itemTextures;
 
     protected EnumMap<FluidType, Fluid> fluids;
 
-    protected ExtendedToolMaterial toolMaterial;
-
     protected Set<IMaterialType> disabledTint;
 
-    private Material(String name, int colour, Element element) {
+    private Material(String name, int colour, Element element, ExtendedToolMaterial toolMaterial) {
         this.name = name;
         this.translationKey = String.join(".", Zairyou.ID, "material", name, "name");
         this.colour = colour;
@@ -108,6 +117,7 @@ public class Material {
         if (this.baseElement != null) {
             this.formula(this.baseElement);
         }
+        this.toolMaterial = toolMaterial;
         REGISTRY.put(name, this);
     }
 
@@ -127,7 +137,7 @@ public class Material {
     }
 
     public String[] getOreNames(ItemMaterialType type) {
-        final String[] typeOreNames = type.getPrefixes();
+        List<String> typeOreNames = type.getPrefixes();
         List<String> oreNames = new ObjectArrayList<>();
         for (final String ore : typeOreNames) {
             final String stripped = ore.replaceAll("\\p{Punct}", "");
@@ -140,7 +150,7 @@ public class Material {
             }
             oreNames.add(stripped.concat(toCamelString()));
         }
-        return oreNames.toArray(new String[typeOreNames.length]);
+        return oreNames.toArray(new String[typeOreNames.size()]);
     }
 
     public String getTranslationKey() {
@@ -159,7 +169,7 @@ public class Material {
         return this.disabledTint == null || !this.disabledTint.contains(type);
     }
 
-    public boolean hasType(BlockMaterialType type) {
+    public boolean hasType(BlockMaterialType<?> type) {
         return this.blocks != null && this.blocks.containsKey(type);
     }
 
@@ -171,7 +181,7 @@ public class Material {
         return (this.flags & flag.bit) > 0;
     }
 
-    public Map<BlockMaterialType, Block> getBlocks() {
+    public Map<BlockMaterialType<?>, Block> getBlocks() {
         return this.blocks == null ? Collections.emptyMap() : this.blocks;
     }
 
@@ -193,7 +203,7 @@ public class Material {
     }
      */
 
-    public Block getBlock(BlockMaterialType type) {
+    public Block getBlock(BlockMaterialType<?> type) {
         return this.blocks == null ? null : this.blocks.get(type);
     }
 
@@ -255,7 +265,7 @@ public class Material {
         return this.blockTextures.get(type);
     }
 
-    public Block setBlock(BlockMaterialType type, Block block) {
+    public Block setBlock(BlockMaterialType<?> type, Block block) {
         this.blocks.put(type, block);
         return block;
     }
@@ -293,13 +303,18 @@ public class Material {
         return formula(FormulaBuilder.of().element(element).build());
     }
 
-    // TODO: placeholder
-    public Material ore() {
+    public <B extends Block, C extends IZairyouBlockBuilder<B>> Material block(BlockMaterialType<C> blockMaterialType, UnaryOperator<C> blockCreator) {
         if (this.blocks == null) {
-            this.blocks = new EnumMap<>(BlockMaterialType.class);
+            this.blocks = new Object2ObjectOpenHashMap<>();
+            this.blockTextures = new Object2ObjectOpenHashMap<>();
         }
-        this.blocks.put(BlockMaterialType.ORE, new OreBlock(this, OreGrade.NORMAL));
+        this.blocks.put(blockMaterialType, blockCreator.apply(blockMaterialType.createBlock(this)).build());
+        this.blockTextures.put(blockMaterialType, TextureSet.DULL.getTextureLocations(blockMaterialType));
         return this;
+    }
+
+    public <B extends Block, C extends IZairyouBlockBuilder<B>> Material block(BlockMaterialType<C> blockMaterialType) {
+        return block(blockMaterialType, b -> b);
     }
 
     public Material items(ItemMaterialType... itemMaterialTypes) {
@@ -307,37 +322,13 @@ public class Material {
             throw new IllegalArgumentException("No ItemMaterialTypes specified for " + this.name + " material!");
         }
         if (this.items == null) {
-            this.items = new EnumMap<>(ItemMaterialType.class);
-            this.itemTextures = new EnumMap<>(ItemMaterialType.class);
+            this.items = new Object2ObjectOpenHashMap<>();
+            this.itemTextures = new Object2ObjectOpenHashMap<>();
         }
         for (ItemMaterialType itemMaterialType : itemMaterialTypes) {
             this.items.put(itemMaterialType, ItemStack.EMPTY);
             this.itemTextures.put(itemMaterialType, TextureSet.DULL.getTextureLocations(itemMaterialType));
         }
-        return this;
-    }
-
-    public Material tools(Item.ToolMaterial toolMaterial, int attackSpeed) {
-        this.toolMaterial = new ExtendedToolMaterial(toolMaterial, attackSpeed);
-        // this.tools = new MaterialTools(this.toolMaterial);
-        return this;
-    }
-
-    public Material tools(Item.ToolMaterial toolMaterial, int attackSpeed, UnaryOperator<MaterialTools> applicableTools) {
-        this.toolMaterial = new ExtendedToolMaterial(toolMaterial, attackSpeed);
-        // this.tools = applicableTools.apply(new MaterialTools(this.toolMaterial));
-        return this;
-    }
-
-    public Material tools(int harvestLevel, int maxUses, float efficiency, float attackDamage, float attackSpeed, int enchantability) {
-        this.toolMaterial = new ExtendedToolMaterial(EnumHelper.addToolMaterial(name, harvestLevel, maxUses, efficiency, attackDamage, enchantability), attackSpeed);
-        // this.tools = new MaterialTools(this.toolMaterial).axe().hoe().pickaxe().shovel().sword();
-        return this;
-    }
-
-    public Material tools(int harvestLevel, int maxUses, float efficiency, float attackDamage, float attackSpeed, int enchantability, UnaryOperator<MaterialTools> applicableTools) {
-        this.toolMaterial = new ExtendedToolMaterial(EnumHelper.addToolMaterial(name, harvestLevel, maxUses, efficiency, attackDamage, enchantability), attackSpeed);
-        // this.tools = applicableTools.apply(new MaterialTools(this.toolMaterial));
         return this;
     }
 
@@ -397,7 +388,7 @@ public class Material {
             }
             ResourceLocation[] locations = this.itemTextures.get(itemMaterialType);
             for (int i = 0; i < locations.length; i++) {
-                locations[i] = new ResourceLocation(Zairyou.ID, String.join("/", "items", itemMaterialType.toString(), "custom", this.name + "_" + i));
+                locations[i] = new ResourceLocation(Zairyou.ID, String.join("/", "items", itemMaterialType.getId(), "custom", this.name + "_" + i));
             }
         }
         return this;
@@ -457,12 +448,8 @@ public class Material {
     }
 
     private void checkFlags() {
-        if ((this.flags & GENERATE_DEFAULT_METAL_TYPES.bit) > 0) {
-            items(INGOT, NUGGET);
-            this.flags |= GENERATE_DUST_VARIANTS.bit;
-        }
-        if ((this.flags & GENERATE_DUST_VARIANTS.bit) > 0) {
-            items(DUST, SMALL_DUST, TINY_DUST);
+        for (MaterialFlag materialFlag : MaterialFlag.VALUES) {
+            materialFlag.checkFlag(this);
         }
     }
 
@@ -473,4 +460,8 @@ public class Material {
         this.delegatingCode.add(delegatingCode);
     }
 
+    @Override
+    public int compareTo(Material m) {
+        return this.getName().compareTo(m.getName());
+    }
 }
