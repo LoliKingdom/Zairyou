@@ -61,6 +61,10 @@ public final class ItemMaterialType implements IMaterialType {
 
     public static final ItemMaterialType GRINDING_BALL = new ItemMaterialType("enderio", "ball").materialAmount(u -> (u * 5) / 24);
 
+    public static final ItemMaterialType ORE = new ItemMaterialType("tfc", "ore").materialAmount(u -> -1);
+    public static final ItemMaterialType ORE_RICH = new ItemMaterialType("tfc", "oreRich").materialAmount(u -> -1);
+    public static final ItemMaterialType ORE_POOR = new ItemMaterialType("tfc", "orePoor").materialAmount(u -> -1);
+
     /**
      *     BAIT("thermalfoundation", 1, -1, "bait"),
      *     COIL("thermalfoundation", 2, M * 2, "coil"),

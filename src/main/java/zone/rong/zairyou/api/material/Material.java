@@ -165,6 +165,10 @@ public class Material implements Comparable<Material> {
         return chemicalFormula;
     }
 
+    public ExtendedToolMaterial getToolMaterial() {
+        return toolMaterial;
+    }
+
     public boolean hasTint(IMaterialType type) {
         return this.disabledTint == null || !this.disabledTint.contains(type);
     }

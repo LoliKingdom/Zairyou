@@ -28,6 +28,7 @@ import zone.rong.zairyou.api.block.IZairyouBlockBuilder;
 import zone.rong.zairyou.api.client.Bakery;
 import zone.rong.zairyou.api.client.IModelOverride;
 import zone.rong.zairyou.api.material.Material;
+import zone.rong.zairyou.api.material.type.ItemMaterialType;
 import zone.rong.zairyou.api.ore.stone.StoneType;
 import zone.rong.zairyou.api.ore.stone.StoneTypeProperty;
 
@@ -66,6 +67,7 @@ public class OreBlock extends Block implements INestedMetaBlock<OreBlock, StoneT
         setSoundType(SoundType.STONE);
         setHardness(3.0F);
         setResistance(5.0F);
+        setHarvestLevel("pickaxe", material.getToolMaterial().getHarvestLevel() - 1);
         setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
         String name = String.join("_", oreGrade.name(), material.getName(), "ore", String.valueOf(recursion));
         setRegistryName(Zairyou.ID, name);
@@ -130,6 +132,21 @@ public class OreBlock extends Block implements INestedMetaBlock<OreBlock, StoneT
     public void getSubBlocks(CreativeTabs tab, NonNullList<ItemStack> list) {
         if (tab == this.getCreativeTabToDisplayOn()) {
             this.blockState.getValidStates().forEach(s -> list.add(new ItemStack(this, 1, this.getMetaFromState(s))));
+        }
+    }
+
+    @Override
+    public void getDrops(NonNullList<ItemStack> drops, IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
+        switch (oreGrade) {
+            case NORMAL:
+                drops.add(material.getItem(ItemMaterialType.ORE, true));
+                break;
+            case POOR:
+                drops.add(material.getItem(ItemMaterialType.ORE_POOR, true));
+                break;
+            case RICH:
+                drops.add(material.getItem(ItemMaterialType.ORE_RICH, true));
+                break;
         }
     }
 
