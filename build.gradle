@@ -57,7 +57,7 @@ dependencies {
         transitive = false
     }
 
-    deobfCompile "curse.maven:tfcraft-302973:3136903"
+    deobfCompile "curse.maven:tfcraft-302973:3218034"
 
     deobfCompile "curse.maven:jei-238222:3043174"
 

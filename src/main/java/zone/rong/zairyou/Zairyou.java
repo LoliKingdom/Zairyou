@@ -9,10 +9,9 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import zone.rong.zairyou.api.module.IZairyouModule;
 import zone.rong.zairyou.api.item.MaterialItem;
 import zone.rong.zairyou.api.material.Material;
-import zone.rong.zairyou.api.module.ModuleInitialization;
+import zone.rong.zairyou.objects.ZairyouBlocks;
 import zone.rong.zairyou.objects.ZairyouItems;
 import zone.rong.zairyou.objects.Materials;
 
@@ -26,25 +25,23 @@ public class Zairyou {
 
     static {
         FluidRegistry.enableUniversalBucket();
-        ModuleInitialization.onConstruction();
     }
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(this);
         Materials.init();
-        IZairyouModule.REGISTRY.values().forEach(IZairyouModule::preInit);
+        ZairyouBlocks.init();
         ZairyouItems.init();
     }
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
-        IZairyouModule.REGISTRY.values().forEach(IZairyouModule::init);
     }
 
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
-        IZairyouModule.REGISTRY.values().forEach(IZairyouModule::postInit);
+        // TFCFallables.init();
         ZairyouItems.oreDictInit();
         Material.all()
                 .stream()

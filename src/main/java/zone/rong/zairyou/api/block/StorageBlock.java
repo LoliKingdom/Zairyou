@@ -1,129 +1,94 @@
 package zone.rong.zairyou.api.block;
 
+import com.google.common.collect.ImmutableSet;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSets;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.color.IBlockColor;
 import net.minecraft.client.renderer.color.IItemColor;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
-import zone.rong.zairyou.Zairyou;
 import zone.rong.zairyou.api.block.itemblock.StorageItemBlock;
+import zone.rong.zairyou.api.block.metablock.AbstractMetaBlock;
+import zone.rong.zairyou.api.block.metablock.MutableMetaBlockBuilder;
 import zone.rong.zairyou.api.material.Material;
-import zone.rong.zairyou.api.material.MaterialProperty;
-import zone.rong.zairyou.api.util.IdentifiableBlockStateContainer;
+import zone.rong.zairyou.api.material.type.BlockMaterialType;
+import zone.rong.zairyou.api.ore.stone.StoneType;
+import zone.rong.zairyou.api.property.type.MaterialProperty;
 
 import javax.annotation.Nullable;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
-public class StorageBlock extends Block implements IItemBlockProvider<StorageItemBlock>, IBlockColor, IItemColor, IMetaBlock<Material> {
+public class StorageBlock extends AbstractMetaBlock<MaterialProperty, Material, StorageItemBlock> implements IBlockColor, IItemColor {
 
-    private final MaterialProperty allowedTypes;
-    private final StorageItemBlock itemBlock;
+    public static void create() {
+        new MutableMetaBlockBuilder<>("block", StorageBlock.class, net.minecraft.block.material.Material.ROCK, MaterialProperty.class)
+                .entries(Material.all().stream().filter(m -> m.hasType(BlockMaterialType.STORAGE)).collect(Collectors.toList()))
+                .modify((l, b) -> l.forEach(m -> m.setBlock(BlockMaterialType.STORAGE, b.getDefaultState().withProperty(b.freezableProperty, m))))
+                .build();
+    }
 
-    protected StorageBlock(Material material, net.minecraft.block.material.Material vanillaMaterial, int count) {
-        super(vanillaMaterial);
-        this.allowedTypes = new MaterialProperty(material);
-        this.itemBlock = new StorageItemBlock(this);
-        setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
-        String name = "storage_block_" + count;
-        setRegistryName(Zairyou.ID, name);
-        this.itemBlock.setRegistryName(Zairyou.ID, name);
+    public StorageBlock(net.minecraft.block.material.Material vanillaMaterial, MaterialProperty property) {
+        super(vanillaMaterial, property);
     }
 
     @Override
-    public StorageItemBlock getItemBlock() {
-        return itemBlock;
-    }
-
-    @Override
-    public MaterialProperty getAllowedTypes() {
-        return allowedTypes;
-    }
-
-    @Override
-    public void alignBlockStateContainer() {
-        if (!(this.blockState instanceof IdentifiableBlockStateContainer)) {
-            this.blockState = new IdentifiableBlockStateContainer(this, this.allowedTypes);
-            this.setDefaultState(this.blockState.getBaseState());
-        }
-    }
-
-    @Override
-    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
-        return getDefaultState().withProperty(allowedTypes, allowedTypes.getAllowedValues().get(placer.getHeldItem(hand).getMetadata()));
-    }
-
-    @Override
-    public int damageDropped(IBlockState state) {
-        return getMetaFromState(state);
-    }
-
-    @Override
-    public IBlockState getStateFromMeta(int meta) {
-        return getDefaultState().withProperty(allowedTypes, allowedTypes.getAllowedValues().get(meta));
-    }
-
-    @Override
-    public int getMetaFromState(IBlockState state) {
-        return allowedTypes.getAllowedValues().indexOf(state.getValue(allowedTypes));
-    }
-
-    @Override
-    public void getSubBlocks(CreativeTabs tab, NonNullList<ItemStack> list) {
-        if (tab == this.getCreativeTabToDisplayOn()) {
-            this.blockState.getValidStates().forEach(s -> list.add(new ItemStack(this, 1, this.getMetaFromState(s))));
-        }
-    }
-
-    @Override
-    public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
-        return new ItemStack(this, 1, allowedTypes.getAllowedValues().indexOf(state.getValue(allowedTypes)));
+    public Supplier<StorageItemBlock> getItemBlock() {
+        return () -> new StorageItemBlock(this);
     }
 
     @Override
     public int colorMultiplier(IBlockState state, @Nullable IBlockAccess world, @Nullable BlockPos pos, int tintIndex) {
-        return tintIndex == 1 ? this.allowedTypes.getAllowedValues().get(this.getMetaFromState(state)).getColour() : -1;
+        return tintIndex == 1 ? state.getValue(freezableProperty).getColour() : -1;
     }
 
     @Override
     public int colorMultiplier(ItemStack stack, int tintIndex) {
-        return tintIndex == 1 ? this.allowedTypes.getAllowedValues().get(stack.getMetadata()).getColour() : -1;
+        return tintIndex == 1 ? this.freezableProperty.getAllowedValues().get(stack.getMetadata()).getColour() : -1;
     }
 
-    public static class Builder implements IZairyouBlockBuilder<StorageBlock> {
+    public static class Getter implements IBlockGetter {
 
-        static StorageBlock lastBlock;
-        static int count = 0;
+        private final Map<Material, IBlockState> map = new Object2ObjectOpenHashMap<>();
 
-        private final Material material;
-
-        private net.minecraft.block.material.Material vanillaMaterial = net.minecraft.block.material.Material.IRON;
-
-        public Builder(Material material) {
-            this.material = material;
+        @Override
+        public void supplyBlock(IBlockState state, Object... arguments) {
+            if (arguments.length > 1) {
+                throw new UnsupportedOperationException("This getter only allows 1 argument.");
+            }
+            for (Object argument : arguments) {
+                if (!(argument instanceof Material)) {
+                    throw new UnsupportedOperationException("Argument not supported");
+                }
+            }
+            map.put((Material) arguments[0], state);
         }
 
-        public Builder material(net.minecraft.block.material.Material material) {
-            this.vanillaMaterial = material;
-            return this;
+        @Nullable
+        @Override
+        public IBlockState getBlockState(Object... arguments) {
+            if (arguments.length > 1) {
+                throw new UnsupportedOperationException("This getter only allows 1 argument.");
+            }
+            return map.get(arguments[0]);
         }
 
         @Override
-        public StorageBlock build() {
-            if (lastBlock != null && lastBlock.allowedTypes.appendMaterial(material)) {
-                return lastBlock;
-            }
-            return lastBlock = new StorageBlock(material, vanillaMaterial, count++);
+        public Set<Block> getBlocks() {
+            return ObjectSets.unmodifiable(new ObjectOpenHashSet<>(map.values().stream().map(IBlockState::getBlock).iterator()));
         }
 
+        @Override
+        public Set<IBlockState> getBlockStates() {
+            return ImmutableSet.copyOf(map.values());
+        }
     }
 
 }

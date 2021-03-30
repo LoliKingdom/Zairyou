@@ -8,6 +8,7 @@ public class MetaItemBlock extends ItemBlock {
     public MetaItemBlock(Block block) {
         super(block);
         setHasSubtypes(true);
+        this.setRegistryName(block.getRegistryName());
     }
 
 }

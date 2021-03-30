@@ -1,5 +1,11 @@
 package zone.rong.zairyou.api.ore.stone;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import net.dries007.tfc.TerraFirmaCraft;
+import net.dries007.tfc.api.registries.TFCRegistries;
+import net.dries007.tfc.api.types.Rock;
+import net.dries007.tfc.types.DefaultRocks;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ResourceLocation;
 import zone.rong.zairyou.Zairyou;
@@ -12,45 +18,78 @@ import static zone.rong.zairyou.api.material.Material.*;
 
 public enum StoneType implements IStringSerializable, ITranslatable {
 
-    ANDESITE("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/andesite"), "", "stone", "andesite"),
-    BASALT("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/basalt"), "", "stone", "basalt"),
-    CHALK("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/chalk"), "", "stone", "chalk"),
-    CHERT("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/chalk"), "", "stone", "chalk"),
-    CLAYSTONE("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/claystone"), "", "stone", "claystone"),
-    CONGLOMERATE("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/conglomerate"), "", "stone", "conglomerate"),
-    DACITE("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/dacite"), "", "stone", "dacite"),
-    DIORITE("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/diorite"), "", "stone", "diorite"),
-    DOLOMITE("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/dolomite"), "", "stone", "dolomite"),
-    GABBRO("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/gabbro"), "", "stone", "gabbro"),
-    GNEISS("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/gneiss"), "", "stone", "gneiss"),
-    GRANITE("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/granite"), "", "stone", "granite"),
-    LIMESTONE("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/limestone"), "", "stone", "limestone"),
-    MARBLE("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/marble"), "", "stone", "marble"),
-    PHYLLITE("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/phyllite"), "", "stone", "phyllite"),
-    QUARTZITE("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/quartzite"), "", "stone", "quartzite"),
-    RHYOLITE("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/rhyolite"), "", "stone", "rhyolite"),
-    ROCKSALT("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/rocksalt"), "", "stone", "rocksalt"),
-    SCHIST("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/schist"), "", "stone", "schist"),
-    SHALE("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/shale"), "", "stone", "shale"),
-    SLATE("tfc", new ResourceLocation(Zairyou.ID, "blocks/stone_type/slate"), "", "stone", "slate");
+    ANDESITE("tfc", DefaultRocks.ANDESITE, "", "stone", "andesite"),
+    BASALT("tfc", DefaultRocks.BASALT, "", "stone", "basalt"),
+    CHALK("tfc", DefaultRocks.CHALK, "", "stone", "chalk"),
+    CHERT("tfc", DefaultRocks.CHERT, "", "stone", "chert"),
+    CLAYSTONE("tfc", DefaultRocks.CLAYSTONE, "", "stone", "claystone"),
+    CONGLOMERATE("tfc", DefaultRocks.CONGLOMERATE, "", "stone", "conglomerate"),
+    DACITE("tfc", DefaultRocks.DACITE, "", "stone", "dacite"),
+    DIORITE("tfc", DefaultRocks.DIORITE, "", "stone", "diorite"),
+    DOLOMITE("tfc", DefaultRocks.DOLOMITE, "", "stone", "dolomite"),
+    GABBRO("tfc", DefaultRocks.GABBRO, "", "stone", "gabbro"),
+    GNEISS("tfc", DefaultRocks.GNEISS, "", "stone", "gneiss"),
+    GRANITE("tfc", DefaultRocks.GRANITE, "", "stone", "granite"),
+    LIMESTONE("tfc", DefaultRocks.LIMESTONE, "", "stone", "limestone"),
+    MARBLE("tfc", DefaultRocks.MARBLE, "", "stone", "marble"),
+    PHYLLITE("tfc", DefaultRocks.PHYLLITE, "", "stone", "phyllite"),
+    QUARTZITE("tfc", DefaultRocks.QUARTZITE, "", "stone", "quartzite"),
+    RHYOLITE("tfc", DefaultRocks.RHYOLITE, "", "stone", "rhyolite"),
+    ROCKSALT("tfc", DefaultRocks.ROCKSALT, "", "stone", "rocksalt"),
+    SCHIST("tfc", DefaultRocks.SCHIST, "", "stone", "schist"),
+    SHALE("tfc", DefaultRocks.SHALE, "", "stone", "shale"),
+    SLATE("tfc", DefaultRocks.SLATE, "", "stone", "slate");
 
+    public static final StoneType[] TFC_ROCKS;
     public static final StoneType[] VALUES;
 
+    private static final BiMap<StoneType, Rock> LOOKUP;
+
     static {
+        TFC_ROCKS = new StoneType[20];
         VALUES = values();
+        System.arraycopy(VALUES, 0, TFC_ROCKS, 0, 20);
+        LOOKUP = HashBiMap.create(TFC_ROCKS.length);
+    }
+
+    public static Rock getRockFromType(StoneType stoneType) {
+        Rock rock = LOOKUP.get(stoneType);
+        if (rock == null) {
+            rock = stoneType.getRock();
+            LOOKUP.put(stoneType, rock);
+        }
+        return rock;
+    }
+
+    public static StoneType getTypeFromRock(Rock rock) {
+        StoneType type = LOOKUP.inverse().get(rock);
+        if (type == null) {
+            for (StoneType stoneType : VALUES) {
+                LOOKUP.put(stoneType, stoneType.getRock());
+                if (stoneType.getRock() == rock) {
+                    type = stoneType;
+                }
+            }
+        }
+        return type;
     }
 
     private final String modId;
     private final Material backingMaterial;
-    private final ResourceLocation baseTexture, topTexture;
+    private final ResourceLocation rockLocation;
     private final String[] prefixes;
 
-    StoneType(String modId, ResourceLocation baseTexture, String... prefixes) {
+    private Rock rock = null;
+
+    StoneType(String modId, ResourceLocation rockLocation, String... prefixes) {
         this.modId = modId;
         this.backingMaterial = of(toString());
-        this.baseTexture = baseTexture;
-        this.topTexture = baseTexture;
+        this.rockLocation = rockLocation;
         this.prefixes = prefixes;
+    }
+
+    public ResourceLocation getTypeLocation(Rock.Type type) {
+        return new ResourceLocation(TerraFirmaCraft.MOD_ID, String.join("/", "blocks", "stonetypes", type.name(), name()));
     }
 
     public String getModId() {
@@ -61,13 +100,15 @@ public enum StoneType implements IStringSerializable, ITranslatable {
         return backingMaterial;
     }
 
-    public ResourceLocation getBaseTexture() {
-        return baseTexture;
+    public ResourceLocation getRockLocation() {
+        return rockLocation;
     }
 
-    @Deprecated
-    public ResourceLocation getTopTexture() {
-        return topTexture;
+    public Rock getRock() {
+        if (rock == null) {
+            rock = TFCRegistries.ROCKS.getValue(rockLocation);
+        }
+        return rock;
     }
 
     @Override

@@ -8,7 +8,6 @@ import static zone.rong.zairyou.api.material.type.ItemMaterialType.*;
 
 public enum MaterialFlag {
 
-    METAL,
     ORE,
     GENERATE_DEFAULT_METAL_TYPES,
     GENERATE_DUST_VARIANTS,

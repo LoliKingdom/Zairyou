@@ -1,16 +1,17 @@
 package zone.rong.zairyou.api.ore;
 
-import net.minecraft.util.ResourceLocation;
-import zone.rong.zairyou.Zairyou;
+import zone.rong.zairyou.api.material.type.BlockMaterialType;
+import zone.rong.zairyou.api.material.type.ItemMaterialType;
 import zone.rong.zairyou.api.util.ITranslatable;
 
 import java.util.Locale;
 
 public enum OreGrade implements ITranslatable {
 
-    NORMAL("", new ResourceLocation(Zairyou.ID, "blocks/grade/normal")),
-    POOR("Poor", new ResourceLocation(Zairyou.ID, "blocks/grade/poor")),
-    RICH("Rich", new ResourceLocation(Zairyou.ID, "blocks/grade/rich"));
+    NORMAL("", BlockMaterialType.ORE, ItemMaterialType.ORE),
+    SMALL("Small", BlockMaterialType.ORE_SURFACE_ROCK, ItemMaterialType.ORE_SMALL),
+    POOR("Poor", BlockMaterialType.ORE_POOR, ItemMaterialType.ORE_POOR),
+    RICH("Rich", BlockMaterialType.ORE_RICH, ItemMaterialType.ORE_RICH);
 
     public static final OreGrade[] VALUES;
 
@@ -19,19 +20,25 @@ public enum OreGrade implements ITranslatable {
     }
 
     private final String append;
-    private final ResourceLocation textureLocation;
+    private final BlockMaterialType blockRepresentation;
+    private final ItemMaterialType itemRepresentation;
 
-    OreGrade(String append, ResourceLocation textureLocation) {
+    OreGrade(String append, BlockMaterialType blockRepresentation, ItemMaterialType itemRepresentation) {
         this.append = append;
-        this.textureLocation = textureLocation;
+        this.blockRepresentation = blockRepresentation;
+        this.itemRepresentation = itemRepresentation;
     }
 
     public String getAppend() {
         return append;
     }
 
-    public ResourceLocation getTextureLocation() {
-        return textureLocation;
+    public BlockMaterialType getBlockRepresentation() {
+        return blockRepresentation;
+    }
+
+    public ItemMaterialType getItemRepresentation() {
+        return itemRepresentation;
     }
 
     @Override

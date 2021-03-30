@@ -10,13 +10,16 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.registries.IForgeRegistry;
 import zone.rong.zairyou.Zairyou;
+import zone.rong.zairyou.api.item.MaterialItem;
 import zone.rong.zairyou.api.material.Material;
 import zone.rong.zairyou.api.util.RecipeUtil;
 import zone.rong.zairyou.api.util.Util;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.LongUnaryOperator;
+import java.util.function.Supplier;
 
 public final class ItemMaterialType implements IMaterialType {
 
@@ -62,6 +65,7 @@ public final class ItemMaterialType implements IMaterialType {
     public static final ItemMaterialType GRINDING_BALL = new ItemMaterialType("enderio", "ball").materialAmount(u -> (u * 5) / 24);
 
     public static final ItemMaterialType ORE = new ItemMaterialType("tfc", "ore").materialAmount(u -> -1);
+    public static final ItemMaterialType ORE_SMALL = new ItemMaterialType("tfc", "oreSmall").materialAmount(u -> -1);
     public static final ItemMaterialType ORE_RICH = new ItemMaterialType("tfc", "oreRich").materialAmount(u -> -1);
     public static final ItemMaterialType ORE_POOR = new ItemMaterialType("tfc", "orePoor").materialAmount(u -> -1);
 
@@ -123,6 +127,7 @@ public final class ItemMaterialType implements IMaterialType {
 
         COIL.recipe((r, t, m) -> r.register(RecipeUtil.addShaped(String.format("%s_coil", m.getName()), true, m.getItem(t, false),
                 "x  ", " r ", "  x", 'x', m.getItem(INGOT, false), 'r', Items.REDSTONE)));
+
     }
 
     private final String domain, id, modName;
@@ -130,6 +135,7 @@ public final class ItemMaterialType implements IMaterialType {
 
     private int modelLayers;
     private long materialAmount;
+    private Function<Material, ? extends MaterialItem> itemSupplier;
     private List<RecipeRegisterCallback<ItemMaterialType>> recipes;
 
     public ItemMaterialType(String domain, String id) {
@@ -144,6 +150,7 @@ public final class ItemMaterialType implements IMaterialType {
         this.modName = mod == null ? Zairyou.NAME : mod.getName();
         this.modelLayers = 1;
         this.materialAmount = Util.M;
+        this.itemSupplier = m -> new MaterialItem(m, this);
         REGISTRY.put(id, this);
     }
 
@@ -177,6 +184,10 @@ public final class ItemMaterialType implements IMaterialType {
         return prefixes;
     }
 
+    public Function<Material, ? extends MaterialItem> getItemSupplier() {
+        return itemSupplier;
+    }
+
     public List<RecipeRegisterCallback<ItemMaterialType>> getRecipes() {
         return this.recipes == null ? ObjectLists.emptyList() : this.recipes;
     }
@@ -199,6 +210,11 @@ public final class ItemMaterialType implements IMaterialType {
     public ItemMaterialType prefixAndItself(String prefix) {
         this.prefixes.add(prefix);
         this.prefixes.add(prefix.concat("*"));
+        return this;
+    }
+
+    public ItemMaterialType setItemSupplier(Function<Material, ? extends MaterialItem> itemSupplier) {
+        this.itemSupplier = itemSupplier;
         return this;
     }
 

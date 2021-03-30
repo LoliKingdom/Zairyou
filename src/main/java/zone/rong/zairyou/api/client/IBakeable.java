@@ -10,14 +10,18 @@ import net.minecraftforge.client.model.ModelLoader;
 import zone.rong.zairyou.api.client.model.baked.FaceBakeryExtender;
 
 import java.util.Map;
+import java.util.function.UnaryOperator;
 
 public interface IBakeable<T> {
 
-    default IBakedModel bakeModel(IModel model, Map<String, String> sprites, VertexFormat format) {
+    default IBakedModel bakeModel(IModel model, UnaryOperator<IModel> mutate, Map<String, String> sprites, VertexFormat format) {
         if (!sprites.containsKey("particle")) {
             sprites.put("particle", sprites.get("layer0"));
         }
         IModel retextured = model.retexture(ImmutableMap.copyOf(sprites));
+        if (mutate != null) {
+            retextured = mutate.apply(retextured);
+        }
         return retextured.bake(retextured.getDefaultState(), format, ModelLoader.defaultTextureGetter());
     }
 
@@ -68,6 +72,8 @@ public interface IBakeable<T> {
     T prepareTexture(String element, String textureLocation);
 
     T prepareTextures(String element, ResourceLocation[] textureLocations);
+
+    T mutate(UnaryOperator<IModel> model);
 
     T bake();
 

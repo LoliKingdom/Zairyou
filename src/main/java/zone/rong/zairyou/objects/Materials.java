@@ -11,17 +11,20 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import zone.rong.zairyou.api.fluid.PotionFluid;
 import zone.rong.zairyou.api.material.Material;
+import zone.rong.zairyou.api.material.MetalMaterial;
 import zone.rong.zairyou.api.material.type.BlockMaterialType;
 import zone.rong.zairyou.api.material.type.ItemMaterialType;
 
+import static net.dries007.tfc.api.types.Metal.Tier.*;
 import static zone.rong.zairyou.api.material.MaterialFlag.ORE;
+import static zone.rong.zairyou.api.material.MetalMaterial.ofMetal;
 import static zone.rong.zairyou.api.material.element.Element.*;
 import static zone.rong.zairyou.api.material.Material.of;
 import static zone.rong.zairyou.api.material.MaterialFlag.*;
 import static zone.rong.zairyou.api.fluid.FluidType.*;
 import static zone.rong.zairyou.api.material.type.ItemMaterialType.*;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({ "unused", "unchecked" })
 public class Materials {
 
     /*
@@ -437,98 +440,98 @@ public class Materials {
 
     /** Generic - GregTech-esque **/
 
-    public static final Material Aluminium = of("aluminium", 0x80C8F0, Al).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Beryllium = of("beryllium", 0x64B464, Be).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Bismuth = of("bismuth", 0x64A0A0, Bi).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Aluminium = ofMetal("aluminium", 0x80C8F0, Al, TIER_III, 0.3F, 660).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Beryllium = ofMetal("beryllium", 0x64B464, Be, TIER_VI, 0.35F, 1300).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Bismuth = ofMetal("bismuth", 0x64A0A0, Bi, TIER_I, 0.14F, 270).flag(ORE, GENERATE_DUST_VARIANTS);
     public static final Material Carbon = of("carbon", 0x141414, C).flag(GENERATE_DUST_VARIANTS);
-    public static final Material Chrome = of("chrome", 0xffE6E6, Cr).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Cobalt = of("cobalt", 0x5050FA, Co).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Iridium = of("iridium", 0xF0F0F5, Ir).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Lanthanum = of("lanthanum", 0xFFFFFF, La).flag(GENERATE_DUST_VARIANTS);
-    public static final Material Lead = of("lead", 0x8C648C, Pb).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Manganese = of("manganese", 0xFAFAFA, Mn).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Molybdenum = of("molybdenum", 0xB4B4DC, Mo).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Neodymium = of("neodymium", 0x646464, Nd).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Nickel = of("nickel", 0xc8c8FA, Ni).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Osmium = of("osmium", 0x3232FF, Os).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Palladium = of("palladium", 0x808080, Pd).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Platinum = of("platinum", 0xFFFFC8, Pt).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Plutonium244 = of("plutonium", 0xF03232, Pu).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Plutonium241 = of("plutonium_241", 0xFA4646, Pu_241).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Silver = of("silver", 0x79A7E0, Ag).flag(ORE, GENERATE_DEFAULT_METAL_TYPES).items(COIL).fluid(MOLTEN, fluid -> fluid.temperature(1235));
-    public static final Material Thorium = of("thorium", 0x001E00, Th).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Titanium = of("titanium", 0xDCA0F0, Ti).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Tungsten = of("tungsten", 0x323232, W).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Uranium238 = of("uranium", 0x32F032, U).flag(ORE, GENERATE_DUST_VARIANTS);
-    public static final Material Uranium235 = of("uranium_235", 0x46FA46, U_235).flag(GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Chrome = ofMetal("chrome", 0xffE6E6, Cr, TIER_IV, 0.2F, 1907).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Cobalt = ofMetal("cobalt", 0x5050FA, Co, TIER_III, 0.3F, 1495).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Iridium = ofMetal("iridium", 0xF0F0F5, Ir, TIER_VI, 0.58F, 2466).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Lanthanum = ofMetal("lanthanum", 0xFFFFFF, La, TIER_VI, 0.1F, 920).flag(GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Lead = ofMetal("lead", 0x8C648C, Pb, TIER_I, 0.22F, 328).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Manganese = ofMetal("manganese", 0xFAFAFA, Mn, TIER_III, 0.29F, 1250).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Molybdenum = ofMetal("molybdenum", 0xB4B4DC, Mo, TIER_VI, 0.1F, 2623).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Neodymium = ofMetal("neodymium", 0x646464, Nd, TIER_III, 0.2F, 1016).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Nickel = ofMetal("nickel", 0xc8c8FA, Ni, TIER_I, 0.48F, 1453).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Osmium = ofMetal("osmium", 0x3232FF, Os, TIER_VI, 0.35F, 3025).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Palladium = ofMetal("palladium", 0x808080, Pd, TIER_III, 0.1F, 1555).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Platinum = ofMetal("platinum", 0xFFFFC8, Pt, TIER_V, 0.35F, 1730).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Plutonium244 = ofMetal("plutonium", 0xF03232, Pu, TIER_V, 0.1F, 912).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Plutonium241 = ofMetal("plutonium_241", 0xFA4646, Pu_241, TIER_V, 0.1F, 912).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Silver = ofMetal("silver", 0x79A7E0, Ag, TIER_I, 0.48F, 961).flag(ORE, GENERATE_DEFAULT_METAL_TYPES).items(COIL).fluid(MOLTEN, fluid -> fluid.temperature(1235));
+    public static final MetalMaterial Thorium = ofMetal("thorium", 0x001E00, Th, TIER_III, 0.3F, 630).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Titanium = ofMetal("titanium", 0xDCA0F0, Ti, TIER_VI, 0.3F, 1700).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Tungsten = ofMetal("tungsten", 0x323232, W, TIER_VI, 0.2F, 3400).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Uranium238 = ofMetal("uranium", 0x32F032, U, TIER_III, 0.3F, 3000).flag(ORE, GENERATE_DUST_VARIANTS);
+    public static final MetalMaterial Uranium235 = ofMetal("uranium_235", 0x46FA46, U_235, TIER_III, 0.3F, 3000).flag(GENERATE_DUST_VARIANTS);
 
-    public static final Material Graphite = of("graphite", 0x808080).flag(GENERATE_DUST_VARIANTS).formula(b -> b.allotrope(C, "graphite"));
+    public static final Material<?> Graphite = of("graphite", 0x808080).flag(GENERATE_DUST_VARIANTS).formula(b -> b.allotrope(C, "graphite"));
 
     /** Metallurgy **/
 
     // Overworld TODO: colours
-    public static final Material DeepIron = of("deep_iron", 0x808080).flag(ORE);
-    public static final Material Prometheum = of("prometheum", 0x808080).flag(ORE);
-    public static final Material Oureclase = of("oureclase", 0x808080).flag(ORE);
-    public static final Material Infuscolium = of("infuscolium", 0x808080).flag(ORE);
-    public static final Material Adamantine = of("adamantine", 0x808080).flag(ORE);
-    public static final Material Rubracium = of("rubracium", 0x808080).flag(ORE);
-    public static final Material Atlarus = of("atlarus", 0x808080).flag(ORE);
-    public static final Material Carmot = of("carmot", 0x808080).flag(ORE);
-    public static final Material Mithril = of("mithril", 0x808080).flag(ORE);
-    public static final Material Orichalcum = of("orichalcum", 0x808080).flag(ORE);
-    public static final Material AstralSilver = of("astral_silver", 0x808080).flag(ORE);
-    public static final Material Lutetium = of("lutetium", 0x808080, Lu).flag(ORE);
+    public static final Material<?> DeepIron = of("deep_iron", 0x808080).flag(ORE);
+    public static final Material<?> Prometheum = of("prometheum", 0x808080).flag(ORE);
+    public static final Material<?> Oureclase = of("oureclase", 0x808080).flag(ORE);
+    public static final Material<?> Infuscolium = of("infuscolium", 0x808080).flag(ORE);
+    public static final Material<?> Adamantine = of("adamantine", 0x808080).flag(ORE);
+    public static final Material<?> Rubracium = of("rubracium", 0x808080).flag(ORE);
+    public static final Material<?> Atlarus = of("atlarus", 0x808080).flag(ORE);
+    public static final Material<?> Carmot = of("carmot", 0x808080).flag(ORE);
+    public static final Material<?> Mithril = of("mithril", 0x808080).flag(ORE);
+    public static final Material<?> Orichalcum = of("orichalcum", 0x808080).flag(ORE);
+    public static final Material<?> AstralSilver = of("astral_silver", 0x808080).flag(ORE);
+    public static final Material<?> Lutetium = of("lutetium", 0x808080, Lu).flag(ORE);
 
     /** Thermal Foundation **/
 
-    public static final Material Coke = of("coke", 0x4C4335).flag(GENERATE_DUST_VARIANTS).items(ItemMaterialType.COAL);
-    public static final Material Electrum = of("electrum", 0xFFFF64).flag(GENERATE_DEFAULT_METAL_TYPES).items(COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
+    public static final Material<?> Coke = of("coke", 0x4C4335).flag(GENERATE_DUST_VARIANTS).items(ItemMaterialType.COAL);
+    public static final Material<?> Electrum = of("electrum", 0xFFFF64).flag(GENERATE_DEFAULT_METAL_TYPES).items(COIL).fluid(MOLTEN, fluid -> fluid.temperature(1337));
 
-    public static final Material Aerotheum = of("aerotheum", 0xD5D181).flag(GENERATE_DUST_VARIANTS).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/aerotheum_still").flow("blocks/fluids/aerotheum_flow").noTint().density(-800).viscosity(100).gasLike().rarity(EnumRarity.RARE));
-    public static final Material Cryotheum = of("cryotheum", 0x49EFFF).flag(GENERATE_DUST_VARIANTS).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/cryotheum_still").flow("blocks/fluids/cryotheum_flow").noTint().density(4000).viscosity(4000).temperature(50).rarity(EnumRarity.RARE));
-    public static final Material Petrotheum = of("petrotheum", 0x6E5A5D).flag(GENERATE_DUST_VARIANTS).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/petrotheum_still").flow("blocks/fluids/petrotheum_flow").noTint().density(4000).viscosity(1500).temperature(350).rarity(EnumRarity.RARE));
-    public static final Material Pyrotheum = of("pyrotheum", 0xE56000).flag(GENERATE_DUST_VARIANTS).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/pyrotheum_still").flow("blocks/fluids/pyrotheum_flow").noTint().luminosity(15).density(2000).viscosity(1200).temperature(4000).rarity(EnumRarity.RARE));
-    public static final Material Blizz = of("blizz", 0x211B2E).flag(GENERATE_DUST_VARIANTS).items(ROD);
-    public static final Material Blitz = of("blitz", 0x211B2E).flag(GENERATE_DUST_VARIANTS).items(ROD);
-    public static final Material Basalz = of("basalz", 0x211B2E).flag(GENERATE_DUST_VARIANTS).items(ROD);
-    public static final Material Cinnabar = of("cinnabar", 0xBF4538).formula(b -> b.element(Hg).element(S)).items(CRYSTAL);
+    public static final Material<?> Aerotheum = of("aerotheum", 0xD5D181).flag(GENERATE_DUST_VARIANTS).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/aerotheum_still").flow("blocks/fluids/aerotheum_flow").noTint().density(-800).viscosity(100).gasLike().rarity(EnumRarity.RARE));
+    public static final Material<?> Cryotheum = of("cryotheum", 0x49EFFF).flag(GENERATE_DUST_VARIANTS).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/cryotheum_still").flow("blocks/fluids/cryotheum_flow").noTint().density(4000).viscosity(4000).temperature(50).rarity(EnumRarity.RARE));
+    public static final Material<?> Petrotheum = of("petrotheum", 0x6E5A5D).flag(GENERATE_DUST_VARIANTS).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/petrotheum_still").flow("blocks/fluids/petrotheum_flow").noTint().density(4000).viscosity(1500).temperature(350).rarity(EnumRarity.RARE));
+    public static final Material<?> Pyrotheum = of("pyrotheum", 0xE56000).flag(GENERATE_DUST_VARIANTS).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/pyrotheum_still").flow("blocks/fluids/pyrotheum_flow").noTint().luminosity(15).density(2000).viscosity(1200).temperature(4000).rarity(EnumRarity.RARE));
+    public static final Material<?> Blizz = of("blizz", 0x211B2E).flag(GENERATE_DUST_VARIANTS).items(ROD);
+    public static final Material<?> Blitz = of("blitz", 0x211B2E).flag(GENERATE_DUST_VARIANTS).items(ROD);
+    public static final Material<?> Basalz = of("basalz", 0x211B2E).flag(GENERATE_DUST_VARIANTS).items(ROD);
+    public static final Material<?> Cinnabar = of("cinnabar", 0xBF4538).formula(b -> b.element(Hg).element(S)).items(CRYSTAL);
 
-    public static final Material Niter = of("niter", 0xFFC8C8).flag(ORE, GENERATE_DUST_VARIANTS).formula(b -> b.element(K).element(N).element(O, 3));
-    public static final Material Sulfur = of("sulfur", 0xC8C800).flag(ORE, GENERATE_DUST_VARIANTS).formula(S);
+    public static final Material<?> Niter = of("niter", 0xFFC8C8).flag(ORE, GENERATE_DUST_VARIANTS).formula(b -> b.element(K).element(N).element(O, 3));
+    public static final Material<?> Sulfur = of("sulfur", 0xC8C800).flag(ORE, GENERATE_DUST_VARIANTS).formula(S);
 
-    public static final Material Tar = of("tar", 0x2E2E2E);
-    // public static final Material ROSIN = of("rosin", 0xE68821).types(GLOB);
+    public static final Material<?> Tar = of("tar", 0x2E2E2E);
+    // public static final Material<?> ROSIN = of("rosin", 0xE68821).types(GLOB);
 
-    public static final Material PrimalMana = of("mana", 0x065E8E).flag(GENERATE_DEFAULT_METAL_TYPES).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/mana_still").flow("blocks/fluids/mana_flow").noTint().luminosity(15).density(600).viscosity(6000).rarity(EnumRarity.EPIC));
+    public static final Material<?> PrimalMana = of("mana", 0x065E8E).flag(GENERATE_DEFAULT_METAL_TYPES).fluid(MOLTEN, fluid -> fluid.still("blocks/fluids/mana_still").flow("blocks/fluids/mana_flow").noTint().luminosity(15).density(600).viscosity(6000).rarity(EnumRarity.EPIC));
 
     /** Netherrocks **/
-    public static final Material Argonite = of("argonite", 0x32004D).flag(ORE); //harvest=4, maxUse=1300, eff=8F, att=3F, ench=18
-    public static final Material Ashstone = of("ashstone", 0x5A5A5A).flag(ORE); //harvest=3, maxUse=900, eff=16F, att=2F, ench=7
-    public static final Material Dragonstone = of("dragonstone", 0x740303).flag(ORE); //harvest=4, maxUse=4000, eff=10F, att=8F, ench=27
-    public static final Material Fyrite = of("fyrite", 0xFC3300).flag(ORE); //harvest=3, maxUse=700, eff=8F, att=4F, ench=15
-    public static final Material Illumenite = of("illumenite", 0xFCFF00).flag(ORE); //harvest=3, maxUse=700, eff=9F, att=3F, ench=39
+    public static final Material<?> Argonite = of("argonite", 0x32004D).flag(ORE); //harvest=4, maxUse=1300, eff=8F, att=3F, ench=18
+    public static final Material<?> Ashstone = of("ashstone", 0x5A5A5A).flag(ORE); //harvest=3, maxUse=900, eff=16F, att=2F, ench=7
+    public static final Material<?> Dragonstone = of("dragonstone", 0x740303).flag(ORE); //harvest=4, maxUse=4000, eff=10F, att=8F, ench=27
+    public static final Material<?> Fyrite = of("fyrite", 0xFC3300).flag(ORE); //harvest=3, maxUse=700, eff=8F, att=4F, ench=15
+    public static final Material<?> Illumenite = of("illumenite", 0xFCFF00).flag(ORE); //harvest=3, maxUse=700, eff=9F, att=3F, ench=39
 
-    /* Pure Fluid Materials */
-    public static final Material Biocrude = of("biocrude", 0x346217).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/biocrude_still").flow("blocks/fluids/biocrude_flow").noTint().customTranslation().density(1500).viscosity(2500));
-    public static final Material Creosote = of("creosote", 0x804000).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/creosote_still").flow("blocks/fluids/creosote_flow").noTint().customTranslation().density(1100).viscosity(2000));
-    public static final Material Crude_oil = of("crude_oil", 0x666666).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/crude_oil_still").flow("blocks/fluids/crude_oil_flow").noTint().customTranslation().density(900).viscosity(2000));
-    public static final Material Experience = of("experience", 0x28CE0A).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/experience_still").flow("blocks/fluids/experience_flow").noTint().luminosity(12).density(-200).viscosity(200).rarity(EnumRarity.UNCOMMON));
-    public static final Material Mushroom_stew = of("mushroom_stew", 0xB79474).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/mushroom_stew_still").flow("blocks/fluids/mushroom_stew_flow").noTint().customTranslation().density(2000).viscosity(2000));
-    public static final Material Refined_biofuel = of("refined_biofuel", 0x7FA814).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/refined_biofuel_still").flow("blocks/fluids/refined_biofuel_flow").noTint().customTranslation().density(750).viscosity(800));
-    public static final Material Refined_oil = of("refined_oil", 0x666666).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/refined_oil_still").flow("blocks/fluids/refined_oil_flow").noTint().customTranslation().density(800).viscosity(1400));
-    public static final Material Refined_fuel = of("refined_fuel", 0xFFFF00).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/refined_fuel_still").flow("blocks/fluids/refined_fuel_flow").noTint().customTranslation().density(750).viscosity(800));
-    public static final Material Resin = of("resin", 0xA66E00).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/resin_still").flow("blocks/fluids/resin_flow").noTint().customTranslation().density(900).viscosity(3000));
-    public static final Material Sap = of("sap", 0x946426).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/sap_still").flow("blocks/fluids/sap_flow").noTint().customTranslation().density(1050).viscosity(1500));
-    public static final Material SeedOil = of("seed_oil", 0xC4FF00).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/seed_oil_still").flow("blocks/fluids/seed_oil_flow").noTint().customTranslation().density(950).viscosity(1300));
-    // Fixme UNUSED: public static final Material SYRUP = of("syrup", 0x946426).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/sap_still").flow("blocks/fluids/sap_flow").noTint().density(1400).viscosity(2500));
-    public static final Material Steam = of("steam", 0xFFFFFF).fluid(GASEOUS, fluid -> fluid.still("blocks/fluids/steam_still").flow("blocks/fluids/steam_flow").noTint().customTranslation().viscosity(200).temperature(750));
-    public static final Material TreeOil = of("tree_oil", 0x8F7638).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/tree_oil_still").flow("blocks/fluids/tree_oil_flow").noTint().customTranslation().density(900).viscosity(1200));
+    /* Pure Fluid Material<?>s */
+    public static final Material<?> Biocrude = of("biocrude", 0x346217).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/biocrude_still").flow("blocks/fluids/biocrude_flow").noTint().customTranslation().density(1500).viscosity(2500));
+    public static final Material<?> Creosote = of("creosote", 0x804000).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/creosote_still").flow("blocks/fluids/creosote_flow").noTint().customTranslation().density(1100).viscosity(2000));
+    public static final Material<?> Crude_oil = of("crude_oil", 0x666666).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/crude_oil_still").flow("blocks/fluids/crude_oil_flow").noTint().customTranslation().density(900).viscosity(2000));
+    public static final Material<?> Experience = of("experience", 0x28CE0A).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/experience_still").flow("blocks/fluids/experience_flow").noTint().luminosity(12).density(-200).viscosity(200).rarity(EnumRarity.UNCOMMON));
+    public static final Material<?> Mushroom_stew = of("mushroom_stew", 0xB79474).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/mushroom_stew_still").flow("blocks/fluids/mushroom_stew_flow").noTint().customTranslation().density(2000).viscosity(2000));
+    public static final Material<?> Refined_biofuel = of("refined_biofuel", 0x7FA814).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/refined_biofuel_still").flow("blocks/fluids/refined_biofuel_flow").noTint().customTranslation().density(750).viscosity(800));
+    public static final Material<?> Refined_oil = of("refined_oil", 0x666666).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/refined_oil_still").flow("blocks/fluids/refined_oil_flow").noTint().customTranslation().density(800).viscosity(1400));
+    public static final Material<?> Refined_fuel = of("refined_fuel", 0xFFFF00).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/refined_fuel_still").flow("blocks/fluids/refined_fuel_flow").noTint().customTranslation().density(750).viscosity(800));
+    public static final Material<?> Resin = of("resin", 0xA66E00).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/resin_still").flow("blocks/fluids/resin_flow").noTint().customTranslation().density(900).viscosity(3000));
+    public static final Material<?> Sap = of("sap", 0x946426).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/sap_still").flow("blocks/fluids/sap_flow").noTint().customTranslation().density(1050).viscosity(1500));
+    public static final Material<?> SeedOil = of("seed_oil", 0xC4FF00).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/seed_oil_still").flow("blocks/fluids/seed_oil_flow").noTint().customTranslation().density(950).viscosity(1300));
+    // Fixme UNUSED: public static final Material<?> SYRUP = of("syrup", 0x946426).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/sap_still").flow("blocks/fluids/sap_flow").noTint().density(1400).viscosity(2500));
+    public static final Material<?> Steam = of("steam", 0xFFFFFF).fluid(GASEOUS, fluid -> fluid.still("blocks/fluids/steam_still").flow("blocks/fluids/steam_flow").noTint().customTranslation().viscosity(200).temperature(750));
+    public static final Material<?> TreeOil = of("tree_oil", 0x8F7638).fluid(LIQUID, fluid -> fluid.still("blocks/fluids/tree_oil_still").flow("blocks/fluids/tree_oil_flow").noTint().customTranslation().density(900).viscosity(1200));
 
     /* Marker/Pseudo Materials - TODO: Match colours with electric tier defaults(?) */
-    // public static final Material Basic = of("basic").items(FERTILIZER, SLAG, BAIT).noTints(FERTILIZER, SLAG).tex(FERTILIZER, "items/fertilizer/basic", 0).tex(SLAG, "items/slag/basic", 0);
-    // public static final Material Rich = of("rich").items(FERTILIZER, SLAG, BAIT).noTints(FERTILIZER, SLAG).tex(FERTILIZER, "items/fertilizer/rich", 0).tex(SLAG, "items/slag/rich", 0);
-    // public static final Material Flux = of("flux").items(FERTILIZER, BAIT).noTint(FERTILIZER).tex(FERTILIZER, "items/fertilizer/flux", 0);
+    // public static final Material<?> Basic = of("basic").items(FERTILIZER, SLAG, BAIT).noTints(FERTILIZER, SLAG).tex(FERTILIZER, "items/fertilizer/basic", 0).tex(SLAG, "items/slag/basic", 0);
+    // public static final Material<?> Rich = of("rich").items(FERTILIZER, SLAG, BAIT).noTints(FERTILIZER, SLAG).tex(FERTILIZER, "items/fertilizer/rich", 0).tex(SLAG, "items/slag/rich", 0);
+    // public static final Material<?> Flux = of("flux").items(FERTILIZER, BAIT).noTint(FERTILIZER).tex(FERTILIZER, "items/fertilizer/flux", 0);
 
     public static void init() {
         Potions.init();

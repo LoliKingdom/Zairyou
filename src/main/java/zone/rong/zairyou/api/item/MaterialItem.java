@@ -28,9 +28,9 @@ import java.util.Set;
 
 public class MaterialItem extends Item implements IModelOverride, IItemColor {
 
-    private final Material material;
-    private final ItemMaterialType itemMaterialType;
-    private final String[] oreNames;
+    protected final Material material;
+    protected final ItemMaterialType itemMaterialType;
+    protected final String[] oreNames;
 
     public MaterialItem(Material material, ItemMaterialType itemMaterialType) {
         this.material = material;

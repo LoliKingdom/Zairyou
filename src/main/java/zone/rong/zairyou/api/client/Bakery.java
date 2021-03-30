@@ -8,6 +8,7 @@ import net.minecraftforge.client.model.IModel;
 import zone.rong.zairyou.Zairyou;
 
 import java.util.Map;
+import java.util.function.UnaryOperator;
 
 public class Bakery {
 
@@ -40,6 +41,7 @@ public class Bakery {
 
         private boolean currentlyBaking = false;
         private ModelType template;
+        private UnaryOperator<IModel> mutate;
         private IBakedModel product;
 
         @Override
@@ -71,11 +73,17 @@ public class Bakery {
         }
 
         @Override
+        public BlockDepartment mutate(UnaryOperator<IModel> model) {
+            this.mutate = model;
+            return this;
+        }
+
+        @Override
         public BlockDepartment bake() {
             if (!this.currentlyBaking) {
                 throw new RuntimeException("Tried baking with no ingredients!");
             }
-            this.product = bakeModel(this.template.model, this.sprites, DefaultVertexFormats.BLOCK);
+            this.product = bakeModel(this.template.model, this.mutate, this.sprites, DefaultVertexFormats.BLOCK);
             // this.product = bake(Bakery.FACE_BAKERY, this.template.baseModel, this.sprites, this.tints);
             this.template = null;
             this.sprites.clear();
@@ -101,6 +109,7 @@ public class Bakery {
 
         private boolean currentlyBaking = false;
         private ModelType template;
+        private UnaryOperator<IModel> mutate;
         private IBakedModel product;
 
         @Override
@@ -132,11 +141,17 @@ public class Bakery {
         }
 
         @Override
+        public ItemDepartment mutate(UnaryOperator<IModel> model) {
+            this.mutate = model;
+            return this;
+        }
+
+        @Override
         public ItemDepartment bake() {
             if (!this.currentlyBaking) {
                 throw new RuntimeException("Tried baking with no ingredients!");
             }
-            this.product = bakeModel(this.template.model, this.sprites, DefaultVertexFormats.ITEM);
+            this.product = bakeModel(this.template.model, this.mutate, this.sprites, DefaultVertexFormats.ITEM);
             // this.product = bake(Bakery.FACE_BAKERY, this.template.baseModel, this.sprites, this.tints);
             this.template = null;
             this.sprites.clear();
@@ -156,16 +171,25 @@ public class Bakery {
 
     }
 
-    public enum ModelType {
+    public static class ModelType {
 
-        NORMAL_BLOCK(Zairyou.ID, "block/normal"),
-        NORMAL_ITEM("minecraft", "item/generated"),
-        HANDHELD_ITEM("minecraft", "item/handheld");
+        public static final ModelType NORMAL_BLOCK = new ModelType(Zairyou.ID, "block/normal");
+        public static final ModelType SINGLE_OVERLAY_BLOCK = new ModelType(Zairyou.ID, "block/single_overlay");
+        public static final ModelType NORMAL_ITEM = new ModelType("minecraft", "item/generated");
+        public static final ModelType HANDHELD_ITEM = new ModelType("minecraft", "item/handheld");
 
-        final IModel model;
+        private final IModel model;
 
-        ModelType(String locationDomain, String locationPath) {
+        public ModelType(String locationDomain, String locationPath) {
             this.model = RenderUtils.load(locationDomain, locationPath);
+        }
+
+        public ModelType(IModel model) {
+            this.model = model;
+        }
+
+        public IModel getModel() {
+            return model;
         }
 
     }

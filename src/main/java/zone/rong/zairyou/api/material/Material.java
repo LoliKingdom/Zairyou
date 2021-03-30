@@ -3,6 +3,7 @@ package zone.rong.zairyou.api.material;
 import com.google.common.base.CaseFormat;
 import it.unimi.dsi.fastutil.objects.*;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -10,7 +11,6 @@ import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import zone.rong.zairyou.Zairyou;
-import zone.rong.zairyou.api.block.IZairyouBlockBuilder;
 import zone.rong.zairyou.api.fluid.ExtendedFluid;
 import zone.rong.zairyou.api.fluid.FluidType;
 import zone.rong.zairyou.api.item.MaterialItem;
@@ -27,6 +27,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Material. That's it.
@@ -39,16 +41,16 @@ public class Material implements Comparable<Material> {
     private static final Object2ObjectMap<String, Material> REGISTRY = new Object2ObjectRBTreeMap<>();
     private static final Object2ObjectMap<Class<?>, Function<Material, ?>> APPENDER_REGISTRY = new Object2ObjectOpenHashMap<>();
 
-    public static <T extends IMaterialAppender<T>> void registerAppender(Class<T> clazz, Function<Material, T> construct) {
-        APPENDER_REGISTRY.put(clazz, construct);
-    }
-
     public static Material get(String name) {
         return REGISTRY.getOrDefault(name, NONE);
     }
 
     public static ObjectCollection<Material> all() {
         return REGISTRY.values();
+    }
+
+    public static <M extends Material> Stream<M> all(Class<M> clazz) {
+        return REGISTRY.values().stream().filter(clazz::isInstance).map(clazz::cast);
     }
 
     public static void all(BiConsumer<String, Material> consumer) {
@@ -95,12 +97,10 @@ public class Material implements Comparable<Material> {
     protected long flags = 0L;
     protected String chemicalFormula = "";
 
-    protected Object2ObjectMap<Class<?>, IMaterialAppender<?>> appenders;
-
     protected List<UnaryOperator<Material>> delegatingCode;
 
-    protected Map<BlockMaterialType<?>, Block> blocks;
-    protected Map<BlockMaterialType<?>, ResourceLocation[]> blockTextures;
+    protected Set<BlockMaterialType<?>> blocks;
+    protected Map<BlockMaterialType, ResourceLocation[]> blockTextures;
 
     protected Map<ItemMaterialType, ItemStack> items;
     protected Map<ItemMaterialType, ResourceLocation[]> itemTextures;
@@ -109,7 +109,7 @@ public class Material implements Comparable<Material> {
 
     protected Set<IMaterialType> disabledTint;
 
-    private Material(String name, int colour, Element element, ExtendedToolMaterial toolMaterial) {
+    protected Material(String name, int colour, Element element, ExtendedToolMaterial toolMaterial) {
         this.name = name;
         this.translationKey = String.join(".", Zairyou.ID, "material", name, "name");
         this.colour = colour;
@@ -119,17 +119,6 @@ public class Material implements Comparable<Material> {
         }
         this.toolMaterial = toolMaterial;
         REGISTRY.put(name, this);
-    }
-
-    public <T extends IMaterialAppender<T>> T cast(Class<T> clazz) {
-        if (this.appenders == null) {
-            this.appenders = new Object2ObjectOpenHashMap<>();
-        }
-        T appender = (T) this.appenders.get(clazz);
-        if (appender == null) {
-            this.appenders.put(clazz, appender = (T) APPENDER_REGISTRY.get(clazz).apply(this));
-        }
-        return appender;
     }
 
     public String getName() {
@@ -174,7 +163,7 @@ public class Material implements Comparable<Material> {
     }
 
     public boolean hasType(BlockMaterialType<?> type) {
-        return this.blocks != null && this.blocks.containsKey(type);
+        return this.blocks.contains(type);
     }
 
     public boolean hasType(ItemMaterialType type) {
@@ -185,8 +174,22 @@ public class Material implements Comparable<Material> {
         return (this.flags & flag.bit) > 0;
     }
 
-    public Map<BlockMaterialType<?>, Block> getBlocks() {
-        return this.blocks == null ? Collections.emptyMap() : this.blocks;
+    public Map<BlockMaterialType<?>, Collection<Block>> getBlocks() {
+        if (this.blocks == null) {
+            return Collections.emptyMap();
+        }
+        Map<BlockMaterialType<?>, Collection<Block>> map = new Object2ObjectOpenHashMap<>();
+        this.blocks.forEach(b -> map.put(b, b.getGetter().getBlocks()));
+        return map;
+    }
+
+    public Map<BlockMaterialType<?>, Collection<IBlockState>> getBlockStates() {
+        if (this.blocks == null) {
+            return Collections.emptyMap();
+        }
+        Map<BlockMaterialType<?>, Collection<IBlockState>> map = new Object2ObjectOpenHashMap<>();
+        this.blocks.forEach(b -> map.put(b, b.getGetter().getBlockStates()));
+        return map;
     }
 
     public Map<ItemMaterialType, ItemStack> getItems() {
@@ -207,8 +210,11 @@ public class Material implements Comparable<Material> {
     }
      */
 
-    public Block getBlock(BlockMaterialType<?> type) {
-        return this.blocks == null ? null : this.blocks.get(type);
+    public IBlockState getBlock(BlockMaterialType<?> type, Object... arguments) {
+        if (arguments.length == 0) {
+            return type.getGetter().getBlockState(this);
+        }
+        return type.getGetter().getBlockState(arguments);
     }
 
     public ItemStack getItem(ItemMaterialType type, boolean copy) {
@@ -222,13 +228,8 @@ public class Material implements Comparable<Material> {
         return copy ? stack.copy() : stack;
     }
 
-    @Nullable
-    public MaterialItem getItem(ItemMaterialType type) {
-        Item item = getItem(type, false).getItem();
-        if (item instanceof MaterialItem) {
-            return (MaterialItem) item;
-        }
-        return null;
+    public Item getItem(ItemMaterialType type) {
+        return getItem(type, false).getItem();
     }
 
     public Fluid getFluid(FluidType type) {
@@ -236,11 +237,15 @@ public class Material implements Comparable<Material> {
     }
 
     public ItemStack getStack(BlockMaterialType type, int count) {
-        Block block = getBlock(type);
-        if (block == null) {
+        return getStack(this, type, count);
+    }
+
+    public <T> ItemStack getStack(T genericType, BlockMaterialType type, int count) {
+        IBlockState state = getBlock(type, genericType);
+        if (state == null) {
             return ItemStack.EMPTY;
         }
-        return new ItemStack(block, count);
+        return new ItemStack(state.getBlock(), count, state.getBlock().getMetaFromState(state));
     }
 
     public ItemStack getStack(ItemMaterialType type, int count) {
@@ -265,24 +270,40 @@ public class Material implements Comparable<Material> {
         return this.itemTextures.get(type);
     }
 
-    public ResourceLocation[] getTextures(BlockMaterialType type) {
+    public ResourceLocation[] getTextures(BlockMaterialType<?> type) {
         return this.blockTextures.get(type);
     }
 
-    public Block setBlock(BlockMaterialType<?> type, Block block) {
-        this.blocks.put(type, block);
-        return block;
+    public void setBlock(BlockMaterialType<?> type, IBlockState state, Object... arguments) {
+        if (!this.hasType(type)) {
+            throw new IllegalStateException(this.getName() + " does not have " + type.getId() + "!");
+        }
+        if (arguments.length == 0) {
+            type.getGetter().supplyBlock(state, this);
+        } else {
+            type.getGetter().supplyBlock(state, arguments);
+        }
+        this.blocks.add(type); // In case
     }
 
     public void setItem(ItemMaterialType type, ItemStack stack) {
+        if (!this.hasType(type)) {
+            throw new IllegalStateException(this.getName() + " does not have " + type.getId() + "!");
+        }
         this.items.put(type, stack);
     }
 
     public void setItem(ItemMaterialType type, Item item, int meta) {
+        if (!this.hasType(type)) {
+            throw new IllegalStateException(this.getName() + " does not have " + type.getId() + "!");
+        }
         this.items.put(type, new ItemStack(item, 1, meta));
     }
 
     public void setItem(ItemMaterialType type, Item item) {
+        if (!this.hasType(type)) {
+            throw new IllegalStateException(this.getName() + " does not have " + type.getId() + "!");
+        }
         this.items.put(type, new ItemStack(item));
     }
 
@@ -290,38 +311,34 @@ public class Material implements Comparable<Material> {
         return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, this.name);
     }
 
-    public Material formula(String formula) {
+    public <M extends Material> M formula(String formula) {
         this.chemicalFormula = formula;
-        return this;
+        return self();
     }
 
-    public Material formula(UnaryOperator<FormulaBuilder> builder) {
+    public <M extends Material> M formula(UnaryOperator<FormulaBuilder> builder) {
         return formula(builder.apply(FormulaBuilder.of()).build());
     }
 
-    public Material formula(Element element, int atoms) {
+    public <M extends Material> M formula(Element element, int atoms) {
         return formula(FormulaBuilder.of().element(element, atoms).build());
     }
 
-    public Material formula(Element element) {
+    public <M extends Material> M formula(Element element) {
         return formula(FormulaBuilder.of().element(element).build());
     }
 
-    public <B extends Block, C extends IZairyouBlockBuilder<B>> Material block(BlockMaterialType<C> blockMaterialType, UnaryOperator<C> blockCreator) {
+    public Material block(BlockMaterialType<?> blockMaterialType) {
         if (this.blocks == null) {
-            this.blocks = new Object2ObjectOpenHashMap<>();
+            this.blocks = new ObjectOpenHashSet<>();
             this.blockTextures = new Object2ObjectOpenHashMap<>();
         }
-        this.blocks.put(blockMaterialType, blockCreator.apply(blockMaterialType.createBlock(this)).build());
+        this.blocks.add(blockMaterialType);
         this.blockTextures.put(blockMaterialType, TextureSet.DULL.getTextureLocations(blockMaterialType));
-        return this;
+        return self();
     }
 
-    public <B extends Block, C extends IZairyouBlockBuilder<B>> Material block(BlockMaterialType<C> blockMaterialType) {
-        return block(blockMaterialType, b -> b);
-    }
-
-    public Material items(ItemMaterialType... itemMaterialTypes) {
+    public <M extends Material> M items(ItemMaterialType... itemMaterialTypes) {
         if (itemMaterialTypes.length == 0) {
             throw new IllegalArgumentException("No ItemMaterialTypes specified for " + this.name + " material!");
         }
@@ -333,10 +350,10 @@ public class Material implements Comparable<Material> {
             this.items.put(itemMaterialType, ItemStack.EMPTY);
             this.itemTextures.put(itemMaterialType, TextureSet.DULL.getTextureLocations(itemMaterialType));
         }
-        return this;
+        return self();
     }
 
-    public Material provideFluid(FluidType type, Fluid fluid) {
+    public <M extends Material> M provideFluid(FluidType type, Fluid fluid) {
         if (this.fluids == null) {
             this.fluids = new EnumMap<>(FluidType.class);
         }
@@ -346,62 +363,81 @@ public class Material implements Comparable<Material> {
         }
          */
         this.fluids.put(type, fluid);
-        return this;
+        return self();
     }
 
-    public Material fluid(FluidType fluidType, UnaryOperator<ExtendedFluid.Builder> builderOperator) {
+    public <M extends Material> M fluid(FluidType fluidType, UnaryOperator<ExtendedFluid.Builder> builderOperator) {
         Fluid fluid = builderOperator.apply(new ExtendedFluid.Builder(this, fluidType)).build();
         return provideFluid(fluidType, fluid);
     }
 
-    public Material tex(ItemMaterialType itemMaterialType, ResourceLocation location, int layer) {
+    public <M extends Material> M tex(IMaterialType type, ResourceLocation location, int layer) {
         if (!frozen) {
-            createDelegate(m -> m.tex(itemMaterialType, location, layer));
-            return this;
+            createDelegate(m -> m.tex(type, location, layer));
+            return self();
         }
-        if (this.itemTextures == null || !this.itemTextures.containsKey(itemMaterialType)) {
-            throw new IllegalStateException("ItemMaterialType not found for " + this.name + ", cannot change the texture of its item.");
-        }
-        ResourceLocation[] locations = this.itemTextures.get(itemMaterialType);
-        if (locations.length <= layer) {
-            throw new IllegalStateException(itemMaterialType + " does not have layer " + layer);
-        }
-        locations[layer] = location;
-        return this;
-    }
-
-    public Material tex(ItemMaterialType itemMaterialType, String location, int layer) {
-        int colonIndex = location.indexOf(':');
-        if (colonIndex == -1) {
-            return tex(itemMaterialType, new ResourceLocation(Zairyou.ID, location), layer);
-        }
-        return tex(itemMaterialType, new ResourceLocation(location), layer);
-    }
-
-    public Material tex(ItemMaterialType... itemMaterialTypes) {
-        if (!frozen) {
-            createDelegate(m -> m.tex(itemMaterialTypes));
-            return this;
-        }
-        if (this.itemTextures == null) {
-            throw new IllegalStateException("ItemMaterialType not found for " + this.name + ", cannot change the texture of its item.");
-        }
-        for (ItemMaterialType itemMaterialType : itemMaterialTypes) {
-            if (!this.itemTextures.containsKey(itemMaterialType)) {
+        if (type instanceof ItemMaterialType) {
+            if (this.itemTextures == null || !this.itemTextures.containsKey(type)) {
                 throw new IllegalStateException("ItemMaterialType not found for " + this.name + ", cannot change the texture of its item.");
             }
-            ResourceLocation[] locations = this.itemTextures.get(itemMaterialType);
-            for (int i = 0; i < locations.length; i++) {
-                locations[i] = new ResourceLocation(Zairyou.ID, String.join("/", "items", itemMaterialType.getId(), "custom", this.name + "_" + i));
+            ResourceLocation[] locations = this.itemTextures.get(type);
+            if (locations.length <= layer) {
+                throw new IllegalStateException(type.getId() + " does not have layer " + layer);
+            }
+            locations[layer] = location;
+        } else {
+            if (this.blockTextures == null || !this.blockTextures.containsKey(type)) {
+                throw new IllegalStateException("ItemMaterialType not found for " + this.name + ", cannot change the texture of its item.");
+            }
+            ResourceLocation[] locations = this.blockTextures.get(type);
+            if (locations.length <= layer) {
+                throw new IllegalStateException(type.getId() + " does not have layer " + layer);
             }
         }
-        return this;
+        return self();
     }
 
-    public Material noTint(ItemMaterialType type) {
+    public <M extends Material> M tex(IMaterialType type, String location, int layer) {
+        int colonIndex = location.indexOf(':');
+        if (colonIndex == -1) {
+            return tex(type, new ResourceLocation(Zairyou.ID, location), layer);
+        }
+        return tex(type, new ResourceLocation(location), layer);
+    }
+
+    // TODO fix
+    public <M extends Material> M tex(IMaterialType... types) {
+        if (!frozen) {
+            createDelegate(m -> m.tex(types));
+            return self();
+        }
+        for (IMaterialType type : types) {
+            if (type instanceof ItemMaterialType) {
+                if (!this.itemTextures.containsKey(type)) {
+                    throw new IllegalStateException("ItemMaterialType not found for " + this.name + ", cannot change the texture of its item.");
+                }
+                ResourceLocation[] locations = this.itemTextures.get(type);
+                for (int i = 0; i < locations.length; i++) {
+                    locations[i] = new ResourceLocation(Zairyou.ID, String.join("/", "items", type.getId(), "custom", this.name + "_" + i));
+                }
+            }
+            else {
+                if (!this.blockTextures.containsKey(type)) {
+                    throw new IllegalStateException("BlockMaterialType not found for " + this.name + ", cannot change the texture of its item.");
+                }
+                ResourceLocation[] locations = this.blockTextures.get(type);
+                for (int i = 0; i < locations.length; i++) {
+                    locations[i] = new ResourceLocation(Zairyou.ID, String.join("/", "blocks", type.getId(), "custom", this.name + "_" + i));
+                }
+            }
+        }
+        return self();
+    }
+
+    public <M extends Material> M noTint(IMaterialType type) {
         if (!frozen) {
             createDelegate(m -> m.noTint(type));
-            return this;
+            return self();
         }
         if (this.items == null || !this.items.containsKey(type)) {
             throw new IllegalStateException("ItemMaterialType not found, cannot decide on whether to tint the item or not.");
@@ -410,13 +446,13 @@ public class Material implements Comparable<Material> {
             this.disabledTint = new ObjectOpenHashSet<>();
         }
         this.disabledTint.add(type);
-        return this;
+        return self();
     }
 
-    public Material noTints(ItemMaterialType... types) {
+    public <M extends Material> M noTints(IMaterialType... types) {
         if (!frozen) {
             createDelegate(m -> m.noTints(types));
-            return this;
+            return self();
         }
         if (this.items == null) {
             throw new IllegalStateException("ItemMaterialType not found, cannot decide on whether to tint the item or not.");
@@ -424,23 +460,26 @@ public class Material implements Comparable<Material> {
         if (this.disabledTint == null) {
             this.disabledTint = new ObjectOpenHashSet<>();
         }
-        for (ItemMaterialType type : types) {
-            if (!this.items.containsKey(type)) {
-                throw new IllegalStateException("ItemMaterialType not found, cannot decide on whether to tint the item or not.");
+        for (IMaterialType type : types) {
+            if (type instanceof ItemMaterialType && !this.items.containsKey(type)) {
+                throw new IllegalStateException(type.getId() + "for " + this.name + " not found, cannot decide on whether to tint the item or not.");
+            }
+            if (type instanceof BlockMaterialType && !this.blocks.contains(type)) {
+                throw new IllegalStateException(type.getId() + "for " + this.name + " not found, cannot decide on whether to tint the block or not.");
             }
             this.disabledTint.add(type);
         }
-        return this;
+        return self();
     }
 
-    public Material flag(MaterialFlag... flags) {
+    public <M extends Material> M flag(MaterialFlag... flags) {
         if (flags.length == 0) {
             throw new IllegalArgumentException("Flags not specified for " + this.name + " material!");
         }
         for (MaterialFlag flag : flags) {
             this.flags |= flag.bit;
         }
-        return this;
+        return self();
     }
 
     public void prepare() {
@@ -462,6 +501,10 @@ public class Material implements Comparable<Material> {
             this.delegatingCode = new ObjectArrayList<>();
         }
         this.delegatingCode.add(delegatingCode);
+    }
+    
+    protected <M extends Material> M self() {
+        return (M) this;
     }
 
     @Override
