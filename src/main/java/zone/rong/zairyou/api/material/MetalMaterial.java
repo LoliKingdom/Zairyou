@@ -1,12 +1,19 @@
 package zone.rong.zairyou.api.material;
 
 import net.dries007.tfc.api.types.Metal;
+import net.dries007.tfc.objects.fluids.FluidsTFC;
+import net.dries007.tfc.objects.fluids.properties.FluidWrapper;
+import net.dries007.tfc.objects.fluids.properties.MetalProperty;
+import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.EnumHelper;
+import zone.rong.zairyou.Zairyou;
+import zone.rong.zairyou.api.fluid.FluidType;
 import zone.rong.zairyou.api.item.tool.ExtendedToolMaterial;
 import zone.rong.zairyou.api.material.element.Element;
 
-public class MetalMaterial extends Material<MetalMaterial> {
+public class MetalMaterial extends Material {
 
     public static MetalMaterial ofMetal(String name, int colour, Metal.Tier metalTier, float specificHeat, int meltTemp) {
         return ofMetal(name, colour, null, NONE_TOOL_EXTENDED, metalTier, specificHeat, meltTemp);
@@ -32,27 +39,34 @@ public class MetalMaterial extends Material<MetalMaterial> {
         return new MetalMaterial(name, colour, element, extendedToolMaterial, metalTier, specificHeat, meltTemp);
     }
 
-    private final Metal.Tier metalTier;
-    private final float specificHeat;
-    private final int meltTemp;
+    protected final Metal metal;
+    protected final FluidWrapper metalFluidWrapper;
 
     protected MetalMaterial(String name, int colour, Element element, ExtendedToolMaterial toolMaterial, Metal.Tier metalTier, float specificHeat, int meltTemp) {
         super(name, colour, element, toolMaterial);
-        this.metalTier = metalTier;
-        this.specificHeat = specificHeat;
-        this.meltTemp = meltTemp;
+        fluid(FluidType.MOLTEN, fluid -> fluid.still("blocks/fluids/molten_still").flow("blocks/fluids/molten_flow").temperature(meltTemp + 273).luminosity(15).density(600).viscosity(6000).rarity(EnumRarity.EPIC));
+        this.metal = new Metal(new ResourceLocation(Zairyou.ID, name), metalTier, true, specificHeat, meltTemp, colour, toolMaterial.getBase(), null);
+        this.metalFluidWrapper = FluidsTFC.getWrapper(this.fluids.get(FluidType.MOLTEN)).with(MetalProperty.METAL, new MetalProperty(this.metal));
+    }
+
+    public Metal getRepresentation() {
+        return metal;
     }
 
     public Metal.Tier getMetalTier() {
-        return metalTier;
+        return metal.getTier();
     }
 
     public float getSpecificHeat() {
-        return specificHeat;
+        return metal.getSpecificHeat();
     }
 
     public int getMeltingTemperature() {
-        return meltTemp;
+        return (int) metal.getMeltTemp();
+    }
+
+    public FluidWrapper getMetalFluidWrapper() {
+        return metalFluidWrapper;
     }
 
 }

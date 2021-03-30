@@ -5,13 +5,14 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipe;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
-import net.minecraftforge.registries.IForgeRegistry;
 import zone.rong.zairyou.Zairyou;
 import zone.rong.zairyou.api.item.MaterialItem;
 import zone.rong.zairyou.api.material.Material;
+import zone.rong.zairyou.api.material.MetalMaterial;
+import zone.rong.zairyou.api.ore.item.MetalOreItem;
+import zone.rong.zairyou.api.ore.item.OreItem;
 import zone.rong.zairyou.api.util.RecipeUtil;
 import zone.rong.zairyou.api.util.Util;
 
@@ -19,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.LongUnaryOperator;
-import java.util.function.Supplier;
 
 public final class ItemMaterialType implements IMaterialType {
 
@@ -65,9 +65,9 @@ public final class ItemMaterialType implements IMaterialType {
     public static final ItemMaterialType GRINDING_BALL = new ItemMaterialType("enderio", "ball").materialAmount(u -> (u * 5) / 24);
 
     public static final ItemMaterialType ORE = new ItemMaterialType("tfc", "ore").materialAmount(u -> -1);
-    public static final ItemMaterialType ORE_SMALL = new ItemMaterialType("tfc", "oreSmall").materialAmount(u -> -1);
-    public static final ItemMaterialType ORE_RICH = new ItemMaterialType("tfc", "oreRich").materialAmount(u -> -1);
-    public static final ItemMaterialType ORE_POOR = new ItemMaterialType("tfc", "orePoor").materialAmount(u -> -1);
+    public static final ItemMaterialType ORE_SMALL = new ItemMaterialType("tfc", "small_ore", "oreSmall").materialAmount(u -> -1).modelLayers(2);
+    public static final ItemMaterialType ORE_RICH = new ItemMaterialType("tfc", "rich_ore", "oreRich").materialAmount(u -> -1);
+    public static final ItemMaterialType ORE_POOR = new ItemMaterialType("tfc", "poor_ore", "orePoor").materialAmount(u -> -1);
 
     /**
      *     BAIT("thermalfoundation", 1, -1, "bait"),
@@ -88,6 +88,11 @@ public final class ItemMaterialType implements IMaterialType {
     public static final ItemMaterialType CRYSTAL = new ItemMaterialType("thermalfoundation", "crystal").materialAmount(u -> u);
 
     static {
+
+        ORE.setItemSupplier(m -> m instanceof MetalMaterial ? new MetalOreItem((MetalMaterial) m, ORE) : new OreItem(m, ORE));
+        ORE_SMALL.setItemSupplier(m -> m instanceof MetalMaterial ? new MetalOreItem((MetalMaterial) m, ORE_SMALL) : new OreItem(m, ORE_SMALL));
+        ORE_RICH.setItemSupplier(m -> m instanceof MetalMaterial ? new MetalOreItem((MetalMaterial) m, ORE_RICH) : new OreItem(m, ORE_RICH));
+        ORE_POOR.setItemSupplier(m -> m instanceof MetalMaterial ? new MetalOreItem((MetalMaterial) m, ORE_POOR) : new OreItem(m, ORE_POOR));
 
         DUST.recipe((r, t, m) -> {
             final ItemStack dustStack = m.getItem(t, false);

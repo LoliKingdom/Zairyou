@@ -32,7 +32,8 @@ public enum MaterialFlag {
                     material.block(BlockMaterialType.ORE);
                     material.block(BlockMaterialType.ORE_POOR);
                     material.block(BlockMaterialType.ORE_RICH);
-                    material.items(ItemMaterialType.ORE, ItemMaterialType.ORE_POOR, ItemMaterialType.ORE_RICH);
+                    material.block(ORE_SURFACE_ROCK);
+                    material.items(ItemMaterialType.ORE, ItemMaterialType.ORE_SMALL, ItemMaterialType.ORE_POOR, ItemMaterialType.ORE_RICH);
                     material.flags |= GENERATE_DUST_VARIANTS.bit;
                 }
                 break;

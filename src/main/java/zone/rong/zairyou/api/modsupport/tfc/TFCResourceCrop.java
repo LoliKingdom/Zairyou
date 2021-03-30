@@ -1,7 +1,7 @@
-package zone.rong.zairyou.modsupport.api.tfc.bridge.mysticalagriculture;
+package zone.rong.zairyou.api.modsupport.tfc;
 
 import net.minecraft.item.ItemStack;
-import zone.rong.zairyou.modsupport.api.tfc.TFCCrop;
+import zone.rong.zairyou.api.modsupport.tfc.TFCCrop;
 
 import javax.annotation.Nullable;
 

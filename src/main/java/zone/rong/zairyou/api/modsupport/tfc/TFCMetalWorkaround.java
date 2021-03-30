@@ -10,7 +10,7 @@ import zone.rong.zairyou.api.material.MetalMaterial;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-public class TFCMetalsWorkaround {
+public class TFCMetalWorkaround {
 
     public static final Field allMetalFluidsField;
     public static final Map<Metal, FluidWrapper> allMetalFluids;

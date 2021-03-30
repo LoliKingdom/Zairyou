@@ -1,21 +1,15 @@
-package zone.rong.zairyou.api.ore.stone;
+package zone.rong.zairyou.api.property.type;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.block.properties.PropertyHelper;
+import zone.rong.zairyou.api.ore.stone.StoneType;
+import zone.rong.zairyou.api.property.FreezableProperty;
 
-public class StoneTypeProperty extends PropertyHelper<StoneType> {
+public class StoneTypeProperty extends FreezableProperty<StoneType> {
 
-    private final ImmutableList<StoneType> allowedTypes;
-
-    public StoneTypeProperty(StoneType... allowedTypes) {
+    public StoneTypeProperty() {
         super("stone_type", StoneType.class);
-        this.allowedTypes = ImmutableList.copyOf(allowedTypes);
-    }
-
-    @Override
-    public ImmutableList<StoneType> getAllowedValues() {
-        return this.allowedTypes;
     }
 
     @Override

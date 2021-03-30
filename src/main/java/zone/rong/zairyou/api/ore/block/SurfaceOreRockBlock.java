@@ -1,5 +1,9 @@
-package zone.rong.zairyou.api.ore;
+package zone.rong.zairyou.api.ore.block;
 
+import com.google.common.collect.ImmutableSet;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSets;
 import net.dries007.tfc.api.types.Rock;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.BlockFaceShape;
@@ -26,6 +30,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import zone.rong.zairyou.Zairyou;
+import zone.rong.zairyou.api.block.IBlockGetter;
 import zone.rong.zairyou.api.block.itemblock.MetaItemBlock;
 import zone.rong.zairyou.api.block.metablock.AbstractMetaBlock;
 import zone.rong.zairyou.api.block.metablock.MutableMetaBlockBuilder;
@@ -40,6 +45,7 @@ import zone.rong.zairyou.api.property.type.MaterialProperty;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -213,5 +219,42 @@ public class SurfaceOreRockBlock extends AbstractMetaBlock<MaterialProperty, Mat
     @Override
     public int colorMultiplier(IBlockState state, @Nullable IBlockAccess worldIn, @Nullable BlockPos pos, int tintIndex) {
         return tintIndex == 0 ? state.getValue(freezableProperty).getColour() : -1;
+    }
+
+    public static class Getter implements IBlockGetter {
+
+        private final Map<Material, IBlockState> map = new Object2ObjectOpenHashMap<>();
+
+        @Override
+        public void supplyBlock(IBlockState state, Object... arguments) {
+            if (arguments.length > 1) {
+                throw new UnsupportedOperationException("This getter only allows 1 argument.");
+            }
+            for (Object argument : arguments) {
+                if (!(argument instanceof Material)) {
+                    throw new UnsupportedOperationException("Argument not supported");
+                }
+            }
+            map.put((Material) arguments[0], state);
+        }
+
+        @Nullable
+        @Override
+        public IBlockState getBlockState(Object... arguments) {
+            if (arguments.length > 1) {
+                throw new UnsupportedOperationException("This getter only allows 1 argument.");
+            }
+            return map.get(arguments[0]);
+        }
+
+        @Override
+        public Set<Block> getBlocks() {
+            return ObjectSets.unmodifiable(new ObjectOpenHashSet<>(map.values().stream().map(IBlockState::getBlock).iterator()));
+        }
+
+        @Override
+        public Set<IBlockState> getBlockStates() {
+            return ImmutableSet.copyOf(map.values());
+        }
     }
 }

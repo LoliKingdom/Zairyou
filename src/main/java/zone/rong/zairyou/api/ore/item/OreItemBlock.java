@@ -1,9 +1,10 @@
-package zone.rong.zairyou.api.ore;
+package zone.rong.zairyou.api.ore.item;
 
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import zone.rong.zairyou.api.block.itemblock.MetaItemBlock;
 import zone.rong.zairyou.api.material.type.BlockMaterialType;
+import zone.rong.zairyou.api.ore.block.OreBlock;
 
 import javax.annotation.Nullable;
 

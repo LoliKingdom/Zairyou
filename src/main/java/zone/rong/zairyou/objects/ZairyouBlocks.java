@@ -1,2 +1,8 @@
-package zone.rong.zairyou.objects;public class ZairyouBlocks {
+package zone.rong.zairyou.objects;
+
+public class ZairyouBlocks {
+
+    public static void init() {
+    }
+
 }

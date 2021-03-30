@@ -1,4 +1,4 @@
-package zone.rong.zairyou.api.ore;
+package zone.rong.zairyou.api.ore.item;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;

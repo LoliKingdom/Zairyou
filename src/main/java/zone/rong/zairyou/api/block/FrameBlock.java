@@ -1,2 +1,4 @@
-package zone.rong.zairyou.api.block;public class FrameBlock {
+package zone.rong.zairyou.api.block;
+
+public class FrameBlock {
 }

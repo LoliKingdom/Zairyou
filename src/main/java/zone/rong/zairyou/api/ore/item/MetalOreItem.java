@@ -1,10 +1,11 @@
-package zone.rong.zairyou.api.ore;
+package zone.rong.zairyou.api.ore.item;
 
 import net.dries007.tfc.api.capability.metal.IMetalItem;
 import net.dries007.tfc.api.types.Metal;
 import net.minecraft.item.ItemStack;
 import zone.rong.zairyou.api.material.MetalMaterial;
 import zone.rong.zairyou.api.material.type.ItemMaterialType;
+import zone.rong.zairyou.api.ore.item.OreItem;
 
 import javax.annotation.Nullable;
 
